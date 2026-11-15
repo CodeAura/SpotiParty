@@ -1,0 +1,91 @@
+# Builds SpotiParty for the desktop: SpotiParty.exe (Windows) and SpotiParty.dmg (macOS, Apple silicon and Intel).
+# Run it by hand under Actions → Desktop apps → Run workflow (the files appear under the run's Artifacts),
+# or push a tag like v1.0.0 to also attach them to a GitHub release.
+name: Desktop apps
+
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyinstaller pillow
+      - name: Build SpotiParty.exe
+        run: >
+          pyinstaller --noconfirm --onefile --windowed --name SpotiParty
+          --icon desktop/icon.ico --add-data "web;web"
+          --distpath dist --workpath build --specpath build/spec
+          desktop/spotiparty_app.py
+        shell: bash
+      - name: Smoke test
+        shell: pwsh
+        run: |
+          $p = Start-Process dist/SpotiParty.exe -PassThru
+          $ok = $false
+          foreach ($i in 1..20) {
+            try { if ((Invoke-WebRequest http://127.0.0.1:8769/index.html -UseBasicParsing).Content -match 'SpotiParty') { $ok = $true; break } } catch {}
+            Start-Sleep 1
+          }
+          Stop-Process -Id $p.Id -Force
+          if (-not $ok) { throw "SpotiParty.exe did not serve the page" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SpotiParty-windows
+          path: dist/SpotiParty.exe
+
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-latest
+            arch: apple-silicon
+          - runner: macos-15-intel
+            arch: intel
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyinstaller pillow
+      - name: Build SpotiParty.app
+        run: >
+          pyinstaller --noconfirm --windowed --name SpotiParty
+          --icon desktop/icon.png --add-data "web:web"
+          --osx-bundle-identifier io.github.codeaura.spotiparty
+          --distpath dist --workpath build --specpath build/spec
+          desktop/spotiparty_app.py
+      - name: Pack SpotiParty.dmg
+        run: |
+          mkdir -p dmg
+          cp -R dist/SpotiParty.app dmg/
+          ln -s /Applications dmg/Applications
+          hdiutil create -volname SpotiParty -srcfolder dmg -ov -format UDZO "SpotiParty-macos-${{ matrix.arch }}.dmg"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SpotiParty-macos-${{ matrix.arch }}
+          path: SpotiParty-macos-${{ matrix.arch }}.dmg
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: out/*

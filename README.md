@@ -49,7 +49,7 @@ SpotiParty **leest** alleen van Spotify: wat er speelt en wat erna komt. Hij bed
 | | 📺 Android TV | 💻 PC | 🏠 Home Assistant |
 |---|---|---|---|
 | **Toont** | Wat er op de tv speelt | Wat je Spotify-account speelt, op elk apparaat | Elke `media_player`: Spotify, Sonos, Cast, Music Assistant… |
-| **Nodig** | ADB en een PC om te bouwen | Python 3 | Home Assistant |
+| **Nodig** | ADB en een PC om te bouwen | De app (`.exe` of `.dmg`), of Python 3 | Home Assistant |
 | **Spotify-app nodig?** | Alleen voor **Hierna: …** | Ja | Alleen voor **Hierna: …**, en alleen via HTTPS |
 | **Jam-link instellen** | Met je telefoon (QR-code op de tv) | ⚙ in de app | ⚙ in de kaart |
 | **Tijd** | ± 20 min | ± 5 min | ± 5 min |
@@ -184,17 +184,38 @@ een oude Jam-code weg.
 
 ## 💻 Webapp op de PC
 
-### Starten
+### Starten met de app (aanbevolen)
 
-Je hebt [Python 3](https://www.python.org/downloads/) nodig. Op Windows dubbelklik je `web/start.cmd`. Of start hem
-in een terminal:
+Download de app bij de nieuwste [**Release**](../../releases/latest):
+
+| Systeem | Bestand | Installeren |
+|---|---|---|
+| **Windows 10/11** | `SpotiParty.exe` | Niets te installeren: dubbelklik het bestand. |
+| **Mac met Apple silicon** (M1 en nieuwer) | `SpotiParty-macos-apple-silicon.dmg` | Open de `.dmg` en sleep **SpotiParty** naar **Apps**. |
+| **Mac met Intel** | `SpotiParty-macos-intel.dmg` | Idem. |
+
+SpotiParty opent in een eigen venster, zonder tabbladen. Er verschijnt ook een klein venster met **Scherm openen**
+en **Stoppen**. Sluit je dat kleine venster, dan stopt SpotiParty.
+
+> [!WARNING]
+> De apps zijn niet bij Microsoft of Apple geregistreerd. Daarom waarschuwt je computer bij de **eerste** start:
+> - **Windows:** *"Windows heeft uw pc beschermd"*. Klik **Meer informatie** en dan **Toch uitvoeren**.
+> - **Mac:** *"SpotiParty kan niet worden geopend"*. Klik **Gereed** en ga naar **Systeeminstellingen → Privacy en
+>   beveiliging**. Klik onderaan bij SpotiParty op **Open toch**.
+
+Daarna start de app gewoon met een dubbelklik.
+
+### Of starten met Python
+
+Heb je [Python 3](https://www.python.org/downloads/)? Op Windows dubbelklik je `web/start.cmd`. Of start hem in een
+terminal:
 
 ```bash
 python web/serve.py
 ```
 
-De browser opent `http://127.0.0.1:8769/index.html`. De server luistert alleen op je eigen PC; niemand anders in
-het netwerk kan erbij.
+Bij beide manieren draait SpotiParty op `http://127.0.0.1:8769/index.html`. Dat luistert alleen op je eigen PC;
+niemand anders in het netwerk kan erbij.
 
 ### Instellen
 
@@ -322,7 +343,8 @@ Stopt de Jam, dan werkt de oude link niet meer. Start dan een nieuwe Jam en plak
 | **Hierna: …** blijft leeg | De wachtrij is leeg, of een ander account speelt dan het account dat je gekoppeld hebt. |
 | **HA:** de kaart blijft *"Zet muziek aan"* | Geen speler met een titel speelt. Kies een vaste speler met `&entity=`. |
 | **HA:** *"token nodig"* | De pagina draait niet via `/local/` van je eigen Home Assistant. Vul een access token in via de ⚙. |
-| **PC:** de knop *Inloggen* is grijs | Open de app via `http://127.0.0.1:8769` (met `serve.py`), niet als bestand of via een ander `http://`-adres. |
+| **PC:** de knop *Inloggen* is grijs | Open de app via `http://127.0.0.1:8769` (de app of `serve.py`), niet als bestand of via een ander `http://`-adres. |
+| **PC:** de app opent niets | Draait SpotiParty al, of gebruikt een ander programma poort 8769? Sluit het andere programma of de oude SpotiParty. |
 | **Tv:** de QR-code voor je telefoon werkt niet | Je telefoon moet op hetzelfde wifi-netwerk zitten als de tv. |
 
 ---

@@ -4,3 +4,6 @@ local.properties
 *.apk
 .idea/
 __pycache__/
+desktop/dist/
+desktop/build/
+*.spec
