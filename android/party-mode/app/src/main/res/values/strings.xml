@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SpotiParty</string>
+    <string name="idle">Zet muziek aan in Spotify 🎉</string>
+    <string name="needs_access">SpotiParty mag nog niet zien wat er speelt.\nZet Meldingstoegang aan voor SpotiParty in de instellingen van de tv.</string>
+    <string name="jam_title">Doe mee met de Jam</string>
+    <string name="jam_text">Scan met je camera en zet je nummer in de wachtrij.</string>
+    <string name="setup_title">Jam instellen</string>
+    <string name="setup_text">Jam gestopt of nieuw? Start een Jam in Spotify, scan deze code met je eigen telefoon en plak de nieuwe link.</string>
+    <string name="no_network">De tv is niet verbonden met een netwerk.</string>
+    <string name="no_lyrics">Geen songtekst voor dit nummer</string>
+    <string name="no_lyrics_addon">Installeer de Lyrics-add-on voor songteksten</string>
+    <string name="bad_link">Dat is geen Spotify-link. Kopieer de uitnodiging van je Jam (https://spotify.link/…).</string>
+    <string name="saved">Staat op de tv! Je vrienden kunnen nu scannen.</string>
+    <string name="cleared">Jam-code weggehaald.</string>
+    <string name="next_up">Hierna: %1$s%2$s</string>
+    <string name="next_login">Hierna: log opnieuw in bij Spotify (Menu)</string>
+    <string name="next_forbidden">Hierna: Spotify geeft deze app geen toegang tot de wachtrij</string>
+    <string name="next_idle">Hierna: je gekoppelde Spotify-account speelt nu niets</string>
+    <string name="next_error">Hierna: Spotify gaf fout %1$s</string>
+    <string name="reset_jam">↻  Nieuwe Jam</string>
+    <string name="reset_confirm">Nog een keer OK om te resetten</string>
+</resources>

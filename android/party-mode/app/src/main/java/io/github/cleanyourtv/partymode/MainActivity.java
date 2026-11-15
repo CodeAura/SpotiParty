@@ -1,0 +1,836 @@
+package io.github.cleanyourtv.partymode;
+
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.Outline;
+import android.graphics.RenderEffect;
+import android.graphics.Shader;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
+import android.media.MediaMetadata;
+import android.media.session.MediaController;
+import android.media.session.MediaSessionManager;
+import android.media.session.PlaybackState;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.SystemClock;
+import android.text.TextUtils;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
+import android.view.WindowManager;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+/**
+ * SpotiParty: the song Spotify is playing on the TV, full screen. The cover fills the background (blurred and
+ * darkened), the lyrics run along with the song, and a QR code lets friends join the host's Spotify Jam.
+ * The Jam link is pasted from the host's phone (the code in the corner while none is set, or Menu).
+ */
+public class MainActivity extends Activity {
+    private static final int PORT = 8768;
+    private static final Uri LYRICS = Uri.parse("content://io.github.cleanyourtv.lyrics.widget/lyrics");
+    private static final long TICK_MS = 150;
+    /** Which of the lyric lines on screen is the one being sung. */
+    private static final int NOW = 1;
+
+    private SharedPreferences prefs;
+    private PhoneLink link;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final ExecutorService worker = Executors.newSingleThreadExecutor();
+
+    private ImageView backdrop;
+    private ImageView cover;
+    private TextView title;
+    private TextView artist;
+    private ProgressBar progress;
+    private TextView[] lyricViews;
+    private TextView idle;
+    private View songBlock;
+    private QrView qr;
+    private TextView qrTitle;
+    private TextView qrText;
+    private TextView resetButton;
+    private TextView nextUp;
+    private boolean queueLoading;
+
+    /** Every 10 s while SpotiParty is open: what comes next in the host's queue (friends add to it in the Jam). */
+    private final Runnable queuePoll = new Runnable() {
+        @Override
+        public void run() {
+            if (!started) return;
+            loadNext();
+            handler.postDelayed(this, 10_000);
+        }
+    };
+
+    /** The cover gives way to a two-line title and the "Next" line, so the progress bar stays on screen. */
+    private void fitCover() {
+        float dp = getResources().getDisplayMetrics().density;
+        int base = title.getLineCount() > 1 ? 250 : 300;
+        if (nextUp.getVisibility() == View.VISIBLE) base -= 26;
+        int side = Math.round(base * dp);
+        ViewGroup.LayoutParams lp = cover.getLayoutParams();
+        if (lp.width != side) {
+            lp.width = side;
+            lp.height = side;
+            cover.post(() -> cover.setLayoutParams(lp));
+        }
+    }
+
+    private void loadNext() {
+        if (queueLoading || !SpotifyApi.linked(prefs)) {
+            if (!SpotifyApi.linked(prefs)) nextUp.setVisibility(View.GONE);
+            return;
+        }
+        queueLoading = true;
+        worker.execute(() -> {
+            SpotifyApi.Next next = SpotifyApi.next(prefs);
+            handler.post(() -> {
+                queueLoading = false;
+                if (next.title != null && !next.title.isEmpty()) {
+                    nextUp.setText(getString(R.string.next_up, next.title,
+                            next.artist == null || next.artist.isEmpty() ? "" : " · " + next.artist));
+                    nextUp.setVisibility(View.VISIBLE);
+                } else if ("login".equals(next.error)) {
+                    nextUp.setText(R.string.next_login);
+                    nextUp.setVisibility(View.VISIBLE);
+                } else if ("forbidden".equals(next.error)) {
+                    nextUp.setText(R.string.next_forbidden);
+                    nextUp.setVisibility(View.VISIBLE);
+                } else if ("idle".equals(next.error)) {
+                    nextUp.setText(R.string.next_idle);   // the linked account plays nothing: another account on the TV?
+                    nextUp.setVisibility(View.VISIBLE);
+                } else if (next.error != null && next.error.startsWith("error")) {
+                    nextUp.setText(getString(R.string.next_error, next.error.substring(5).trim()));
+                    nextUp.setVisibility(View.VISIBLE);
+                } else {
+                    nextUp.setVisibility(View.GONE);   // an empty queue, or offline this time
+                }
+                fitCover();
+            });
+        });
+    }
+    private boolean showingSetup;
+
+    private MediaSessionManager sessions;
+    private MediaController controller;
+    private String trackKey = "";
+    /** The cover on screen now, so a later update of the same song with its cover is not missed or redrawn. */
+    private Bitmap shownArt;
+    private long[] times = new long[0];
+    private String[] lines = new String[0];
+    private boolean synced;
+    private int shownLine = -2;
+    private boolean started;
+
+    private final MediaSessionManager.OnActiveSessionsChangedListener sessionsChanged = this::pick;
+
+    private final MediaController.Callback callback = new MediaController.Callback() {
+        @Override public void onMetadataChanged(MediaMetadata metadata) { update(); }
+        @Override public void onPlaybackStateChanged(PlaybackState state) { update(); }
+        @Override public void onSessionDestroyed() { setController(null); }
+    };
+
+    private final Runnable tick = new Runnable() {
+        @Override
+        public void run() {
+            if (!started) return;
+            showPosition();
+            handler.postDelayed(this, TICK_MS);
+        }
+    };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        prefs = getSharedPreferences("party", MODE_PRIVATE);
+        float dp = getResources().getDisplayMetrics().density;
+
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(0xFF0B0B10);
+        backdrop = new ImageView(this);
+        backdrop.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        root.addView(backdrop, match());
+        View shade = new View(this);
+        shade.setBackground(new GradientDrawable(GradientDrawable.Orientation.LEFT_RIGHT,
+                new int[]{0xB3000000, 0x8C000000, 0xA6000000}));
+        root.addView(shade, match());
+
+        LinearLayout row = new LinearLayout(this);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_VERTICAL);
+        int pad = Math.round(64 * dp);
+        row.setPadding(pad, Math.round(48 * dp), pad, Math.round(48 * dp));
+        root.addView(row, match());
+
+        // Left: cover, title, artist, progress.
+        LinearLayout song = new LinearLayout(this);
+        song.setOrientation(LinearLayout.VERTICAL);
+        songBlock = song;
+        cover = new ImageView(this);
+        cover.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        cover.setBackgroundColor(0x33FFFFFF);
+        int radius = Math.round(20 * dp);
+        cover.setOutlineProvider(new ViewOutlineProvider() {
+            @Override
+            public void getOutline(View v, Outline outline) {
+                outline.setRoundRect(0, 0, v.getWidth(), v.getHeight(), radius);
+            }
+        });
+        cover.setClipToOutline(true);
+        cover.setElevation(24 * dp);
+        int coverSize = Math.round(300 * dp);
+        song.addView(cover, new LinearLayout.LayoutParams(coverSize, coverSize));
+        title = label(34, 0xFFFFFFFF, Typeface.BOLD);
+        title.setPadding(0, Math.round(22 * dp), 0, 0);
+        // A title on two lines takes the room of the progress bar: the cover gives way so everything stays on screen.
+        title.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> fitCover());
+        title.setMaxLines(2);
+        title.setEllipsize(TextUtils.TruncateAt.END);
+        song.addView(title, new LinearLayout.LayoutParams(coverSize + Math.round(80 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
+        artist = label(22, 0xCCFFFFFF, Typeface.NORMAL);
+        artist.setSingleLine(true);
+        artist.setEllipsize(TextUtils.TruncateAt.END);
+        song.addView(artist, new LinearLayout.LayoutParams(coverSize + Math.round(80 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
+        // "Next: song · artist" from the host's Spotify queue, once Spotify is linked.
+        nextUp = label(16, 0x99FFFFFF, Typeface.NORMAL);
+        nextUp.setSingleLine(true);
+        nextUp.setEllipsize(TextUtils.TruncateAt.END);
+        nextUp.setPadding(0, Math.round(6 * dp), 0, 0);
+        nextUp.setVisibility(View.GONE);
+        song.addView(nextUp, new LinearLayout.LayoutParams(coverSize + Math.round(80 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
+        progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        progress.setMax(1000);
+        LinearLayout.LayoutParams pl = new LinearLayout.LayoutParams(coverSize, Math.round(6 * dp));
+        pl.topMargin = Math.round(18 * dp);
+        song.addView(progress, pl);
+        row.addView(song, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        // Right: the lyrics, the line being sung in the middle.
+        LinearLayout lyrics = new LinearLayout(this);
+        lyrics.setOrientation(LinearLayout.VERTICAL);
+        lyrics.setGravity(Gravity.CENTER_VERTICAL);
+        // Above the QR card: one line back, the line now, and the two coming up.
+        lyrics.setPadding(Math.round(64 * dp), 0, 0, Math.round(150 * dp));
+        lyricViews = new TextView[4];
+        int[] sizes = {24, 44, 28, 22};
+        int[] colors = {0x59FFFFFF, 0xFFFFFFFF, 0x99FFFFFF, 0x59FFFFFF};
+        for (int i = 0; i < lyricViews.length; i++) {
+            TextView t = label(sizes[i], colors[i], i == NOW ? Typeface.BOLD : Typeface.NORMAL);
+            t.setMaxLines(i == NOW ? 2 : 1);
+            t.setEllipsize(TextUtils.TruncateAt.END);
+            t.setPadding(0, Math.round((i == NOW ? 12 : 5) * dp), 0, Math.round((i == NOW ? 12 : 5) * dp));
+            lyricViews[i] = t;
+            lyrics.addView(t);
+        }
+        row.addView(lyrics, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
+
+        idle = label(28, 0xFFFFFFFF, Typeface.BOLD);
+        idle.setGravity(Gravity.CENTER);
+        idle.setText(R.string.idle);
+        int ip = Math.round(140 * dp);
+        idle.setPadding(ip, 0, ip, 0);
+        FrameLayout.LayoutParams il = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP);
+        il.topMargin = Math.round(150 * dp);
+        root.addView(idle, il);
+
+        // Bottom right: the QR card.
+        LinearLayout card = new LinearLayout(this);
+        card.setOrientation(LinearLayout.HORIZONTAL);
+        card.setGravity(Gravity.CENTER_VERTICAL);
+        GradientDrawable glass = new GradientDrawable();
+        glass.setColor(0x99000000);
+        glass.setCornerRadius(24 * dp);
+        glass.setStroke(Math.max(1, Math.round(dp)), 0x33FFFFFF);
+        card.setBackground(glass);
+        int cp = Math.round(12 * dp);
+        card.setPadding(cp, cp, Math.round(20 * dp), cp);
+        qr = new QrView(this);
+        int qs = Math.round(92 * dp);
+        card.addView(qr, new LinearLayout.LayoutParams(qs, qs));
+        LinearLayout qrWords = new LinearLayout(this);
+        qrWords.setOrientation(LinearLayout.VERTICAL);
+        qrWords.setPadding(Math.round(14 * dp), 0, 0, 0);
+        qrTitle = label(18, 0xFFFFFFFF, Typeface.BOLD);
+        qrText = label(13, 0xCCFFFFFF, Typeface.NORMAL);
+        qrTitle.setSingleLine(true);
+        qrWords.addView(qrTitle);
+        qrWords.addView(qrText);
+        resetButton = makeResetButton(dp);
+        LinearLayout.LayoutParams bl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        bl.topMargin = Math.round(10 * dp);
+        qrWords.addView(resetButton, bl);
+        // A fixed width, so the title and the wrapped text keep their room next to the button.
+        card.addView(qrWords, new LinearLayout.LayoutParams(Math.round(250 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
+        FrameLayout.LayoutParams cl = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.END);
+        cl.setMargins(0, 0, Math.round(48 * dp), Math.round(40 * dp));
+        root.addView(card, cl);
+
+        setContentView(root);
+        root.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+    }
+
+    /**
+     * "Reset Jam": forgets the Jam link (a stopped Jam's link no longer works) and shows the code to set a new one.
+     * It asks for a second OK within 4 s, so a friend holding the remote does not end the party's code by accident.
+     */
+    private TextView makeResetButton(float dp) {
+        TextView b = label(14, 0xFFFFFFFF, Typeface.BOLD);
+        b.setText(R.string.reset_jam);
+        b.setShadowLayer(0, 0, 0, 0);
+        int hp = Math.round(14 * dp);
+        int vp = Math.round(6 * dp);
+        b.setPadding(hp, vp, hp, vp);
+        GradientDrawable idle = new GradientDrawable();
+        idle.setColor(0x33FFFFFF);
+        idle.setCornerRadius(18 * dp);
+        GradientDrawable focused = new GradientDrawable();
+        focused.setColor(0xFF1ED760);
+        focused.setCornerRadius(18 * dp);
+        android.graphics.drawable.StateListDrawable states = new android.graphics.drawable.StateListDrawable();
+        states.addState(new int[]{android.R.attr.state_focused}, focused);
+        states.addState(new int[]{}, idle);
+        b.setBackground(states);
+        b.setFocusable(true);
+        b.setOnFocusChangeListener((v, has) -> b.setTextColor(has ? 0xFF0B0B10 : 0xFFFFFFFF));
+        b.setOnClickListener(v -> {
+            long now = SystemClock.uptimeMillis();
+            if (!resetArmed) {
+                resetArmed = true;
+                armedAt = now;
+                b.setText(R.string.reset_confirm);
+                handler.postDelayed(disarmReset, 4000);
+                return;
+            }
+            // A double press (or one press arriving twice) is not a confirmation: the second OK must be deliberate.
+            if (now - armedAt < 600) return;
+            handler.removeCallbacks(disarmReset);
+            resetArmed = false;
+            prefs.edit().remove("jam").apply();
+            showingSetup = false;
+            showQr();
+        });
+        return b;
+    }
+
+    private boolean resetArmed;
+    private long armedAt;
+
+    private final Runnable disarmReset = () -> {
+        resetArmed = false;
+        if (resetButton != null) resetButton.setText(R.string.reset_jam);
+    };
+
+    private static FrameLayout.LayoutParams match() {
+        return new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+    }
+
+    private TextView label(int sp, int color, int style) {
+        TextView t = new TextView(this);
+        t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
+        t.setTextColor(color);
+        t.setTypeface(Typeface.create("sans-serif", style));
+        t.setShadowLayer(8 * getResources().getDisplayMetrics().density, 0, 2, 0x99000000);
+        return t;
+    }
+
+    /** On screen now: PartyListener does not open SpotiParty again over itself. */
+    static volatile boolean visible;
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        visible = true;
+    }
+
+    @Override
+    protected void onPause() {
+        visible = false;
+        super.onPause();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        started = true;
+        link = new PhoneLink(PORT, this::handle);
+        link.start();
+        showQr();
+        try {
+            sessions = getSystemService(MediaSessionManager.class);
+            ComponentName listener = new ComponentName(this, PartyListener.class);
+            sessions.addOnActiveSessionsChangedListener(sessionsChanged, listener, handler);
+            pick(sessions.getActiveSessions(listener));
+        } catch (SecurityException e) {
+            sessions = null;
+            idle.setText(R.string.needs_access);
+            idle.setVisibility(View.VISIBLE);
+            songBlock.setVisibility(View.INVISIBLE);
+        }
+        handler.post(tick);
+        handler.post(queuePoll);
+    }
+
+    @Override
+    protected void onStop() {
+        started = false;
+        handler.removeCallbacks(tick);
+        handler.removeCallbacks(queuePoll);
+        if (sessions != null) sessions.removeOnActiveSessionsChangedListener(sessionsChanged);
+        sessions = null;
+        setController(null);
+        if (link != null) link.stop();
+        link = null;
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        worker.shutdownNow();
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_MENU) {
+            showingSetup = !showingSetup;
+            showQr();
+            return true;
+        }
+        if (keyCode == KeyEvent.KEYCODE_BACK && showingSetup) {
+            showingSetup = false;
+            showQr();
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    /** The Jam's code once a link is set; until then (or with Menu) the code to set it from the phone. */
+    private void showQr() {
+        String jam = prefs.getString("jam", "");
+        String setup = link == null ? null : link.address(this);
+        if (!jam.isEmpty() && !showingSetup) {
+            qr.setText(jam);
+            qrTitle.setText(R.string.jam_title);
+            qrText.setText(R.string.jam_text);
+        } else {
+            qr.setText(setup);
+            qrTitle.setText(R.string.setup_title);
+            qrText.setText(setup == null ? getString(R.string.no_network) : getString(R.string.setup_text));
+        }
+        // The reset button only while a Jam link is set; it has the remote's focus then, so OK reaches it.
+        boolean hasJam = !jam.isEmpty();
+        resetButton.setVisibility(hasJam ? View.VISIBLE : View.GONE);
+        resetButton.setText(R.string.reset_jam);
+        if (hasJam) resetButton.requestFocus();
+    }
+
+    private void pick(List<MediaController> list) {
+        MediaController best = null;
+        if (list != null) {
+            for (MediaController c : list) {
+                PlaybackState s = c.getPlaybackState();
+                if (c.getMetadata() == null || s == null) continue;
+                if (s.getState() == PlaybackState.STATE_PLAYING) {
+                    best = c;
+                    break;
+                }
+                if (best == null && s.getState() == PlaybackState.STATE_PAUSED) best = c;
+            }
+        }
+        setController(best);
+    }
+
+    private void setController(MediaController c) {
+        if (controller != null) controller.unregisterCallback(callback);
+        controller = c;
+        if (controller != null) controller.registerCallback(callback, handler);
+        update();
+    }
+
+    private void update() {
+        MediaController c = controller;
+        MediaMetadata m = c == null ? null : c.getMetadata();
+        PlaybackState s = c == null ? null : c.getPlaybackState();
+        boolean show = m != null && s != null && s.getState() != PlaybackState.STATE_STOPPED
+                && s.getState() != PlaybackState.STATE_NONE && s.getState() != PlaybackState.STATE_ERROR;
+        if (!show) {
+            if (sessions != null) idle.setText(R.string.idle);
+            idle.setVisibility(View.VISIBLE);
+            songBlock.setVisibility(View.INVISIBLE);
+            for (TextView t : lyricViews) t.setText("");
+            trackKey = "";
+            return;
+        }
+        idle.setVisibility(View.GONE);
+        songBlock.setVisibility(View.VISIBLE);
+        String songTitle = text(m, MediaMetadata.METADATA_KEY_TITLE);
+        String songArtist = text(m, MediaMetadata.METADATA_KEY_ARTIST);
+        String album = text(m, MediaMetadata.METADATA_KEY_ALBUM);
+        long duration = m.getLong(MediaMetadata.METADATA_KEY_DURATION);
+        title.setText(songTitle);
+        artist.setText(songArtist);
+        songBlock.animate().alpha(s.getState() == PlaybackState.STATE_PAUSED ? 0.55f : 1f).setDuration(250).start();
+
+        String key = songArtist + "\n" + songTitle;
+        // Spotify sends the title first and the cover in a later update of the same song: every update is checked
+        // for a cover, not only the first one of a song.
+        Bitmap art = m.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART);
+        if (art == null) art = m.getBitmap(MediaMetadata.METADATA_KEY_ART);
+        if (art == null) art = m.getBitmap(MediaMetadata.METADATA_KEY_DISPLAY_ICON);
+        boolean newSong = !key.equals(trackKey);
+        if (art != null && art != shownArt) {
+            showArt(art);
+        } else if (art == null && newSong) {
+            cover.setImageDrawable(null);   // the old song's cover must not stand for the new one; the backdrop stays
+            shownArt = null;
+            String uri = text(m, MediaMetadata.METADATA_KEY_ALBUM_ART_URI);
+            if (uri.isEmpty()) uri = text(m, MediaMetadata.METADATA_KEY_ART_URI);
+            loadArtUri(uri, key);
+        }
+        if (!newSong) return;
+        trackKey = key;
+        times = new long[0];
+        lines = new String[0];
+        synced = false;
+        shownLine = -2;
+        for (TextView t : lyricViews) t.setText("");
+        loadLyrics(key, songArtist, songTitle, album, duration);
+        // A new song moved the queue: ask again once Spotify's servers have caught up.
+        handler.removeCallbacks(queuePoll);
+        handler.postDelayed(queuePoll, 1500);
+    }
+
+    private static String text(MediaMetadata m, String key) {
+        CharSequence v = m.getText(key);
+        return v == null ? "" : v.toString().trim();
+    }
+
+    /** The cover, and the same cover blurred behind everything, tinted with its own colour for the progress bar. */
+    private void showArt(Bitmap art) {
+        shownArt = art;
+        cover.setImageBitmap(art);
+        if (art == null) {
+            backdrop.setImageDrawable(null);
+            return;
+        }
+        Bitmap background;
+        if (Build.VERSION.SDK_INT >= 31) {
+            background = Bitmap.createScaledBitmap(art, 320, 320, true);
+            backdrop.setRenderEffect(RenderEffect.createBlurEffect(70f, 70f, Shader.TileMode.CLAMP));
+        } else {
+            background = Bitmap.createScaledBitmap(art, 16, 16, true);   // scaled back up, it is a soft blur
+        }
+        // Straight in, with a short lift instead of a fade from black.
+        backdrop.animate().cancel();
+        backdrop.setAlpha(0.6f);
+        backdrop.setImageBitmap(background);
+        backdrop.animate().alpha(1f).setDuration(220).start();
+        int accent = average(art);
+        progress.setProgressTintList(android.content.res.ColorStateList.valueOf(accent));
+        progress.setProgressBackgroundTintList(android.content.res.ColorStateList.valueOf(0x40FFFFFF));
+    }
+
+    /** A cover the app gives only as an address (content:// or https://), loaded in the background. */
+    private void loadArtUri(String uri, String key) {
+        if (uri.isEmpty()) return;
+        worker.execute(() -> {
+            Bitmap bitmap = null;
+            try {
+                java.io.InputStream in;
+                if (uri.startsWith("https://")) {
+                    java.net.HttpURLConnection c = (java.net.HttpURLConnection) new java.net.URL(uri).openConnection();
+                    c.setConnectTimeout(4000);
+                    c.setReadTimeout(6000);
+                    in = c.getInputStream();
+                } else if (uri.startsWith("content://") || uri.startsWith("android.resource://")) {
+                    in = getContentResolver().openInputStream(Uri.parse(uri));
+                } else {
+                    return;
+                }
+                try (java.io.InputStream stream = in) {
+                    bitmap = android.graphics.BitmapFactory.decodeStream(stream);
+                }
+            } catch (Exception ignored) {
+                // no cover
+            }
+            Bitmap loaded = bitmap;
+            handler.post(() -> {
+                if (loaded != null && key.equals(trackKey) && shownArt == null) showArt(loaded);
+            });
+        });
+    }
+
+    /** The cover's average colour, lifted so it stays visible on the dark background. */
+    private static int average(Bitmap art) {
+        Bitmap one = Bitmap.createScaledBitmap(art, 1, 1, true);
+        int c = one.getPixel(0, 0);
+        float[] hsv = new float[3];
+        Color.colorToHSV(c, hsv);
+        hsv[1] = Math.max(hsv[1], 0.55f);
+        hsv[2] = Math.max(hsv[2], 0.85f);
+        return Color.HSVToColor(hsv);
+    }
+
+    private void loadLyrics(String key, String songArtist, String songTitle, String album, long duration) {
+        worker.execute(() -> {
+            List<Long> t = new ArrayList<>();
+            List<String> l = new ArrayList<>();
+            boolean addOn = true;
+            try (Cursor c = getContentResolver().query(LYRICS, null, null, new String[]{songArtist, songTitle, album,
+                    String.valueOf(duration / 1000)}, null)) {
+                if (c == null) {
+                    addOn = false;
+                } else {
+                    while (c.moveToNext()) {
+                        t.add(c.getLong(0));
+                        l.add(c.getString(1));
+                    }
+                }
+            } catch (Exception e) {
+                addOn = false;
+            }
+            boolean available = addOn;
+            handler.post(() -> {
+                if (!key.equals(trackKey)) return;
+                times = new long[t.size()];
+                for (int i = 0; i < times.length; i++) times[i] = t.get(i);
+                lines = l.toArray(new String[0]);
+                synced = times.length > 0 && times[0] >= 0;
+                shownLine = -2;
+                if (lines.length == 0) {
+                    lyricViews[NOW].setText(available ? R.string.no_lyrics : R.string.no_lyrics_addon);
+                    lyricViews[NOW].setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+                } else {
+                    lyricViews[NOW].setTextSize(TypedValue.COMPLEX_UNIT_SP, 44);
+                    if (!synced) showLines(0);
+                }
+            });
+        });
+    }
+
+    private void showPosition() {
+        MediaController c = controller;
+        PlaybackState s = c == null ? null : c.getPlaybackState();
+        MediaMetadata m = c == null ? null : c.getMetadata();
+        if (s == null || m == null) return;
+        long position = s.getPosition();
+        if (s.getState() == PlaybackState.STATE_PLAYING) {
+            position += (long) ((SystemClock.elapsedRealtime() - s.getLastPositionUpdateTime()) * s.getPlaybackSpeed());
+        }
+        long duration = m.getLong(MediaMetadata.METADATA_KEY_DURATION);
+        if (duration > 0) progress.setProgress((int) Math.min(1000, position * 1000 / duration));
+        if (!synced) return;
+        long ahead = position + 250;
+        int index = -1;
+        for (int i = 0; i < times.length; i++) {
+            if (times[i] <= ahead) index = i; else break;
+        }
+        if (index != shownLine) {
+            shownLine = index;
+            showLines(index);
+        }
+    }
+
+    /** One line before, the line now, two after. */
+    private void showLines(int index) {
+        for (int i = 0; i < lyricViews.length; i++) {
+            int at = index + i - NOW;
+            String s = at >= 0 && at < lines.length ? lines[at] : "";
+            lyricViews[i].setText(s.isEmpty() && i == NOW ? "♪" : s);
+        }
+        TextView now = lyricViews[NOW];
+        now.setAlpha(0.2f);
+        now.setTranslationY(18 * getResources().getDisplayMetrics().density);
+        now.animate().alpha(1f).translationY(0).setDuration(260).start();
+    }
+
+    private PhoneLink.Response handle(String method, String path, Map<String, String> query, byte[] body) {
+        if ("GET".equals(method) && "/".equals(path)) {
+            return PhoneLink.Response.html(PhoneLink.page(getString(R.string.app_name), PHONE_PAGE));
+        }
+        if ("GET".equals(method) && "/jam".equals(path)) {
+            return PhoneLink.Response.text(200, prefs.getString("jam", ""));
+        }
+        if ("POST".equals(method) && "/jam".equals(path)) {
+            String jam = new String(body, StandardCharsets.UTF_8).trim();
+            if (!jam.isEmpty() && !isSpotifyLink(jam)) {
+                return PhoneLink.Response.text(400, getString(R.string.bad_link));
+            }
+            prefs.edit().putString("jam", jam).apply();
+            runOnUiThread(() -> {
+                showingSetup = false;
+                showQr();
+            });
+            return PhoneLink.Response.text(200, getString(jam.isEmpty() ? R.string.cleared : R.string.saved));
+        }
+        if ("GET".equals(method) && "/spotify".equals(path)) {
+            return PhoneLink.Response.text(200, (SpotifyApi.linked(prefs) ? "linked" : "no") + "\n"
+                    + prefs.getString("sp_client", ""));
+        }
+        if ("POST".equals(method) && "/spotify/login".equals(path)) {
+            String client = new String(body, StandardCharsets.UTF_8).trim();
+            if (!client.matches("[0-9a-fA-F]{32}")) {
+                return PhoneLink.Response.text(400, "Dat lijkt geen Client ID (32 tekens, cijfers en a-f).");
+            }
+            return PhoneLink.Response.text(200, SpotifyApi.authorizeUrl(prefs, client));
+        }
+        if ("POST".equals(method) && "/spotify/code".equals(path)) {
+            String pasted = new String(body, StandardCharsets.UTF_8);
+            try {
+                String problem = SpotifyApi.finishLogin(prefs, pasted);
+                if (problem != null) {
+                    android.util.Log.w(SpotifyApi.TAG, "login not finished: " + problem);
+                    return PhoneLink.Response.text(400, problem);
+                }
+                android.util.Log.i(SpotifyApi.TAG, "login finished, tokens saved");
+            } catch (SpotifyApi.ApiError e) {
+                android.util.Log.w(SpotifyApi.TAG, "code exchange refused: " + e.getMessage());
+                return PhoneLink.Response.text(400, "Spotify weigerde de code (" + e.code + "). "
+                        + "Klopt de Redirect URI precies (" + SpotifyApi.REDIRECT + ")? Log anders opnieuw in.");
+            } catch (Exception e) {
+                android.util.Log.w(SpotifyApi.TAG, "code exchange failed: " + e);
+                return PhoneLink.Response.text(400, "Spotify is niet bereikbaar vanaf de tv. Probeer het zo nog eens.");
+            }
+            SpotifyApi.Next next = SpotifyApi.next(prefs);
+            runOnUiThread(this::loadNext);
+            if ("forbidden".equals(next.error)) {
+                return PhoneLink.Response.text(200, "Gekoppeld, maar Spotify geeft deze app (nog) geen toegang tot "
+                        + "de wachtrij. Controleer in het Spotify-dashboard of jouw account onder User Management staat.");
+            }
+            return PhoneLink.Response.text(200, next.title != null
+                    ? "Gekoppeld! Hierna: " + next.title + ". Dit staat nu ook op de tv."
+                    : "Gekoppeld! Zodra er iets in de wachtrij staat, zie je het op de tv.");
+        }
+        if ("POST".equals(method) && "/spotify/unlink".equals(path)) {
+            SpotifyApi.unlink(prefs);
+            runOnUiThread(this::loadNext);
+            return PhoneLink.Response.text(200, "Ontkoppeld. De tv vergeet je Spotify-login.");
+        }
+        if ("GET".equals(method) && "/auto".equals(path)) {
+            return PhoneLink.Response.text(200, (prefs.getBoolean("auto_open", true) ? "on" : "off") + "\n"
+                    + (android.provider.Settings.canDrawOverlays(this) ? "allowed" : "blocked"));
+        }
+        if ("POST".equals(method) && "/auto".equals(path)) {
+            boolean on = "on".equals(new String(body, StandardCharsets.UTF_8).trim());
+            prefs.edit().putBoolean("auto_open", on).apply();
+            return PhoneLink.Response.text(200, on
+                    ? "SpotiParty opent nu vanzelf zodra Spotify begint te spelen."
+                    : "SpotiParty opent niet meer vanzelf.");
+        }
+        return null;
+    }
+
+    private static final String PHONE_PAGE =
+            "<p>Zet de link van je Spotify Jam op de tv. Je vrienden scannen daarna de code op het scherm.</p>"
+            + "<ol style='color:#b9bcc6;padding-left:20px'>"
+            + "<li>Open Spotify op je telefoon en speel af op de tv.</li>"
+            + "<li>Tik op het apparaat-icoon (of de drie puntjes) en kies <b>Start een Jam</b>.</li>"
+            + "<li>Open de <b>Jam-instellingen</b> en zet <b>Gasten mogen afspelen bedienen</b> uit "
+            + "(in het Engels: <i>Let guests control playback</i>; de naam kan per Spotify-versie iets "
+            + "verschillen). Dan kunnen vrienden alleen nummers toevoegen "
+            + "aan de wachtrij: niet overslaan, pauzeren of het volume veranderen.</li>"
+            + "<li>Tik op <b>Uitnodigen</b> en <b>Link kopi&euml;ren</b>, en plak hem hieronder.</li></ol>"
+            + "<label for=jam>Jam-link</label>"
+            + "<input id=jam inputmode=url autocapitalize=off placeholder='https://spotify.link/...'>"
+            + "<button id=save>Op de tv zetten</button>"
+            + "<button id=clear style='background:#3a3e4a'>Jam-code weghalen</button><div id=msg></div>"
+            + "<script>"
+            + "const k=new URLSearchParams(location.search).get('k');const $=id=>document.getElementById(id);"
+            + "fetch('/jam?k='+k).then(r=>r.text()).then(t=>{$('jam').value=t;});"
+            + "async function send(v){$('msg').textContent='Bezig...';"
+            + "try{const r=await fetch('/jam?k='+k,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:v});"
+            + "$('msg').textContent=await r.text();}catch(e){$('msg').textContent='De tv is niet bereikbaar. Staat SpotiParty nog open?';}}"
+            + "$('save').onclick=()=>send($('jam').value.trim());"
+            + "$('clear').onclick=()=>{$('jam').value='';send('');};"
+            + "</script>"
+            + "<h1 style='margin-top:40px'>Vanzelf openen</h1>"
+            + "<p>SpotiParty springt naar voren zodra Spotify op de tv begint te spelen (niet bij elk volgend nummer, "
+            + "en niet opnieuw als je hem zelf sluit terwijl de muziek doorgaat).</p>"
+            + "<label style='display:flex;gap:12px;align-items:center'><input id=auto type=checkbox "
+            + "style='width:28px;height:28px'> Vanzelf openen als Spotify start</label>"
+            + "<div id=automsg></div>"
+            + "<script>"
+            + "fetch('/auto?k='+k).then(r=>r.text()).then(t=>{const [a,p]=t.split('\\n');$('auto').checked=a==='on';"
+            + "if(p!=='allowed')$('automsg').textContent='Nog nodig op de tv: Weergeven vóór andere apps toestaan voor SpotiParty.';});"
+            + "$('auto').onchange=async()=>{try{const r=await fetch('/auto?k='+k,{method:'POST',body:$('auto').checked?'on':'off'});"
+            + "$('automsg').textContent=await r.text();}catch(e){$('automsg').textContent='De tv is niet bereikbaar.';}};"
+            + "</script>"
+            + "<h1 style='margin-top:40px'>Volgende nummer tonen</h1>"
+            + "<p>Spotify geeft de wachtrij niet aan de tv door. Koppel je Spotify-account (alleen lezen), dan "
+            + "zet SpotiParty <b>Hierna: nummer</b> onder de artiest. Eenmalig:</p>"
+            + "<ol style='color:#b9bcc6;padding-left:20px'>"
+            + "<li>Ga naar <b>developer.spotify.com/dashboard</b>, log in en tik op <b>Create app</b>.</li>"
+            + "<li>Naam en omschrijving mag je zelf kiezen. Zet bij <b>Redirect URIs</b> precies: "
+            + "<code style='color:#fff'>" + SpotifyApi.REDIRECT + "</code> en vink <b>Web API</b> aan.</li>"
+            + "<li>Kopieer de <b>Client ID</b> van je app en plak hem hieronder.</li></ol>"
+            + "<div id=spstate style='color:#1ed760'></div>"
+            + "<label for=client>Client ID</label>"
+            + "<input id=client autocapitalize=off autocomplete=off placeholder='32 tekens'>"
+            + "<button id=login style='background:#1ed760;color:#000'>Inloggen bij Spotify</button>"
+            + "<a id=go class=pick target=_blank rel=noopener style='display:none;background:#1ed760;color:#000;"
+            + "text-decoration:none'>Open de Spotify-login</a>"
+            + "<p id=after style='display:none'>Na het inloggen probeert je telefoon <b>127.0.0.1</b> te openen en "
+            + "zegt dat het niet lukt. Dat hoort zo. Kopieer dat hele adres uit de adresbalk en plak het hier:</p>"
+            + "<input id=code style='display:none' autocapitalize=off autocomplete=off placeholder='http://127.0.0.1:8768/callback?code=...'>"
+            + "<button id=finish style='display:none'>Koppelen</button>"
+            + "<button id=unlink style='background:#3a3e4a'>Spotify ontkoppelen</button><div id=spmsg></div>"
+            + "<script>"
+            + "async function sp(path,v){const r=await fetch(path+'?k='+k,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:v||''});return [r.ok,await r.text()];}"
+            + "fetch('/spotify?k='+k).then(r=>r.text()).then(t=>{const [s,c]=t.split('\\n');$('client').value=c||'';"
+            + "$('spstate').textContent=s==='linked'?'Spotify is gekoppeld.':'';});"
+            + "$('login').onclick=async()=>{$('spmsg').textContent='Bezig...';"
+            + "try{const [ok,t]=await sp('/spotify/login',$('client').value.trim());"
+            + "if(!ok){$('spmsg').textContent=t;return;}"
+            + "$('go').href=t;$('go').style.display='block';$('after').style.display='block';"
+            + "$('code').style.display='block';$('finish').style.display='block';"
+            + "$('spmsg').textContent='Tik op Open de Spotify-login.';}"
+            + "catch(e){$('spmsg').textContent='De tv is niet bereikbaar.';}};"
+            + "$('finish').onclick=async()=>{$('spmsg').textContent='Koppelen...';"
+            + "try{const [ok,t]=await sp('/spotify/code',$('code').value.trim());$('spmsg').textContent=t;"
+            + "if(ok)$('spstate').textContent='Spotify is gekoppeld.';}catch(e){$('spmsg').textContent='De tv is niet bereikbaar.';}};"
+            + "$('unlink').onclick=async()=>{try{const [ok,t]=await sp('/spotify/unlink');$('spmsg').textContent=t;"
+            + "$('spstate').textContent='';}catch(e){$('spmsg').textContent='De tv is niet bereikbaar.';}};"
+            + "</script>";
+
+    /** Only a Spotify address goes on the screen, so the code cannot send friends anywhere else. */
+    static boolean isSpotifyLink(String s) {
+        try {
+            Uri u = Uri.parse(s);
+            String host = u.getHost() == null ? "" : u.getHost().toLowerCase(Locale.ROOT);
+            return "https".equals(u.getScheme()) && s.length() <= 300
+                    && (host.equals("spotify.link") || host.endsWith(".spotify.link") || host.equals("open.spotify.com")
+                    || host.endsWith(".spotify.com") || host.equals("spotify.app.link"));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+}

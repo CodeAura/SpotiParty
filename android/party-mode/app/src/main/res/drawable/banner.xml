@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 16:9 banner: a vinyl record with green sound bars and confetti. Own art. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp" android:height="180dp"
+    android:viewportWidth="320" android:viewportHeight="180">
+    <path android:fillColor="#140F24" android:pathData="M0,0h320v180h-320z" />
+    <path android:fillColor="#000000" android:pathData="M110,90m-56,0a56,56 0 1 0 112,0a56,56 0 1 0 -112,0" />
+    <path android:strokeColor="#2A2A33" android:strokeWidth="2" android:fillColor="#00000000" android:pathData="M110,90m-44,0a44,44 0 1 0 88,0a44,44 0 1 0 -88,0 M110,90m-32,0a32,32 0 1 0 64,0a32,32 0 1 0 -64,0" />
+    <path android:fillColor="#E8459A" android:pathData="M110,90m-16,0a16,16 0 1 0 32,0a16,16 0 1 0 -32,0" />
+    <path android:fillColor="#1ED760" android:pathData="M196,100h12v40h-12z M216,70h12v70h-12z M236,86h12v54h-12z M256,56h12v84h-12z M276,92h12v48h-12z" />
+    <path android:fillColor="#FFD33D" android:pathData="M200,34h8v8h-8z M244,28h6v6h-6z M286,40h8v8h-8z" />
+    <path android:fillColor="#4FC3F7" android:pathData="M222,44h6v6h-6z M268,22h8v8h-8z" />
+</vector>

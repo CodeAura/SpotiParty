@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-feature android:name="android.software.leanback" android:required="false" />
+    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+
+    <!-- Looks up the playing song's lyrics on lrclib.net (artist, title, album and length are sent, nothing else). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Lets the CleanYourTV launcher (signed with the same key) read the lyrics. -->
+    <permission
+        android:name="io.github.cleanyourtv.permission.HOME_WIDGETS"
+        android:protectionLevel="signature" />
+
+    <!-- No screen of its own: it only answers the launcher's Now playing panel. -->
+    <application
+        android:allowBackup="false"
+        android:label="@string/app_name">
+
+        <provider
+            android:name=".LyricsProvider"
+            android:authorities="io.github.cleanyourtv.lyrics.widget"
+            android:exported="true"
+            android:permission="io.github.cleanyourtv.permission.HOME_WIDGETS" />
+    </application>
+</manifest>
