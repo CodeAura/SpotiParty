@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <rect width="900" height="400" rx="18" fill="#0f1016"/>
+  <text x="30" y="42" fill="#fff" font-size="22" font-weight="700">In een Home Assistant-dashboard</text>
+  <g font-size="13" fill="#b9bcc6">
+    <!-- 1 -->
+    <rect x="30" y="65" width="265" height="310" rx="14" fill="#1c1d26" stroke="#3a3c4a"/>
+    <circle cx="58" cy="93" r="16" fill="#03a9f4"/><text x="58" y="99" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">1</text>
+    <text x="84" y="99" fill="#fff" font-size="16" font-weight="700">Map kopiëren</text>
+    <text x="48" y="128">Met Samba, File editor of</text>
+    <text x="48" y="146">Studio Code Server:</text>
+    <rect x="48" y="160" width="228" height="150" rx="8" fill="#0b0b10"/>
+    <g font-family="Consolas, monospace" font-size="12">
+      <text x="60" y="184" fill="#b9bcc6">📁 config</text>
+      <text x="78" y="206" fill="#b9bcc6">📁 www</text>
+      <text x="96" y="228" fill="#fff">📁 spotiparty</text>
+      <text x="114" y="250" fill="#1ed760">index.html</text>
+      <text x="114" y="270" fill="#1ed760">party.js</text>
+      <text x="114" y="290" fill="#1ed760">qr.js</text>
+    </g>
+    <rect x="92" y="213" width="120" height="22" rx="6" fill="none" stroke="#ff3b6b" stroke-width="2"/>
+    <text x="48" y="336">Inhoud van <tspan fill="#fff">web/</tspan>. Bestond www nog</text>
+    <text x="48" y="354">niet? Herstart HA één keer.</text>
+    <!-- 2 -->
+    <rect x="318" y="65" width="265" height="310" rx="14" fill="#1c1d26" stroke="#3a3c4a"/>
+    <circle cx="346" cy="93" r="16" fill="#03a9f4"/><text x="346" y="99" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">2</text>
+    <text x="372" y="99" fill="#fff" font-size="16" font-weight="700">Kaart toevoegen</text>
+    <rect x="336" y="118" width="230" height="36" rx="8" fill="#0b0b10"/>
+    <text x="350" y="141" fill="#fff">✏️  Dashboard bewerken</text>
+    <text x="440" y="172" fill="#03a9f4" text-anchor="middle" font-size="18">↓</text>
+    <rect x="336" y="180" width="230" height="36" rx="8" fill="#03a9f4"/>
+    <text x="451" y="203" fill="#fff" text-anchor="middle" font-weight="700">+ Kaart toevoegen</text>
+    <text x="440" y="234" fill="#03a9f4" text-anchor="middle" font-size="18">↓</text>
+    <rect x="336" y="242" width="230" height="36" rx="8" fill="#0b0b10" stroke="#ff3b6b" stroke-width="2"/>
+    <text x="350" y="265" fill="#fff">🌐  Webpagina</text>
+    <text x="336" y="310">Wandtablet? Maak een heel</text>
+    <text x="336" y="328">dashboard van het type</text>
+    <text x="336" y="346"><tspan fill="#fff">Webpagina</tspan> met hetzelfde adres.</text>
+    <!-- 3 -->
+    <rect x="606" y="65" width="265" height="310" rx="14" fill="#1c1d26" stroke="#3a3c4a"/>
+    <circle cx="634" cy="93" r="16" fill="#03a9f4"/><text x="634" y="99" text-anchor="middle" fill="#fff" font-size="16" font-weight="700">3</text>
+    <text x="660" y="99" fill="#fff" font-size="16" font-weight="700">Adres invullen</text>
+    <text x="624" y="128">Of in de code-editor:</text>
+    <rect x="624" y="140" width="230" height="104" rx="8" fill="#0b0b10" stroke="#ff3b6b" stroke-width="2"/>
+    <g font-family="Consolas, monospace" font-size="11.5" fill="#fff">
+      <text x="634" y="162">type: iframe</text>
+      <text x="634" y="182">url: /local/spotiparty/</text>
+      <text x="634" y="198">  index.html?source=ha</text>
+      <text x="634" y="214">  &amp;entity=media_player.x</text>
+      <text x="634" y="234">aspect_ratio: 16:9</text>
+    </g>
+    <text x="624" y="270">Zonder <tspan fill="#fff">entity=</tspan> volgt hij vanzelf</text>
+    <text x="624" y="288">de speler die nu speelt.</text>
+    <text x="624" y="320" fill="#1ed760" font-weight="700">✓ Geen token nodig:</text>
+    <text x="624" y="338">de kaart gebruikt de login</text>
+    <text x="624" y="356">van je dashboard.</text>
+  </g>
+</svg>

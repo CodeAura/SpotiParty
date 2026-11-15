@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 330" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <rect width="900" height="330" rx="18" fill="#0f1016"/>
+  <text x="450" y="42" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">Eén scherm, drie plekken</text>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1ed760"/></marker>
+  </defs>
+  <!-- sources -->
+  <g font-size="15" fill="#fff">
+    <rect x="30" y="75" width="230" height="64" rx="12" fill="#1c1d26" stroke="#3a3c4a"/>
+    <text x="50" y="102" font-weight="700">📺  Android TV</text>
+    <text x="50" y="124" fill="#b9bcc6" font-size="13">Spotify speelt op de tv</text>
+    <rect x="30" y="155" width="230" height="64" rx="12" fill="#1c1d26" stroke="#3a3c4a"/>
+    <text x="50" y="182" font-weight="700">💻  PC (browser)</text>
+    <text x="50" y="204" fill="#b9bcc6" font-size="13">Je Spotify-account, overal</text>
+    <rect x="30" y="235" width="230" height="64" rx="12" fill="#1c1d26" stroke="#3a3c4a"/>
+    <text x="50" y="262" font-weight="700">🏠  Home Assistant</text>
+    <text x="50" y="284" fill="#b9bcc6" font-size="13">Elke media player</text>
+  </g>
+  <g stroke="#1ed760" stroke-width="3" fill="none" marker-end="url(#a)">
+    <path d="M262 107 C330 107 330 165 392 175"/>
+    <path d="M262 187 L392 187"/>
+    <path d="M262 267 C330 267 330 210 392 200"/>
+  </g>
+  <!-- screen -->
+  <rect x="400" y="75" width="470" height="224" rx="14" fill="#2b1442" stroke="#5b3a7a"/>
+  <rect x="425" y="100" width="110" height="110" rx="10" fill="#7b3cff"/>
+  <circle cx="480" cy="165" r="32" fill="#ffb347"/>
+  <rect x="425" y="222" width="100" height="12" rx="4" fill="#fff"/>
+  <rect x="425" y="242" width="70" height="9" rx="4" fill="#ffffffaa"/>
+  <rect x="425" y="262" width="110" height="5" rx="3" fill="#ffffff44"/><rect x="425" y="262" width="34" height="5" rx="3" fill="#1ed760"/>
+  <rect x="560" y="120" width="170" height="9" rx="4" fill="#ffffff55"/>
+  <rect x="560" y="142" width="240" height="18" rx="5" fill="#fff"/>
+  <rect x="560" y="172" width="200" height="11" rx="4" fill="#ffffffaa"/>
+  <rect x="560" y="194" width="160" height="9" rx="4" fill="#ffffff55"/>
+  <rect x="770" y="215" width="76" height="68" rx="8" fill="#000000aa"/>
+  <rect x="780" y="223" width="52" height="52" rx="4" fill="#fff"/>
+  <g fill="#000"><rect x="784" y="227" width="14" height="14"/><rect x="814" y="227" width="14" height="14"/><rect x="784" y="257" width="14" height="14"/><rect x="804" y="247" width="8" height="8"/><rect x="816" y="259" width="10" height="8"/></g>
+  <g font-size="12" fill="#1ed760" font-weight="700">
+    <text x="425" y="288">Hoes + titel</text><text x="560" y="222">Songtekst</text><text x="808" y="207" text-anchor="middle">Jam-QR</text>
+  </g>
+</svg>

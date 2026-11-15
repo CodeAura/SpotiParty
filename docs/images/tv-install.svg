@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <rect width="900" height="520" rx="18" fill="#0f1016"/>
+  <text x="30" y="42" fill="#fff" font-size="22" font-weight="700">Op de tv in 5 stappen</text>
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1ed760"/></marker></defs>
+  <g font-size="13" fill="#b9bcc6">
+    <!-- 1 -->
+    <rect x="30" y="65" width="265" height="200" rx="14" fill="#1c1d26" stroke="#3a3c4a"/>
+    <circle cx="58" cy="93" r="16" fill="#1ed760"/><text x="58" y="99" text-anchor="middle" fill="#000" font-size="16" font-weight="700">1</text>
+    <text x="84" y="99" fill="#fff" font-size="16" font-weight="700">Debuggen aanzetten</text>
+    <text x="48" y="130">Instellingen → Systeem → Over</text>
+    <text x="48" y="150">→ 7× op <tspan fill="#fff">Android TV OS-build</tspan></text>
+    <text x="48" y="174">Daarna in Ontwikkelaarsopties:</text>
+    <rect x="48" y="186" width="238" height="30" rx="8" fill="#0b0b10" stroke="#ff3b6b" stroke-width="2"/>
+    <text x="58" y="206" fill="#fff" font-size="12">USB-/netwerkfoutopsporing</text>
+    <rect x="244" y="193" width="34" height="16" rx="8" fill="#1ed760"/><circle cx="270" cy="201" r="6" fill="#fff"/>
+    <text x="48" y="240">Noteer het IP-adres van de tv</text>
+    <text x="48" y="256">(Instellingen → Netwerk)</text>
+    <!-- 2 -->
+    <rect x="318" y="65" width="265" height="200" rx="14" fill="#1c1d26" stroke="#3a3c4a"/>
+    <circle cx="346" cy="93" r="16" fill="#1ed760"/><text x="346" y="99" text-anchor="middle" fill="#000" font-size="16" font-weight="700">2</text>
+    <text x="372" y="99" fill="#fff" font-size="16" font-weight="700">Bouwen op de PC</text>
+    <rect x="336" y="118" width="230" height="80" rx="8" fill="#0b0b10"/>
+    <g font-family="Consolas, monospace" font-size="12" fill="#1ed760">
+      <text x="346" y="140">cd android/party-mode</text>
+      <text x="346" y="160">./gradlew assembleRelease</text>
+      <text x="346" y="180">(idem in android/lyrics)</text>
+    </g>
+    <text x="336" y="222">Nodig: JDK 17 + Android SDK 34</text>
+    <text x="336" y="242">(Android Studio installeert beide)</text>
+    <!-- 3 -->
+    <rect x="606" y="65" width="265" height="200" rx="14" fill="#1c1d26" stroke="#3a3c4a"/>
+    <circle cx="634" cy="93" r="16" fill="#1ed760"/><text x="634" y="99" text-anchor="middle" fill="#000" font-size="16" font-weight="700">3</text>
+    <text x="660" y="99" fill="#fff" font-size="16" font-weight="700">Installeren</text>
+    <rect x="624" y="118" width="230" height="80" rx="8" fill="#0b0b10"/>
+    <g font-family="Consolas, monospace" font-size="12" fill="#1ed760">
+      <text x="634" y="140">adb connect &lt;tv-ip&gt;</text>
+      <text x="634" y="160">adb install -r …party…apk</text>
+      <text x="634" y="180">adb install -r …lyrics…apk</text>
+    </g>
+    <text x="624" y="222">Op de tv: <tspan fill="#fff">Toestaan</tspan> kiezen bij</text>
+    <text x="624" y="242">"USB-foutopsporing toestaan?"</text>
+    <!-- 4 -->
+    <rect x="30" y="290" width="410" height="205" rx="14" fill="#1c1d26" stroke="#3a3c4a"/>
+    <circle cx="58" cy="318" r="16" fill="#1ed760"/><text x="58" y="324" text-anchor="middle" fill="#000" font-size="16" font-weight="700">4</text>
+    <text x="84" y="324" fill="#fff" font-size="16" font-weight="700">Toegang geven</text>
+    <text x="48" y="354">Instellingen → Apps → Speciale app-toegang:</text>
+    <rect x="48" y="366" width="372" height="34" rx="8" fill="#0b0b10" stroke="#ff3b6b" stroke-width="2"/>
+    <text x="60" y="388" fill="#fff">Meldingstoegang → SpotiParty</text>
+    <rect x="378" y="375" width="34" height="16" rx="8" fill="#1ed760"/><circle cx="404" cy="383" r="6" fill="#fff"/>
+    <rect x="48" y="410" width="372" height="34" rx="8" fill="#0b0b10" stroke="#3a3c4a"/>
+    <text x="60" y="432" fill="#fff">Weergeven vóór andere apps → SpotiParty</text>
+    <text x="60" y="472">Verplicht: Meldingstoegang (ziet wat er speelt).</text>
+    <text x="60" y="488">Optioneel: vóór andere apps (opent vanzelf).</text>
+    <!-- 5 -->
+    <rect x="460" y="290" width="411" height="205" rx="14" fill="#1c1d26" stroke="#3a3c4a"/>
+    <circle cx="488" cy="318" r="16" fill="#1ed760"/><text x="488" y="324" text-anchor="middle" fill="#000" font-size="16" font-weight="700">5</text>
+    <text x="514" y="324" fill="#fff" font-size="16" font-weight="700">Jam koppelen met je telefoon</text>
+    <!-- tv -->
+    <rect x="482" y="345" width="200" height="118" rx="8" fill="#2b1442" stroke="#5b3a7a"/>
+    <rect x="620" y="400" width="52" height="52" rx="4" fill="#fff"/>
+    <g fill="#000"><rect x="624" y="404" width="12" height="12"/><rect x="656" y="404" width="12" height="12"/><rect x="624" y="436" width="12" height="12"/><rect x="644" y="426" width="8" height="8"/></g>
+    <rect x="496" y="360" width="56" height="56" rx="6" fill="#7b3cff"/>
+    <text x="496" y="440" fill="#fff" font-size="11">SpotiParty op de tv</text>
+    <!-- phone -->
+    <rect x="760" y="335" width="88" height="128" rx="14" fill="#0b0b10" stroke="#b9bcc6" stroke-width="2"/>
+    <rect x="770" y="358" width="68" height="16" rx="4" fill="#1c1d26"/>
+    <text x="804" y="370" fill="#fff" font-size="9" text-anchor="middle">Jam-link</text>
+    <rect x="770" y="380" width="68" height="16" rx="4" fill="#1ed760"/>
+    <text x="804" y="392" fill="#000" font-size="9" text-anchor="middle" font-weight="700">Op de tv</text>
+    <path d="M748 425 L686 425" stroke="#1ed760" stroke-width="3" marker-end="url(#a)" fill="none"/>
+    <text x="700" y="418" fill="#1ed760" font-size="11" font-weight="700">scan</text>
+    <text x="482" y="486">Plak de link uit Spotify: Jam → Uitnodigen → Link kopiëren</text>
+  </g>
+</svg>
