@@ -24,13 +24,13 @@ jobs:
         run: >
           pyinstaller --noconfirm --onefile --windowed --name SpotiParty
           --icon desktop/icon.ico --add-data "web;web"
-          --distpath dist --workpath build --specpath build/spec
+          --distpath desktop/dist --workpath build --specpath build/spec
           desktop/spotiparty_app.py
         shell: bash
       - name: Smoke test
         shell: pwsh
         run: |
-          $p = Start-Process dist/SpotiParty.exe -PassThru
+          $p = Start-Process desktop/dist/SpotiParty.exe -PassThru
           $ok = $false
           foreach ($i in 1..20) {
             try { if ((Invoke-WebRequest http://127.0.0.1:8769/index.html -UseBasicParsing).Content -match 'SpotiParty') { $ok = $true; break } } catch {}
@@ -38,10 +38,20 @@ jobs:
           }
           Stop-Process -Id $p.Id -Force
           if (-not $ok) { throw "SpotiParty.exe did not serve the page" }
+      - name: Build SpotiParty-Setup.exe
+        shell: pwsh
+        run: |
+          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.0.0-dev' }
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) { choco install innosetup -y --no-progress; $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" }
+          & $iscc /Q "/DAppVersion=$version" desktop/installer.iss
+          if ($LASTEXITCODE) { throw "ISCC failed" }
       - uses: actions/upload-artifact@v4
         with:
           name: SpotiParty-windows
-          path: dist/SpotiParty.exe
+          path: |
+            desktop/dist/SpotiParty.exe
+            desktop/dist/SpotiParty-Setup-*.exe
 
   macos:
     strategy:

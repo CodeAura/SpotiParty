@@ -190,7 +190,8 @@ Download de app bij de nieuwste [**Release**](../../releases/latest):
 
 | Systeem | Bestand | Installeren |
 |---|---|---|
-| **Windows 10/11** | `SpotiParty.exe` | Niets te installeren: dubbelklik het bestand. |
+| **Windows 10/11** | `SpotiParty-Setup-1.0.0.exe` | Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
+| **Windows, zonder installatie** | `SpotiParty.exe` | Dubbelklik het bestand. Handig op een USB-stick. |
 | **Mac met Apple silicon** (M1 en nieuwer) | `SpotiParty-macos-apple-silicon.dmg` | Open de `.dmg` en sleep **SpotiParty** naar **Apps**. |
 | **Mac met Intel** | `SpotiParty-macos-intel.dmg` | Idem. |
 

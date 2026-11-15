@@ -28,3 +28,14 @@ Run it from source without building:
 ```bash
 python desktop/spotiparty_app.py
 ```
+
+## Windows installer
+
+`installer.iss` turns `desktop/dist/SpotiParty.exe` into `desktop/dist/SpotiParty-Setup-<version>.exe` with
+[Inno Setup 6](https://jrsoftware.org/isinfo.php). It installs for the current user (no administrator rights),
+adds Start menu and optional desktop shortcuts, and an entry under **Settings → Apps** to uninstall. On uninstall it
+asks whether to remove the settings and Spotify login too (No by default).
+
+```bash
+"%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe" /DAppVersion=1.0.0 desktop\installer.iss
+```
