@@ -67,6 +67,7 @@ public class MainActivity extends Activity {
     private final Runnable progressPoll = new Runnable() {
         @Override
         public void run() {
+            handler.removeCallbacks(this);   // one chain, also after a song change asked early
             if (!started) return;
             if (!syncLoading && SpotifyApi.linked(prefs)) {
                 syncLoading = true;
@@ -74,6 +75,15 @@ public class MainActivity extends Activity {
                     SpotifyApi.Progress p = SpotifyApi.progress(prefs);
                     // Keep the last good answer for this song when a request fails; a new song clears it.
                     if (p != null) apiProgress = p;
+                    if (p != null && p.durationMs > 0 && sameSong(p.title, lastTitle)) {
+                        // Looked up without a length: maybe another version's lyrics. Again, for this version.
+                        handler.post(() -> {
+                            if (lyricsDuration > 0 || trackKey.isEmpty() || !sameSong(p.title, lastTitle)) return;
+                            lyricsDuration = p.durationMs;
+                            android.util.Log.i(SpotifyApi.TAG, "lyrics: length from Spotify, " + p.durationMs / 1000 + " s");
+                            loadLyrics(trackKey, lastArtist, lastTitle, lastAlbum, p.durationMs);
+                        });
+                    }
                     android.util.Log.i(SpotifyApi.TAG, p == null ? "sync: no answer from Spotify"
                             : "sync: " + p.ms + " ms, playing=" + p.playing + ", title match="
                             + sameSong(p.title, lastTitle));
@@ -122,6 +132,10 @@ public class MainActivity extends Activity {
     private long songSeenAt;
     /** The title on screen, for the sync log (read off the main thread). */
     private volatile String lastTitle = "";
+    private String lastArtist = "";
+    private String lastAlbum = "";
+    /** The song length the current lyrics were looked up with (0 = unknown: maybe another version's lyrics). */
+    private long lyricsDuration;
     /** The position Spotify's servers report (fetched with the queue), for songs that play on another device. */
     private volatile SpotifyApi.Progress apiProgress;
     /** The Jam link from the dashboard (for every screen); "" = use the one set from the phone. */
@@ -713,6 +727,8 @@ public class MainActivity extends Activity {
         String album = text(m, MediaMetadata.METADATA_KEY_ALBUM);
         long duration = m.getLong(MediaMetadata.METADATA_KEY_DURATION);
         lastTitle = songTitle;
+        lastArtist = songArtist;
+        lastAlbum = album;
         title.setText(songTitle);
         artist.setText(songArtist);
         if (hub != null) hub.setSong(songArtist.isEmpty() ? songTitle : songTitle + " – " + songArtist);
@@ -745,6 +761,7 @@ public class MainActivity extends Activity {
         synced = false;
         shownLine = -2;
         for (TextView t : lyricViews) t.setText("");
+        lyricsDuration = duration;
         loadLyrics(key, songArtist, songTitle, album, duration);
         // A new song moved the queue: ask again once Spotify's servers have caught up.
         handler.removeCallbacks(queuePoll);

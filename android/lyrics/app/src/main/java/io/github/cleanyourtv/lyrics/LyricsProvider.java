@@ -63,7 +63,10 @@ public class LyricsProvider extends ContentProvider {
 
     /** "S" + synced LRC, "P" + plain text, or "" for none. Cached on disk. */
     private synchronized String lyrics(String artist, String title, String album, int seconds) {
-        File cache = new File(getContext().getCacheDir(), "l_" + hash(artist + "\n" + title) + ".txt");
+        // Per version: a dance track often has an Original Mix, a Radio Edit and an Extended Mix, each with its own
+        // timing. With the length in the key the lyrics of one version are never shown for another.
+        File cache = new File(getContext().getCacheDir(), "l_" + hash(artist + "\n" + title
+                + (seconds > 0 ? "\n" + seconds : "")) + ".txt");
         long age = System.currentTimeMillis() - cache.lastModified();
         if (cache.isFile()) {
             String cached = read(cache);

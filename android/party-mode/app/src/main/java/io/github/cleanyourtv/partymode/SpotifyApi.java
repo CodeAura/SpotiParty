@@ -199,12 +199,14 @@ final class SpotifyApi {
         final boolean playing;
         final String title;
         final long at;          // elapsedRealtime when Spotify measured ms (halfway the request)
+        final long durationMs;  // the song's length, which tells its version (Radio Edit, Extended Mix...)
 
-        Progress(long ms, boolean playing, String title, long at) {
+        Progress(long ms, boolean playing, String title, long at, long durationMs) {
             this.ms = ms;
             this.playing = playing;
             this.title = title;
             this.at = at;
+            this.durationMs = durationMs;
         }
     }
 
@@ -228,7 +230,8 @@ final class SpotifyApi {
             long t1 = android.os.SystemClock.elapsedRealtime();
             if (t1 - t0 > 6000) return null;   // too slow to trust
             return new Progress(now.optLong("progress_ms"), now.optBoolean("is_playing"),
-                    now.optJSONObject("item").optString("name"), (t0 + t1) / 2);
+                    now.optJSONObject("item").optString("name"), (t0 + t1) / 2,
+                    now.optJSONObject("item").optLong("duration_ms"));
         } catch (Exception e) {
             return null;
         }
