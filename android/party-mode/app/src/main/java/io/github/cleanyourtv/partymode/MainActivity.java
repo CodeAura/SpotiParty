@@ -76,11 +76,14 @@ public class MainActivity extends Activity {
                     // Keep the last good answer for this song when a request fails; a new song clears it.
                     if (p != null) apiProgress = p;
                     if (p != null && p.durationMs > 0 && sameSong(p.title, lastTitle)) {
-                        // Looked up without a length: maybe another version's lyrics. Again, for this version.
+                        // The TV's session can give no length or a wrong one (Spotify Connect): the lyrics were then
+                        // looked up for another version, or not found. Again, with the length Spotify itself gives.
                         handler.post(() -> {
-                            if (lyricsDuration > 0 || trackKey.isEmpty() || !sameSong(p.title, lastTitle)) return;
+                            if (Math.abs(lyricsDuration - p.durationMs) <= 3000 || trackKey.isEmpty()
+                                    || !sameSong(p.title, lastTitle)) return;
+                            android.util.Log.i(SpotifyApi.TAG, "lyrics: length " + lyricsDuration / 1000 + " s on the TV, "
+                                    + p.durationMs / 1000 + " s at Spotify: looked up again");
                             lyricsDuration = p.durationMs;
-                            android.util.Log.i(SpotifyApi.TAG, "lyrics: length from Spotify, " + p.durationMs / 1000 + " s");
                             loadLyrics(trackKey, lastArtist, lastTitle, lastAlbum, p.durationMs);
                         });
                     }
@@ -901,6 +904,7 @@ public class MainActivity extends Activity {
         SpotifyApi.Progress p = apiProgress;
         if (p != null && sameSong(p.title, title.getText().toString())) {
             position = p.ms + (p.playing ? now - p.at : 0);
+            if (p.durationMs > 0) duration = p.durationMs;   // the session's length can be wrong as well
         } else if (position < 0 || (duration > 0 && position > duration + 3000)
                 || s.getPosition() == PlaybackState.PLAYBACK_POSITION_UNKNOWN) {
             position = now - songSeenAt;   // no Spotify link: our own clock since the song came up
