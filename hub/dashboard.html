@@ -96,20 +96,38 @@
   </section>
 
   <section>
-    <h2>🎵 Muziek bedienen</h2>
-    <label for="m-screen">Welk scherm speelt de muziek?</label>
-    <select id="m-screen"></select>
-    <div class="nowplaying" id="m-song"></div>
-    <div class="player">
-      <button data-cmd="volume_down" title="Zachter">🔉</button>
-      <button data-cmd="previous" title="Vorige">⏮</button>
-      <button data-cmd="toggle" class="big" id="m-toggle" title="Afspelen of pauzeren">⏯</button>
-      <button data-cmd="next" title="Volgende">⏭</button>
-      <button data-cmd="volume_up" title="Harder">🔊</button>
+    <h2>🎵 Muziek bedienen <small id="m-acct"></small></h2>
+    <div id="m-linked" hidden>
+      <div class="nowplaying" id="m-song"></div>
+      <p class="nowplaying" id="m-device" style="color:var(--muted);font-size:13px"></p>
+      <div class="player">
+        <button data-cmd="volume_down" title="Zachter">🔉</button>
+        <button data-cmd="previous" title="Vorige">⏮</button>
+        <button data-cmd="toggle" class="big" id="m-toggle" title="Afspelen of pauzeren">⏯</button>
+        <button data-cmd="next" title="Volgende">⏭</button>
+        <button data-cmd="volume_up" title="Harder">🔊</button>
+      </div>
+      <div class="msg" id="m-msg"></div>
+      <p>Bedient je Spotify-account, op welk apparaat het ook speelt. De pauzeknop pauzeert hier ook.
+        <a href="#" id="sp-unlink" style="color:var(--muted)">Spotify ontkoppelen</a></p>
     </div>
-    <div class="msg" id="m-msg"></div>
-    <p>Op de tv bedient SpotiParty de muziek die op de tv speelt. Op de PC en in Home Assistant gaat het via je
-      Spotify-koppeling (Premium nodig) of de Home Assistant-speler.</p>
+    <div id="m-unlinked" hidden>
+      <p>Koppel je Spotify-account aan de Hub (Spotify Premium nodig). Eenmalig, met je eigen Spotify-app:</p>
+      <ol style="color:var(--muted);font-size:14px;padding-left:20px;margin:6px 0">
+        <li>Zet in je app op <b>developer.spotify.com/dashboard</b> bij <b>Redirect URIs</b> ook:<br><code id="sp-redirect"></code></li>
+        <li>Plak de <b>Client ID</b> hieronder en log in.</li>
+      </ol>
+      <label for="sp-client">Client ID</label>
+      <input id="sp-client" autocomplete="off" spellcheck="false" placeholder="32 tekens">
+      <div class="row"><button class="go" id="sp-login">Inloggen bij Spotify</button></div>
+      <div id="sp-paste" hidden>
+        <p>Logde je in op je telefoon? Dan opent die <b>127.0.0.1</b> niet: dat hoort zo. Kopieer dat hele adres
+          uit de adresbalk en plak het hier.</p>
+        <input id="sp-url" autocomplete="off" spellcheck="false" placeholder="http://127.0.0.1:8770/spotify/callback?code=...">
+        <div class="row"><button class="go" id="sp-finish">Koppelen</button></div>
+      </div>
+      <div class="msg" id="sp-msg"></div>
+    </div>
   </section>
 
   <section>
@@ -304,7 +322,6 @@ function render() {
       <div class="top"><span class="dot ${x.online ? "on" : ""}"></span><b title="${esc(x.id)}">${esc(x.name)}</b></div>
       <div class="meta">${KIND[x.kind] || x.kind} · ${esc(x.ip)} · ${x.online ? "online" : `${x.ago < 120 ? x.ago + " s" : Math.round(x.ago / 60) + " min"} geleden`}</div>
       <div class="song">${x.song ? (x.playing ? "▶️ " : "⏸ ") + esc(x.song) : "Geen muziek"}</div>
-      ${x.ctl ? `<div><span class="tag">🎛️ kan de muziek bedienen</span></div>` : ""}
       ${resText(x.res) ? `<div class="err">${esc(resText(x.res))}</div>` : ""}
       <div class="row">
         <button data-act="ident" data-id="${esc(x.id)}" ${s.unlocked ? "" : "disabled"}>Aanwijzen</button>
@@ -344,37 +361,50 @@ function resText(res) {
 }
 
 function renderPlayer() {
-  const sel = $("m-screen"), ctl = state.screens.filter(x => x.ctl && x.online);
-  const keep = sel.value;
-  const opts = ctl.map(x => `<option value="${esc(x.id)}">${esc(x.name)}${x.song ? " · " + esc(x.song) : ""}</option>`).join("");
-  if (sel.dataset.opts !== opts) {
-    sel.dataset.opts = opts;
-    sel.innerHTML = opts || `<option value="">Geen scherm kan de muziek bedienen</option>`;
-    // Keep the choice; else the screen that's playing.
-    sel.value = ctl.some(x => x.id === keep) ? keep : ((ctl.find(x => x.playing) || ctl[0] || {}).id || "");
-  }
-  const x = ctl.find(c => c.id === sel.value);
-  $("m-song").textContent = x ? (x.song ? (x.playing ? "▶️ " : "⏸ ") + x.song : "Er speelt niets") : "";
-  $("m-toggle").textContent = x && x.playing ? "⏸" : "▶";
-  document.querySelectorAll(".player button").forEach(b => { b.disabled = !x; });
-  const err = x && resText(x.res);
-  if (err && !$("m-msg").dataset.sent) msg("m-msg", err, true);
+  const sp = state.spotify || {};
+  $("m-linked").hidden = !sp.linked;
+  $("m-unlinked").hidden = !!sp.linked;
+  $("sp-redirect").textContent = sp.redirect || "";
+  if (!$("sp-client").value && sp.client) $("sp-client").value = sp.client;
+  const p = sp.player;
+  $("m-acct").textContent = sp.linked ? "Spotify-account" : "";
+  $("m-song").textContent = !p ? "…" : p.title ? (p.playing ? "▶️ " : "⏸ ") + p.title + (p.artist ? " – " + p.artist : "") : "Er speelt niets";
+  $("m-device").textContent = p && p.device ? "op " + p.device + (p.volume != null ? ` · volume ${p.volume}%` : "") : "";
+  $("m-toggle").textContent = p && p.playing ? "⏸" : "▶";
+  if (sp.error && !$("m-msg").dataset.sent) msg("m-msg", sp.error, true);
 }
-$("m-screen").onchange = () => { msg("m-msg", ""); renderPlayer(); };
 document.querySelector(".player").onclick = async e => {
   const b = e.target.closest("button[data-cmd]");
   if (!b) return;
-  const x = state.screens.find(c => c.id === $("m-screen").value);
-  if (!x) return;
+  const p = state.spotify && state.spotify.player;
   let cmd = b.dataset.cmd;
-  if (cmd === "toggle") cmd = x.playing ? "pause" : "play";
+  if (cmd === "toggle") cmd = p && p.playing ? "pause" : "play";
+  $("m-msg").dataset.sent = "1";
+  msg("m-msg", { play: "Afspelen…", pause: "Pauzeren…", next: "Volgende nummer…", previous: "Vorige nummer…",
+    volume_up: "Harder…", volume_down: "Zachter…" }[cmd]);
   try {
-    await api("media", { cmd, targets: [x.id] });
-    $("m-msg").dataset.sent = "1";
-    msg("m-msg", { play: "Afspelen…", pause: "Pauzeren…", next: "Volgende nummer…", previous: "Vorige nummer…",
-      volume_up: "Harder…", volume_down: "Zachter…" }[cmd]);
-    setTimeout(() => { delete $("m-msg").dataset.sent; refresh().catch(() => {}); }, 3500);
+    await api("media", { cmd });
+    msg("m-msg", "");
+    setTimeout(() => refresh().catch(() => {}), 1200);
   } catch (err) { msg("m-msg", err.message, true); }
+  setTimeout(() => { delete $("m-msg").dataset.sent; }, 4000);
+};
+$("sp-login").onclick = async () => {
+  try {
+    const r = await api("spotify-login", { client: $("sp-client").value.trim() });
+    window.open(r.url, "_blank", "noopener");
+    $("sp-paste").hidden = /^(127\.0\.0\.1|localhost)$/.test(location.hostname);
+    msg("sp-msg", "Log in in het venster dat opent en kies Akkoord.");
+  } catch (e) { msg("sp-msg", e.message, true); }
+};
+$("sp-finish").onclick = async () => {
+  try { await api("spotify-code", { url: $("sp-url").value }); msg("sp-msg", "Gekoppeld!"); refresh(); }
+  catch (e) { msg("sp-msg", e.message, true); }
+};
+$("sp-unlink").onclick = async e => {
+  e.preventDefault();
+  if (!confirm("Spotify ontkoppelen van de Hub?")) return;
+  try { await api("spotify-unlink", {}); refresh(); } catch (err) { alert(err.message); }
 };
 
 function paintJam(link) {
@@ -460,7 +490,7 @@ $("b-start").onclick = async () => {
       music: $("b-music").checked });
     msg("b-msg", !$("b-music").checked ? "Pauze gestart." : r.paused
       ? "Pauze gestart. De muziek wordt gepauzeerd en gaat na afloop vanzelf verder."
-      : "Pauze gestart. Geen scherm kon de muziek pauzeren: zet hem zelf even stil.");
+      : "Pauze gestart. Koppel Spotify bij Muziek bedienen, dan pauzeert de muziek ook.");
     refresh();
   } catch (e) { msg("b-msg", e.message, true); }
 };

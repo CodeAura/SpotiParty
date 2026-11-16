@@ -30,6 +30,7 @@ import urllib.parse
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import sp_license  # noqa: E402
+import sp_spotify  # noqa: E402
 
 PORT = 8770
 DISCOVERY_PORT = 8771
@@ -98,8 +99,11 @@ class Hub:
         self.static_dir = pathlib.Path(static_dir)
         self.port = port
         self.file = self.data_dir / "hub.json"
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
         self.cfg = self._load()
+        # The account's music: the Hub's own Spotify login controls whatever device the account plays on.
+        self.spotify = sp_spotify.Spotify(self.cfg, self._save_locked, port)
+        self.admin_seen = 0.0   # the dashboard was open then: keep "now playing" fresh
         self.screens = {}       # id -> {name, kind, ip, seen, song}
         self.notice = None      # {id, text, style, until (ms or 0 = until removed), targets}
         self.brk = None         # {id, title, minutes, until (ms), targets}
@@ -124,6 +128,28 @@ class Hub:
         self.file.parent.mkdir(parents=True, exist_ok=True)
         self.file.write_text(json.dumps(cfg, indent=2), "utf-8")
         return cfg
+
+    def _save_locked(self):
+        with self.lock:
+            self._save()
+
+    def _account(self, cmd):
+        """A play/pause for the break, on the account, in the background (never under the lock)."""
+        def run():
+            try:
+                self.spotify.control(cmd)
+            except sp_spotify.SpotifyError as e:
+                self.spotify.player_err = "Pauze: " + str(e)
+        threading.Thread(target=run, daemon=True, name="hub-spotify").start()
+
+    def _spotify_loop(self):
+        # While the dashboard is open (or a break runs): what the account plays, every 4 s.
+        while self.httpd:
+            busy = time.time() - self.admin_seen < 90 or bool(self.brk)
+            p = self.spotify.player
+            if busy and self.spotify.linked() and (not p or time.time() - p["at"] >= 4):
+                self.spotify.refresh()
+            time.sleep(1)
 
     def _save(self):
         tmp = self.file.with_suffix(".tmp")
@@ -151,6 +177,8 @@ class Hub:
             self.brk["resumed"] = True
             if self.brk.get("music"):
                 self._enqueue(self.brk["paused"], "play")
+                if self.brk.get("acct"):
+                    self._account("play")
         if self.brk and self.brk["until"] + AFTER_BREAK_S * 1000 < t:
             self.brk = None
         self.ident = {k: v for k, v in self.ident.items() if v > t}
@@ -217,13 +245,40 @@ class Hub:
                         "ctl": s.get("ctl", False), "playing": s.get("playing", False), "res": s.get("res", "")}
                        for k, s in sorted(self.screens.items(), key=lambda kv: kv[1]["name"].lower())]
             brk = {k: v for k, v in self.brk.items() if k != "paused"} if self.brk else None
-            return {"now": self.now_ms(), "name": self.cfg["name"], "licensing": LICENSING,
+            sp = self.spotify
+            spotify = {"linked": sp.linked(), "client": self.cfg.get("sp_client", ""), "redirect": sp.redirect,
+                       "player": sp.player, "error": sp.player_err}
+            return {"now": self.now_ms(), "name": self.cfg["name"], "licensing": LICENSING, "spotify": spotify,
                     "licence": self.licence, "unlocked": self.unlocked, "jam": self.cfg.get("jam", ""),
                     "notice": self.notice, "brk": brk, "wifi": self.cfg["wifi"], "screens": screens,
                     "urls": [f"http://{a}:{self.port}/" for a in lan_addresses()]}
 
     def admin(self, action, body):
         b = body if isinstance(body, dict) else {}
+        self.admin_seen = time.time()
+        # The account's music: network calls, so outside the lock.
+        try:
+            if action == "spotify-login":
+                client = str(b.get("client", "")).strip()
+                if not (len(client) == 32 and all(c in "0123456789abcdefABCDEF" for c in client)):
+                    return 400, {"error": "Dat lijkt geen Client ID (32 tekens, cijfers en a-f)."}
+                return 200, {"url": self.spotify.login_url(client)}
+            if action == "spotify-code":
+                self.spotify.finish(str(b.get("url", "")))
+                self.spotify.refresh()
+                return 200, {}
+            if action == "spotify-unlink":
+                with self.lock:
+                    self.spotify.unlink()
+                return 200, {}
+            if action == "media":
+                cmd = str(b.get("cmd", ""))
+                if cmd not in MEDIA_CMDS:
+                    return 400, {"error": "Onbekende opdracht."}
+                self.spotify.control(cmd)
+                return 200, {}
+        except sp_spotify.SpotifyError as e:
+            return 400, {"error": str(e)}
         targets = [str(x) for x in b.get("targets", []) if isinstance(x, str)][:200]
         with self.lock:
             if action == "license":
@@ -262,17 +317,6 @@ class Hub:
                 self.cfg["jam"] = jam
                 self._save()
                 return 200, {"jam": jam}
-            if action == "media":
-                cmd = str(b.get("cmd", ""))
-                if cmd not in MEDIA_CMDS:
-                    return 400, {"error": "Onbekende opdracht."}
-                sids = self._resolve(targets)
-                if not sids:
-                    return 409, {"error": "Geen scherm dat de muziek kan bedienen. Open SpotiParty op de tv, of koppel Spotify of Home Assistant op het scherm."}
-                for sid in sids:
-                    self.screens[sid]["res"] = ""
-                self._enqueue(sids, cmd)
-                return 200, {"sent": len(sids)}
             if LICENSING and not self.licence:
                 return 402, {"error": "Hiervoor heb je SpotiParty Pro nodig. Vul je licentiecode in."}
             if action == "notice":
@@ -293,13 +337,18 @@ class Hub:
                     return 400, {"error": "Kies 1 tot 240 minuten."}
                 if self.brk and self.brk.get("music") and not self.brk.get("resumed"):
                     self._enqueue(self.brk["paused"], "play")   # a new break replaces a running one
+                    if self.brk.get("acct") and not (b.get("music", True) and self.spotify.linked()):
+                        self._account("play")
                 music = bool(b.get("music", True))
-                paused = self._resolve(targets) if music else []
+                acct = music and self.spotify.linked()
+                paused = self._resolve(targets) if music and not acct else []
                 self.brk = {"id": secrets.token_hex(4), "title": str(b.get("title", "")).strip()[:60] or "Pauze",
                             "minutes": mins, "until": self.now_ms() + int(mins * 60000), "targets": targets,
-                            "music": music, "paused": paused, "resumed": False}
+                            "music": music, "paused": paused, "resumed": False, "acct": acct}
+                if acct:
+                    self._account("pause")
                 self._enqueue(paused, "pause")
-                return 200, {"paused": len(paused)}
+                return 200, {"paused": len(paused) + (1 if acct else 0), "account": acct}
             if action == "break-extend":
                 if self.brk:
                     self.brk["until"] = max(self.brk["until"], self.now_ms()) + int(float(b.get("minutes", 5)) * 60000)
@@ -307,10 +356,14 @@ class Hub:
                         self.brk["resumed"] = False
                         if self.brk.get("music"):
                             self._enqueue(self.brk["paused"], "pause")
+                            if self.brk.get("acct"):
+                                self._account("pause")
                 return 200, {}
             if action == "break-clear":
                 if self.brk and self.brk.get("music") and not self.brk.get("resumed"):
                     self._enqueue(self.brk["paused"], "play")
+                    if self.brk.get("acct"):
+                        self._account("play")
                 self.brk = None
                 return 200, {}
             if action == "wifi":
@@ -344,6 +397,7 @@ class Hub:
         self.httpd = http.server.ThreadingHTTPServer(("0.0.0.0", self.port), handler)
         self.httpd.daemon_threads = True
         threading.Thread(target=self.httpd.serve_forever, daemon=True, name="hub-http").start()
+        threading.Thread(target=self._spotify_loop, daemon=True, name="hub-spotify-now").start()
         try:
             self.udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.udp.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -418,11 +472,24 @@ class HubHandler(http.server.BaseHTTPRequestHandler):
         if url.path == "/api/screen":
             code, obj = self.hub.screen_poll(q, self.client_address[0])
             return self._send(code, obj, cors=True)
+        if url.path == "/spotify/callback":
+            try:
+                self.hub.spotify.finish(url.query)
+                self.hub.spotify.refresh()
+                text, ok = "Spotify is gekoppeld aan de SpotiParty Hub. Je kunt dit venster sluiten.", True
+            except sp_spotify.SpotifyError as e:
+                text, ok = str(e), False
+            page = (f"<!doctype html><meta charset=utf-8><title>SpotiParty Hub</title><body style='font:18px system-ui;"
+                    f"background:#0b0b10;color:#fff;display:grid;place-items:center;height:90vh;text-align:center'>"
+                    f"<div><div style='font-size:60px'>{'✅' if ok else '⚠️'}</div><p>{text}</p></div>"
+                    + ("<script>setTimeout(()=>window.close(),1500)</script>" if ok else ""))
+            return self._send(200, raw=page.encode(), ctype="text/html; charset=utf-8")
         if url.path == "/api/ping":
             return self._send(200, {"hub": self.hub.cfg["name"], "port": self.hub.port}, cors=True)
         if url.path == "/api/admin/state":
             if not self.hub.pin_ok(self.headers.get("X-SpotiParty-Pin", ""), self.client_address[0]):
                 return self._send(401, {"error": "PIN klopt niet."})
+            self.hub.admin_seen = time.time()
             return self._send(200, self.hub.admin_state())
         if url.path in self.STATIC:
             name, ctype = self.STATIC[url.path]
