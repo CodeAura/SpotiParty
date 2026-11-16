@@ -650,11 +650,15 @@ public class MainActivity extends Activity {
     }
 
     private void showQr() {
-        String jam = !hubJam.isEmpty() ? hubJam : prefs.getString("jam", "");
+        // Once this TV has seen a Hub, the Jam link comes from its dashboard only (kept between connections);
+        // the link once set from the phone is no longer used.
+        boolean hubbed = prefs.getBoolean("hub_seen", false);
+        if (hubbed && hubJam.isEmpty()) hubJam = prefs.getString("hub_jam", "");
+        String jam = hubbed ? hubJam : prefs.getString("jam", "");
         String setup = link == null ? null : link.address(this);
         View card = (View) qr.getParent();
         // With a Hub the Jam link is set in the dashboard: no "set the Jam" code on the TV then (Menu still shows it).
-        if (jam.isEmpty() && hubState != null && !showingSetup) {
+        if (jam.isEmpty() && (hubState != null || hubbed) && !showingSetup) {
             card.setVisibility(View.GONE);
             resetButton.setVisibility(View.GONE);
             return;
@@ -671,7 +675,7 @@ public class MainActivity extends Activity {
         }
         // The reset button only for a Jam link set from the phone (the dashboard's has its own Weghalen); it has the
         // remote's focus then, so OK reaches it.
-        boolean hasJam = !jam.isEmpty() && hubJam.isEmpty();
+        boolean hasJam = !jam.isEmpty() && !hubbed;
         resetButton.setVisibility(hasJam ? View.VISIBLE : View.GONE);
         resetButton.setText(R.string.reset_jam);
         if (hasJam) resetButton.requestFocus();
@@ -1125,7 +1129,16 @@ public class MainActivity extends Activity {
         float dp = getResources().getDisplayMetrics().density;
 
         // The Jam link from the dashboard replaces the one set from the phone, on every screen at once.
-        String jam = s == null || !isSpotifyLink(s.jam) ? "" : s.jam;
+        // Kept when the hub can't be reached for a moment: the TV must not fall back to an old link from the phone.
+        String jam;
+        if (s == null) {
+            jam = prefs.getString("hub_jam", "");
+        } else {
+            jam = isSpotifyLink(s.jam) ? s.jam : "";
+            if (!prefs.getBoolean("hub_seen", false) || !jam.equals(prefs.getString("hub_jam", ""))) {
+                prefs.edit().putBoolean("hub_seen", true).putString("hub_jam", jam).apply();
+            }
+        }
         boolean linkChanged = (s == null) != (hubShown == null);
         hubShown = s;
         if (!jam.equals(hubJam) || linkChanged) {
