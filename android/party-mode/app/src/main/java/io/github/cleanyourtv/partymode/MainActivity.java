@@ -171,8 +171,8 @@ public class MainActivity extends Activity {
     /** The cover gives way to a two-line title and the "Next" line, so the progress bar stays on screen. */
     private void fitCover() {
         float dp = getResources().getDisplayMetrics().density;
-        int base = title.getLineCount() > 1 ? 250 : 300;
-        if (nextUp.getVisibility() == View.VISIBLE) base -= 26;
+        int base = title.getLineCount() > 1 ? 190 : 230;
+        if (nextUp.getVisibility() == View.VISIBLE) base -= 20;
         int side = Math.round(base * dp);
         ViewGroup.LayoutParams lp = cover.getLayoutParams();
         if (lp.width != side) {
@@ -266,8 +266,8 @@ public class MainActivity extends Activity {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_VERTICAL);
-        int pad = Math.round(64 * dp);
-        row.setPadding(pad, Math.round(48 * dp), pad, Math.round(48 * dp));
+        int pad = Math.round(52 * dp);
+        row.setPadding(pad, Math.round(40 * dp), pad, Math.round(40 * dp));
         root.addView(row, match());
 
         // Left: cover, title, artist, progress.
@@ -277,7 +277,7 @@ public class MainActivity extends Activity {
         cover = new ImageView(this);
         cover.setScaleType(ImageView.ScaleType.CENTER_CROP);
         cover.setBackgroundColor(0x33FFFFFF);
-        int radius = Math.round(20 * dp);
+        int radius = Math.round(16 * dp);
         cover.setOutlineProvider(new ViewOutlineProvider() {
             @Override
             public void getOutline(View v, Outline outline) {
@@ -286,30 +286,30 @@ public class MainActivity extends Activity {
         });
         cover.setClipToOutline(true);
         cover.setElevation(24 * dp);
-        int coverSize = Math.round(300 * dp);
+        int coverSize = Math.round(230 * dp);
         song.addView(cover, new LinearLayout.LayoutParams(coverSize, coverSize));
-        title = label(34, 0xFFFFFFFF, Typeface.BOLD);
-        title.setPadding(0, Math.round(22 * dp), 0, 0);
+        title = label(26, 0xFFFFFFFF, Typeface.BOLD);
+        title.setPadding(0, Math.round(16 * dp), 0, 0);
         // A title on two lines takes the room of the progress bar: the cover gives way so everything stays on screen.
         title.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> fitCover());
         title.setMaxLines(2);
         title.setEllipsize(TextUtils.TruncateAt.END);
-        song.addView(title, new LinearLayout.LayoutParams(coverSize + Math.round(80 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
-        artist = label(22, 0xCCFFFFFF, Typeface.NORMAL);
+        song.addView(title, new LinearLayout.LayoutParams(coverSize + Math.round(70 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
+        artist = label(17, 0xCCFFFFFF, Typeface.NORMAL);
         artist.setSingleLine(true);
         artist.setEllipsize(TextUtils.TruncateAt.END);
-        song.addView(artist, new LinearLayout.LayoutParams(coverSize + Math.round(80 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
+        song.addView(artist, new LinearLayout.LayoutParams(coverSize + Math.round(70 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
         // "Next: song · artist" from the host's Spotify queue, once Spotify is linked.
-        nextUp = label(16, 0x99FFFFFF, Typeface.NORMAL);
+        nextUp = label(13, 0x99FFFFFF, Typeface.NORMAL);
         nextUp.setSingleLine(true);
         nextUp.setEllipsize(TextUtils.TruncateAt.END);
-        nextUp.setPadding(0, Math.round(6 * dp), 0, 0);
+        nextUp.setPadding(0, Math.round(4 * dp), 0, 0);
         nextUp.setVisibility(View.GONE);
-        song.addView(nextUp, new LinearLayout.LayoutParams(coverSize + Math.round(80 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
+        song.addView(nextUp, new LinearLayout.LayoutParams(coverSize + Math.round(70 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
         progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
         progress.setMax(1000);
-        LinearLayout.LayoutParams pl = new LinearLayout.LayoutParams(coverSize, Math.round(6 * dp));
-        pl.topMargin = Math.round(18 * dp);
+        LinearLayout.LayoutParams pl = new LinearLayout.LayoutParams(coverSize, Math.round(5 * dp));
+        pl.topMargin = Math.round(14 * dp);
         song.addView(progress, pl);
         row.addView(song, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -319,21 +319,21 @@ public class MainActivity extends Activity {
         lyrics.setOrientation(LinearLayout.VERTICAL);
         lyrics.setGravity(Gravity.CENTER_VERTICAL);
         // Above the QR card: one line back, the line now, and the two coming up.
-        lyrics.setPadding(Math.round(64 * dp), 0, 0, Math.round(150 * dp));
+        lyrics.setPadding(Math.round(52 * dp), 0, 0, Math.round(110 * dp));
         lyricViews = new TextView[4];
-        int[] sizes = {24, 44, 28, 22};
+        int[] sizes = {19, 34, 22, 17};
         int[] colors = {0x59FFFFFF, 0xFFFFFFFF, 0x99FFFFFF, 0x59FFFFFF};
         for (int i = 0; i < lyricViews.length; i++) {
             TextView t = label(sizes[i], colors[i], i == NOW ? Typeface.BOLD : Typeface.NORMAL);
             t.setMaxLines(i == NOW ? 2 : 1);
             t.setEllipsize(TextUtils.TruncateAt.END);
-            t.setPadding(0, Math.round((i == NOW ? 12 : 5) * dp), 0, Math.round((i == NOW ? 12 : 5) * dp));
+            t.setPadding(0, Math.round((i == NOW ? 9 : 4) * dp), 0, Math.round((i == NOW ? 9 : 4) * dp));
             lyricViews[i] = t;
             lyrics.addView(t);
         }
         row.addView(lyrics, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f));
 
-        idle = label(28, 0xFFFFFFFF, Typeface.BOLD);
+        idle = label(22, 0xFFFFFFFF, Typeface.BOLD);
         idle.setGravity(Gravity.CENTER);
         idle.setText(R.string.idle);
         int ip = Math.round(140 * dp);
@@ -349,46 +349,46 @@ public class MainActivity extends Activity {
         card.setGravity(Gravity.CENTER_VERTICAL);
         GradientDrawable glass = new GradientDrawable();
         glass.setColor(0x99000000);
-        glass.setCornerRadius(24 * dp);
+        glass.setCornerRadius(18 * dp);
         glass.setStroke(Math.max(1, Math.round(dp)), 0x33FFFFFF);
         card.setBackground(glass);
-        int cp = Math.round(12 * dp);
-        card.setPadding(cp, cp, Math.round(20 * dp), cp);
+        int cp = Math.round(9 * dp);
+        card.setPadding(cp, cp, Math.round(14 * dp), cp);
         qr = new QrView(this);
-        int qs = Math.round(92 * dp);
+        int qs = Math.round(70 * dp);
         card.addView(qr, new LinearLayout.LayoutParams(qs, qs));
         LinearLayout qrWords = new LinearLayout(this);
         qrWords.setOrientation(LinearLayout.VERTICAL);
-        qrWords.setPadding(Math.round(14 * dp), 0, 0, 0);
-        qrTitle = label(18, 0xFFFFFFFF, Typeface.BOLD);
-        qrText = label(13, 0xCCFFFFFF, Typeface.NORMAL);
+        qrWords.setPadding(Math.round(11 * dp), 0, 0, 0);
+        qrTitle = label(14, 0xFFFFFFFF, Typeface.BOLD);
+        qrText = label(11, 0xCCFFFFFF, Typeface.NORMAL);
         qrTitle.setSingleLine(true);
         qrWords.addView(qrTitle);
         qrWords.addView(qrText);
         resetButton = makeResetButton(dp);
         LinearLayout.LayoutParams bl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        bl.topMargin = Math.round(10 * dp);
+        bl.topMargin = Math.round(7 * dp);
         qrWords.addView(resetButton, bl);
         // A fixed width, so the title and the wrapped text keep their room next to the button.
-        card.addView(qrWords, new LinearLayout.LayoutParams(Math.round(250 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
+        card.addView(qrWords, new LinearLayout.LayoutParams(Math.round(190 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
         // The guest Wi-Fi card (from the Hub) sits to the left of the Jam card.
         wifiCard = new LinearLayout(this);
         wifiCard.setOrientation(LinearLayout.HORIZONTAL);
         wifiCard.setGravity(Gravity.CENTER_VERTICAL);
         wifiCard.setBackground(glass.getConstantState().newDrawable().mutate());
-        wifiCard.setPadding(cp, cp, Math.round(20 * dp), cp);
+        wifiCard.setPadding(cp, cp, Math.round(14 * dp), cp);
         wifiQr = new QrView(this);
         wifiCard.addView(wifiQr, new LinearLayout.LayoutParams(qs, qs));
         LinearLayout wifiWords = new LinearLayout(this);
         wifiWords.setOrientation(LinearLayout.VERTICAL);
-        wifiWords.setPadding(Math.round(14 * dp), 0, 0, 0);
-        TextView wifiTitle = label(18, 0xFFFFFFFF, Typeface.BOLD);
+        wifiWords.setPadding(Math.round(11 * dp), 0, 0, 0);
+        TextView wifiTitle = label(14, 0xFFFFFFFF, Typeface.BOLD);
         wifiTitle.setText(R.string.wifi_title);
-        wifiText = label(13, 0xCCFFFFFF, Typeface.NORMAL);
+        wifiText = label(11, 0xCCFFFFFF, Typeface.NORMAL);
         wifiWords.addView(wifiTitle);
         wifiWords.addView(wifiText);
-        wifiCard.addView(wifiWords, new LinearLayout.LayoutParams(Math.round(190 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
+        wifiCard.addView(wifiWords, new LinearLayout.LayoutParams(Math.round(150 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
         wifiCard.setVisibility(View.GONE);
 
         LinearLayout corner = new LinearLayout(this);
@@ -396,12 +396,12 @@ public class MainActivity extends Activity {
         corner.setGravity(Gravity.BOTTOM);
         LinearLayout.LayoutParams wl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        wl.rightMargin = Math.round(16 * dp);
+        wl.rightMargin = Math.round(12 * dp);
         corner.addView(wifiCard, wl);
         corner.addView(card);
         FrameLayout.LayoutParams cl = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.END);
-        cl.setMargins(0, 0, Math.round(48 * dp), Math.round(40 * dp));
+        cl.setMargins(0, 0, Math.round(40 * dp), Math.round(30 * dp));
         root.addView(corner, cl);
 
         // The break: a big countdown over everything.
@@ -484,11 +484,11 @@ public class MainActivity extends Activity {
      * It asks for a second OK within 4 s, so a friend holding the remote does not end the party's code by accident.
      */
     private TextView makeResetButton(float dp) {
-        TextView b = label(14, 0xFFFFFFFF, Typeface.BOLD);
+        TextView b = label(12, 0xFFFFFFFF, Typeface.BOLD);
         b.setText(R.string.reset_jam);
         b.setShadowLayer(0, 0, 0, 0);
-        int hp = Math.round(14 * dp);
-        int vp = Math.round(6 * dp);
+        int hp = Math.round(11 * dp);
+        int vp = Math.round(5 * dp);
         b.setPadding(hp, vp, hp, vp);
         GradientDrawable idle = new GradientDrawable();
         idle.setColor(0x33FFFFFF);
@@ -870,9 +870,9 @@ public class MainActivity extends Activity {
                 shownLine = -2;
                 if (lines.length == 0) {
                     lyricViews[NOW].setText(available ? R.string.no_lyrics : R.string.no_lyrics_addon);
-                    lyricViews[NOW].setTextSize(TypedValue.COMPLEX_UNIT_SP, 28);
+                    lyricViews[NOW].setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
                 } else {
-                    lyricViews[NOW].setTextSize(TypedValue.COMPLEX_UNIT_SP, 44);
+                    lyricViews[NOW].setTextSize(TypedValue.COMPLEX_UNIT_SP, 34);
                     if (!synced) showLines(0);
                 }
             });
