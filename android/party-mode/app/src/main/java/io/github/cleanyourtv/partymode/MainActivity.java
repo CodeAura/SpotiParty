@@ -87,6 +87,10 @@ public class MainActivity extends Activity {
     private TextView noticeText;
     private ProgressBar noticeBar;
     private String shownNotice = "";
+    /** When this song was first seen (elapsedRealtime), for a position of our own when the session's is useless. */
+    private long songSeenAt;
+    /** The position Spotify's servers report (fetched with the queue), for songs that play on another device. */
+    private volatile SpotifyApi.Progress apiProgress;
     /** The Jam link from the dashboard (for every screen); "" = use the one set from the phone. */
     private String hubJam = "";
     /** Command ids already run, so a repeated answer never pauses or skips twice. */
@@ -134,6 +138,7 @@ public class MainActivity extends Activity {
         queueLoading = true;
         worker.execute(() -> {
             SpotifyApi.Next next = SpotifyApi.next(prefs);
+            apiProgress = SpotifyApi.progress(prefs);   // where the song is, for songs that play on another device
             handler.post(() -> {
                 queueLoading = false;
                 if (next.title != null && !next.title.isEmpty()) {
@@ -684,6 +689,8 @@ public class MainActivity extends Activity {
         }
         if (!newSong) return;
         trackKey = key;
+        songSeenAt = SystemClock.elapsedRealtime() - Math.max(0, Math.min(s.getPosition(), 15_000));
+        apiProgress = null;
         times = new long[0];
         lines = new String[0];
         synced = false;
@@ -808,11 +815,26 @@ public class MainActivity extends Activity {
         PlaybackState s = c == null ? null : c.getPlaybackState();
         MediaMetadata m = c == null ? null : c.getMetadata();
         if (s == null || m == null) return;
+        long now = SystemClock.elapsedRealtime();
         long position = s.getPosition();
         if (s.getState() == PlaybackState.STATE_PLAYING) {
-            position += (long) ((SystemClock.elapsedRealtime() - s.getLastPositionUpdateTime()) * s.getPlaybackSpeed());
+            position += (long) ((now - s.getLastPositionUpdateTime()) * s.getPlaybackSpeed());
         }
         long duration = m.getLong(MediaMetadata.METADATA_KEY_DURATION);
+        // A song that plays on another device (Spotify Connect) leaves the TV's session with a frozen position:
+        // counted on from long ago it lands far past the end, and the lyrics would stay on the last, empty line.
+        boolean impossible = position < 0 || (duration > 0 && position > duration + 3000)
+                || s.getPosition() == PlaybackState.PLAYBACK_POSITION_UNKNOWN;
+        if (impossible) {
+            SpotifyApi.Progress p = apiProgress;
+            String shown = title.getText().toString();
+            if (p != null && now - p.at < 30_000 && p.title.equalsIgnoreCase(shown)) {
+                position = p.ms + (p.playing ? now - p.at : 0);   // from Spotify's servers
+            } else {
+                position = now - songSeenAt;   // our own clock since the song came up
+            }
+            if (duration > 0) position = Math.min(position, duration);
+        }
         if (duration > 0) progress.setProgress((int) Math.min(1000, position * 1000 / duration));
         if (!synced) return;
         long ahead = position + 250;

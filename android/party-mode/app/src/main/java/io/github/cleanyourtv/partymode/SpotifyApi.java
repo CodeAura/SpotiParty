@@ -193,6 +193,42 @@ final class SpotifyApi {
         }
     }
 
+    /** Where the account's current song is, as Spotify's servers know it. */
+    static final class Progress {
+        final long ms;
+        final boolean playing;
+        final String title;
+        final long at = android.os.SystemClock.elapsedRealtime();
+
+        Progress(long ms, boolean playing, String title) {
+            this.ms = ms;
+            this.playing = playing;
+            this.title = title;
+        }
+    }
+
+    /**
+     * The song's position from Spotify itself. Needed when the TV only shows a song that plays on another device
+     * (Spotify Connect): the TV's media session then keeps a frozen position. Null when unknown.
+     */
+    static Progress progress(SharedPreferences prefs) {
+        if (!linked(prefs)) return null;
+        try {
+            JSONObject now;
+            try {
+                now = get("https://api.spotify.com/v1/me/player/currently-playing", access(prefs, false));
+            } catch (ApiError e) {
+                if (e.code != 401) return null;
+                now = get("https://api.spotify.com/v1/me/player/currently-playing", access(prefs, true));
+            }
+            if (now == null || now.optJSONObject("item") == null || now.optLong("progress_ms", -1) < 0) return null;
+            return new Progress(now.optLong("progress_ms"), now.optBoolean("is_playing"),
+                    now.optJSONObject("item").optString("name"));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     private static JSONObject get(String url, String access) throws IOException {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setConnectTimeout(5000);
