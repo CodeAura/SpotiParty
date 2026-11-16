@@ -198,12 +198,13 @@ final class SpotifyApi {
         final long ms;
         final boolean playing;
         final String title;
-        final long at = android.os.SystemClock.elapsedRealtime();
+        final long at;          // elapsedRealtime when Spotify measured ms (halfway the request)
 
-        Progress(long ms, boolean playing, String title) {
+        Progress(long ms, boolean playing, String title, long at) {
             this.ms = ms;
             this.playing = playing;
             this.title = title;
+            this.at = at;
         }
     }
 
@@ -214,16 +215,20 @@ final class SpotifyApi {
     static Progress progress(SharedPreferences prefs) {
         if (!linked(prefs)) return null;
         try {
+            String token = access(prefs, false);
+            long t0 = android.os.SystemClock.elapsedRealtime();
             JSONObject now;
             try {
-                now = get("https://api.spotify.com/v1/me/player/currently-playing", access(prefs, false));
+                now = get("https://api.spotify.com/v1/me/player/currently-playing", token);
             } catch (ApiError e) {
                 if (e.code != 401) return null;
                 now = get("https://api.spotify.com/v1/me/player/currently-playing", access(prefs, true));
             }
             if (now == null || now.optJSONObject("item") == null || now.optLong("progress_ms", -1) < 0) return null;
+            long t1 = android.os.SystemClock.elapsedRealtime();
+            if (t1 - t0 > 3000) return null;   // too slow to trust to the second
             return new Progress(now.optLong("progress_ms"), now.optBoolean("is_playing"),
-                    now.optJSONObject("item").optString("name"));
+                    now.optJSONObject("item").optString("name"), (t0 + t1) / 2);
         } catch (Exception e) {
             return null;
         }

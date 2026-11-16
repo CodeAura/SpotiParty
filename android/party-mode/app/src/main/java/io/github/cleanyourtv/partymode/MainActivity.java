@@ -59,6 +59,25 @@ public class MainActivity extends Activity {
     private PhoneLink link;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
+    /** Spotify's position, on a thread of its own so a slow cover or lyrics lookup never delays it. */
+    private final ExecutorService syncWorker = Executors.newSingleThreadExecutor();
+    private volatile boolean syncLoading;
+    /** Every 4 s while open and linked: where Spotify says the song is, so the lyrics stay in time. */
+    private final Runnable progressPoll = new Runnable() {
+        @Override
+        public void run() {
+            if (!started) return;
+            if (!syncLoading && SpotifyApi.linked(prefs)) {
+                syncLoading = true;
+                syncWorker.execute(() -> {
+                    SpotifyApi.Progress p = SpotifyApi.progress(prefs);
+                    if (p != null) apiProgress = p;
+                    syncLoading = false;
+                });
+            }
+            handler.postDelayed(this, 4000);
+        }
+    };
 
     private ImageView backdrop;
     private ImageView cover;
@@ -138,7 +157,6 @@ public class MainActivity extends Activity {
         queueLoading = true;
         worker.execute(() -> {
             SpotifyApi.Next next = SpotifyApi.next(prefs);
-            apiProgress = SpotifyApi.progress(prefs);   // where the song is, for songs that play on another device
             handler.post(() -> {
                 queueLoading = false;
                 if (next.title != null && !next.title.isEmpty()) {
@@ -530,6 +548,7 @@ public class MainActivity extends Activity {
         }
         handler.post(tick);
         handler.post(queuePoll);
+        handler.post(progressPoll);
     }
 
     @Override
@@ -537,6 +556,7 @@ public class MainActivity extends Activity {
         started = false;
         handler.removeCallbacks(tick);
         handler.removeCallbacks(queuePoll);
+        handler.removeCallbacks(progressPoll);
         if (sessions != null) sessions.removeOnActiveSessionsChangedListener(sessionsChanged);
         sessions = null;
         setController(null);
@@ -551,6 +571,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         worker.shutdownNow();
+        syncWorker.shutdownNow();
         super.onDestroy();
     }
 
@@ -691,6 +712,8 @@ public class MainActivity extends Activity {
         trackKey = key;
         songSeenAt = SystemClock.elapsedRealtime() - Math.max(0, Math.min(s.getPosition(), 15_000));
         apiProgress = null;
+        handler.removeCallbacks(progressPoll);
+        handler.postDelayed(progressPoll, 800);
         times = new long[0];
         lines = new String[0];
         synced = false;
@@ -810,6 +833,12 @@ public class MainActivity extends Activity {
         });
     }
 
+    /** Spotify's title and the TV's can differ a little ("Song - Radio Edit", "Song (feat. X)"). */
+    private static boolean sameSong(String a, String b) {
+        String x = a.toLowerCase(Locale.ROOT).trim(), y = b.toLowerCase(Locale.ROOT).trim();
+        return !x.isEmpty() && !y.isEmpty() && (x.equals(y) || x.startsWith(y) || y.startsWith(x));
+    }
+
     private void showPosition() {
         MediaController c = controller;
         PlaybackState s = c == null ? null : c.getPlaybackState();
@@ -821,20 +850,17 @@ public class MainActivity extends Activity {
             position += (long) ((now - s.getLastPositionUpdateTime()) * s.getPlaybackSpeed());
         }
         long duration = m.getLong(MediaMetadata.METADATA_KEY_DURATION);
-        // A song that plays on another device (Spotify Connect) leaves the TV's session with a frozen position:
-        // counted on from long ago it lands far past the end, and the lyrics would stay on the last, empty line.
-        boolean impossible = position < 0 || (duration > 0 && position > duration + 3000)
-                || s.getPosition() == PlaybackState.PLAYBACK_POSITION_UNKNOWN;
-        if (impossible) {
-            SpotifyApi.Progress p = apiProgress;
-            String shown = title.getText().toString();
-            if (p != null && now - p.at < 30_000 && p.title.equalsIgnoreCase(shown)) {
-                position = p.ms + (p.playing ? now - p.at : 0);   // from Spotify's servers
-            } else {
-                position = now - songSeenAt;   // our own clock since the song came up
-            }
-            if (duration > 0) position = Math.min(position, duration);
+        // Spotify's own position comes first: the TV's session is often wrong for a song that plays on another
+        // device (Spotify Connect). It keeps a frozen position that, counted on, drifts away from the song or
+        // lands far past its end (the lyrics then stay on the last, empty line).
+        SpotifyApi.Progress p = apiProgress;
+        if (p != null && now - p.at < 15_000 && sameSong(p.title, title.getText().toString())) {
+            position = p.ms + (p.playing ? now - p.at : 0);
+        } else if (position < 0 || (duration > 0 && position > duration + 3000)
+                || s.getPosition() == PlaybackState.PLAYBACK_POSITION_UNKNOWN) {
+            position = now - songSeenAt;   // no Spotify link: our own clock since the song came up
         }
+        if (duration > 0) position = Math.min(position, duration);
         if (duration > 0) progress.setProgress((int) Math.min(1000, position * 1000 / duration));
         if (!synced) return;
         long ahead = position + 250;
