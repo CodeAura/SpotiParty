@@ -1,21 +1,86 @@
-MIT License
+SpotiParty - Licentievoorwaarden
 
-Copyright (c) 2026 CodeAura
+Copyright (c) 2026 CodeAura. Alle rechten voorbehouden.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Deze voorwaarden gelden voor SpotiParty: de broncode, de apps (desktop, Android TV, Raspberry Pi,
+Home Assistant-kaart), de SpotiParty Hub, de website en de documentatie ("de Software"). Door de
+Software te installeren of te gebruiken ga je akkoord met deze voorwaarden.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. Eigendom
+   De Software is eigendom van CodeAura. Je krijgt een gebruiksrecht (licentie); de Software wordt
+   niet aan je verkocht. Alle rechten die hieronder niet uitdrukkelijk worden gegeven, blijven bij
+   CodeAura.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+2. Gratis versie
+   Je mag de gratis versie van SpotiParty installeren en gebruiken op je eigen apparaten, voor
+   persoonlijk en niet-commercieel gebruik.
+
+3. SpotiParty Pro
+   a. De Pro-functies mag je alleen gebruiken met een geldige licentiecode die je bij CodeAura hebt
+      gekocht.
+   b. Een licentiecode is voor de koper en zijn of haar huishouden, op apparaten in dat huishouden.
+   c. Een licentiecode is persoonlijk. Je mag hem niet openbaar maken, delen met anderen, verkopen
+      of verhuren. Codes uit een bundel (zoals "Vrienden") mag je elk aan een andere persoon geven;
+      voor die persoon geldt dan hetzelfde.
+
+4. Wat niet mag
+   Zonder voorafgaande schriftelijke toestemming van CodeAura mag je niet:
+   a. de Software, of delen ervan, kopieren, verspreiden, publiceren, verkopen, verhuren of in
+      sublicentie geven, behalve een kopie voor eigen gebruik volgens artikel 2 en 3;
+   b. de Software wijzigen, vertalen, decompileren of reverse engineeren, of er afgeleide werken
+      van maken, behalve voor zover de wet dat dwingend toestaat;
+   c. de licentiecontrole omzeilen, uitschakelen of verwijderen, of zelf licentiecodes maken;
+   d. vermeldingen van auteursrecht, merken of deze voorwaarden verwijderen of wijzigen;
+   e. de Software commercieel gebruiken, zoals in horeca, op betaalde evenementen of als dienst
+      voor anderen.
+
+5. Beeindiging
+   Als je deze voorwaarden niet naleeft, vervalt je licentie direct en moet je de Software
+   verwijderen. Een betaalde licentiecode kan dan ongeldig worden verklaard.
+
+6. Geen garantie
+   De Software wordt geleverd zoals hij is ("as is"), zonder garantie van welke aard ook, voor
+   zover de wet dat toestaat. CodeAura garandeert niet dat de Software foutloos of zonder
+   onderbreking werkt, of blijft werken met diensten van anderen (zoals Spotify, Home Assistant
+   of lrclib.net).
+
+7. Aansprakelijkheid
+   Voor zover de wet dat toestaat, is CodeAura niet aansprakelijk voor indirecte schade of
+   gevolgschade, en is de aansprakelijkheid in totaal beperkt tot het bedrag dat je voor de
+   Software hebt betaald. Je wettelijke rechten als consument (zoals het herroepingsrecht)
+   blijven onverlet.
+
+8. Spotify
+   SpotiParty heeft niets te maken met Spotify AB en is niet door Spotify goedgekeurd. Spotify en
+   Jam zijn handelsmerken van Spotify AB.
+
+9. Toepasselijk recht
+   Op deze voorwaarden is Nederlands recht van toepassing.
+
+10. Onderdelen van derden
+   Sommige onderdelen vallen onder hun eigen licentie, die voor die onderdelen voorgaat:
+
+   - De QR-codegenerator (web/qr.js en android/party-mode/.../Qr.java) is gebaseerd op de
+     QR Code generator library van Project Nayuki, uitgegeven onder de MIT-licentie:
+
+       Copyright (c) Project Nayuki. (MIT License)
+       https://www.nayuki.io/page/qr-code-generator-library
+
+       Permission is hereby granted, free of charge, to any person obtaining a copy of this
+       software and associated documentation files (the "Software"), to deal in the Software
+       without restriction, including without limitation the rights to use, copy, modify, merge,
+       publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons
+       to whom the Software is furnished to do so, subject to the following conditions:
+       - The above copyright notice and this permission notice shall be included in all copies or
+         substantial portions of the Software.
+       - The Software is provided "as is", without warranty of any kind, express or implied,
+         including but not limited to the warranties of merchantability, fitness for a particular
+         purpose and noninfringement. In no event shall the authors or copyright holders be liable
+         for any claim, damages or other liability, whether in an action of contract, tort or
+         otherwise, arising from, out of or in connection with the Software or the use or other
+         dealings in the Software.
+
+   - De Gradle-wrapper (gradlew, gradlew.bat en gradle/wrapper/) valt onder de Apache License 2.0;
+     zie de kop van die bestanden.
+
+Vragen of toestemming nodig? Neem contact op via https://spotiparty.netlify.app.

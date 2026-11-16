@@ -384,4 +384,4 @@ SpotiParty daar als kaart, en leveren de songteksten ook *Now playing* in de lau
 
 SpotiParty heeft niets met Spotify AB te maken. Spotify is een handelsmerk van Spotify AB.
 
-Uitgegeven onder de [MIT-licentie](LICENSE).
+© 2026 CodeAura. Alle rechten voorbehouden; zie de [licentievoorwaarden](LICENSE). Het feestscherm is gratis voor persoonlijk gebruik, de Pro-functies vragen een licentiecode.
