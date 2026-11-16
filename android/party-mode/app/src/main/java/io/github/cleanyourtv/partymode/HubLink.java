@@ -37,7 +37,12 @@ final class HubLink {
     static final class State {
         long offset;            // hub clock minus the TV's clock, ms
         String name = "";
+        boolean pro;            // notices, break, Wi-Fi and "identify" (always on while licences are switched off)
+        String jam = "";        // the Jam link set in the dashboard, for every screen; "" = none
+        final java.util.List<String[]> cmds = new java.util.ArrayList<>();   // {id, cmd} to run once
         String noticeId, noticeText, noticeStyle;
+        long noticeUntil;       // hub clock, ms; 0 = until removed
+        int noticeSecs;
         String breakTitle;
         double breakMinutes;
         long breakUntil;        // hub clock, ms; 0 = no break
@@ -52,6 +57,8 @@ final class HubLink {
     private final Handler main = new Handler(Looper.getMainLooper());
     private volatile boolean running;
     private volatile String song = "";
+    private volatile boolean canControl, playing;
+    private volatile String result = "";
     private Thread thread;
     private volatile String found;   // "host:port" from discovery
 
@@ -61,6 +68,15 @@ final class HubLink {
     }
 
     void setSong(String s) { song = s == null ? "" : s; }
+
+    /** What the hub shows about this TV: can it control the music, is it playing. */
+    void setPlayer(boolean canControl, boolean playing) {
+        this.canControl = canControl;
+        this.playing = playing;
+    }
+
+    /** How the last command went ("id:ok" or "id:err:why"), sent with the next poll. */
+    void setResult(String r) { result = r == null ? "" : r; }
 
     String screenId() {
         String id = prefs.getString("screen_id", "");
@@ -117,7 +133,7 @@ final class HubLink {
                 try {
                     State s = poll(target);
                     fails = 0;
-                    post(s, s == null ? "Verbonden met de Hub (zonder Pro-licentie)." : "Verbonden met de Hub als “" + s.name + "”.");
+                    post(s, "Verbonden met de Hub als “" + s.name + "”.");
                 } catch (Exception e) {
                     if (++fails >= 3) {
                         fails = 0;
@@ -162,7 +178,8 @@ final class HubLink {
         String base = target.startsWith("http") ? target : "http://" + target;
         if (!base.substring(base.indexOf("//") + 2).contains(":")) base += ":8770";
         String url = base.replaceAll("/+$", "") + "/api/screen?id=" + enc(screenId()) + "&name=" + enc(screenName())
-                + "&kind=tv&v=tv-1&song=" + enc(song);
+                + "&kind=tv&v=tv-2&song=" + enc(song) + "&ctl=" + (canControl ? 1 : 0) + "&playing=" + (playing ? 1 : 0)
+                + "&res=" + enc(result);
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setConnectTimeout(3000);
         c.setReadTimeout(3000);
@@ -171,15 +188,23 @@ final class HubLink {
             if (c.getResponseCode() != 200) throw new java.io.IOException("HTTP " + c.getResponseCode());
             long sent = System.currentTimeMillis();
             JSONObject o = new JSONObject(read(c.getInputStream()));
-            if (!o.optBoolean("pro")) return null;
             State s = new State();
             s.offset = o.optLong("now", sent) - sent;
             s.name = o.optString("name");
+            s.pro = o.optBoolean("pro");
+            s.jam = o.optString("jam", "");
+            org.json.JSONArray cmds = o.optJSONArray("cmds");
+            for (int i = 0; cmds != null && i < cmds.length(); i++) {
+                JSONObject x = cmds.optJSONObject(i);
+                if (x != null) s.cmds.add(new String[]{x.optString("id"), x.optString("cmd")});
+            }
             JSONObject n = o.optJSONObject("notice");
             if (n != null) {
                 s.noticeId = n.optString("id");
                 s.noticeText = n.optString("text");
                 s.noticeStyle = n.optString("style", "info");
+                s.noticeUntil = n.optLong("until");
+                s.noticeSecs = n.optInt("secs");
             }
             JSONObject b = o.optJSONObject("brk");
             if (b != null) {

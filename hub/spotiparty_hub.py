@@ -37,6 +37,23 @@ HERE = pathlib.Path(__file__).resolve().parent
 ONLINE_S = 8            # a screen that polled in the last 8 s is online
 AFTER_BREAK_S = 15      # "we gaan weer verder" stays this long after a break
 SCREEN_KINDS = {"web", "tv", "pi", "ha"}
+# Licences are switched off for now: every hub has every feature. Set to True to require a Pro key again
+# (sp_license.py, the dashboard's licence card and the screens' "pro" flag still work as before then).
+LICENSING = False
+MEDIA_CMDS = {"play", "pause", "next", "previous", "volume_up", "volume_down"}
+CMD_TTL_S = 20          # a command a screen hasn't picked up in 20 s is dropped (the moment has passed)
+
+
+def is_spotify_link(s: str) -> bool:
+    """Only a Spotify address goes on the screens, so the Jam code can't send guests anywhere else."""
+    try:
+        u = urllib.parse.urlsplit(s)
+    except ValueError:
+        return False
+    h = (u.hostname or "").lower()
+    return (u.scheme == "https" and len(s) <= 300
+            and (h in ("spotify.link", "open.spotify.com", "spotify.app.link")
+                 or h.endswith(".spotify.link") or h.endswith(".spotify.com")))
 
 
 def default_data_dir() -> pathlib.Path:
@@ -87,6 +104,7 @@ class Hub:
         self.notice = None      # {id, text, style, until (ms or 0 = until removed), targets}
         self.brk = None         # {id, title, minutes, until (ms), targets}
         self.ident = {}         # screen id -> until (ms)
+        self.queue = {}         # screen id -> [{id, cmd, at}]: media commands waiting for that screen's next poll
         self.fails = {}         # ip -> [count, blocked_until]
         self.httpd = None
         self.udp = None
@@ -100,6 +118,7 @@ class Hub:
         cfg.setdefault("pin", f"{secrets.randbelow(10 ** 6):06d}")
         cfg.setdefault("name", platform.node().split(".")[0] or "SpotiParty")
         cfg.setdefault("license", "")
+        cfg.setdefault("jam", "")
         cfg.setdefault("wifi", {"ssid": "", "password": "", "security": "WPA", "hidden": False, "show": False})
         cfg.setdefault("names", {})
         self.file.parent.mkdir(parents=True, exist_ok=True)
@@ -115,6 +134,10 @@ class Hub:
     def licence(self):
         return sp_license.check(self.cfg.get("license", ""))
 
+    @property
+    def unlocked(self):
+        return not LICENSING or bool(self.licence)
+
     @staticmethod
     def now_ms():
         return int(time.time() * 1000)
@@ -123,9 +146,28 @@ class Hub:
         t = self.now_ms()
         if self.notice and self.notice["until"] and self.notice["until"] < t:
             self.notice = None
+        if self.brk and not self.brk.get("resumed") and self.brk["until"] < t:
+            # The break is over: the music goes on where it was paused.
+            self.brk["resumed"] = True
+            if self.brk.get("music"):
+                self._enqueue(self.brk["paused"], "play")
         if self.brk and self.brk["until"] + AFTER_BREAK_S * 1000 < t:
             self.brk = None
         self.ident = {k: v for k, v in self.ident.items() if v > t}
+        old = time.time() - CMD_TTL_S
+        self.queue = {k: [c for c in v if c["at"] > old] for k, v in self.queue.items() if any(c["at"] > old for c in v)}
+
+    def _resolve(self, targets, need_ctl=True):
+        """The screens a command goes to: the chosen ones, or every online screen that can control its music."""
+        t = time.time()
+        ids = targets or [k for k, s in self.screens.items() if t - s["seen"] < ONLINE_S]
+        return [k for k in ids if k in self.screens and (self.screens[k].get("ctl") or not need_ctl)]
+
+    def _enqueue(self, sids, cmd):
+        for sid in sids:
+            q = self.queue.setdefault(sid, [])
+            q.append({"id": secrets.token_hex(4), "cmd": cmd, "at": time.time()})
+            del q[:-10]
 
     @staticmethod
     def _for(item, sid):
@@ -140,23 +182,29 @@ class Hub:
         with self.lock:
             self._expire()
             first = sid not in self.screens
+            prev = self.screens.get(sid, {})
+            # What the screen reports back: can it control its music, is it playing, how did the last command go.
+            res = q.get("res", "")[:160]
             self.screens[sid] = {"name": q.get("name", "")[:60] or kind.upper(), "kind": kind, "ip": ip,
-                                 "seen": time.time(), "song": q.get("song", "")[:120], "v": q.get("v", "")[:20]}
+                                 "seen": time.time(), "song": q.get("song", "")[:120], "v": q.get("v", "")[:20],
+                                 "ctl": q.get("ctl") == "1", "playing": q.get("playing") == "1",
+                                 "res": res or prev.get("res", "")}
             if first and len(self.screens) > 200:   # forget the longest-gone screen
                 del self.screens[min(self.screens, key=lambda k: self.screens[k]["seen"])]
             lic = self.licence
-            out = {"now": self.now_ms(), "hub": self.cfg["name"], "pro": bool(lic),
-                   "name": self.cfg["names"].get(sid) or self.screens[sid]["name"]}
-            if lic:
+            out = {"now": self.now_ms(), "hub": self.cfg["name"], "pro": self.unlocked,
+                   "name": self.cfg["names"].get(sid) or self.screens[sid]["name"],
+                   "jam": self.cfg.get("jam", ""), "cmds": [{"id": c["id"], "cmd": c["cmd"]} for c in self.queue.pop(sid, [])]}
+            if self.unlocked:
                 w = self.cfg["wifi"]
-                out.update(to=lic.get("to", ""),
+                out.update(to=(lic or {}).get("to", ""),
                            notice=self._for(self.notice, sid), brk=self._for(self.brk, sid),
                            wifi={"ssid": w["ssid"], "password": "" if w["security"] == "nopass" else w["password"],
                                  "qr": wifi_qr(w)} if w.get("show") and w.get("ssid") else None,
                            ident=sid in self.ident)
                 for k in ("notice", "brk"):
                     if out[k]:
-                        out[k] = {x: y for x, y in out[k].items() if x != "targets"}
+                        out[k] = {x: y for x, y in out[k].items() if x not in ("targets", "paused", "resumed", "music")}
             return 200, out
 
     # ---------- admin ----------
@@ -165,10 +213,13 @@ class Hub:
             self._expire()
             t = time.time()
             screens = [{"id": k, "name": self.cfg["names"].get(k) or s["name"], "kind": s["kind"], "ip": s["ip"],
-                        "online": t - s["seen"] < ONLINE_S, "ago": int(t - s["seen"]), "song": s["song"]}
+                        "online": t - s["seen"] < ONLINE_S, "ago": int(t - s["seen"]), "song": s["song"],
+                        "ctl": s.get("ctl", False), "playing": s.get("playing", False), "res": s.get("res", "")}
                        for k, s in sorted(self.screens.items(), key=lambda kv: kv[1]["name"].lower())]
-            return {"now": self.now_ms(), "name": self.cfg["name"], "licence": self.licence,
-                    "notice": self.notice, "brk": self.brk, "wifi": self.cfg["wifi"], "screens": screens,
+            brk = {k: v for k, v in self.brk.items() if k != "paused"} if self.brk else None
+            return {"now": self.now_ms(), "name": self.cfg["name"], "licensing": LICENSING,
+                    "licence": self.licence, "unlocked": self.unlocked, "jam": self.cfg.get("jam", ""),
+                    "notice": self.notice, "brk": brk, "wifi": self.cfg["wifi"], "screens": screens,
                     "urls": [f"http://{a}:{self.port}/" for a in lan_addresses()]}
 
     def admin(self, action, body):
@@ -204,7 +255,25 @@ class Hub:
                     self.cfg["names"].pop(sid, None)
                 self._save()
                 return 200, {}
-            if not self.licence:
+            if action == "jam":
+                jam = str(b.get("jam", "")).strip()
+                if jam and not is_spotify_link(jam):
+                    return 400, {"error": "Dat is geen Spotify-link. Kopieer de uitnodiging van je Jam (https://spotify.link/…)."}
+                self.cfg["jam"] = jam
+                self._save()
+                return 200, {"jam": jam}
+            if action == "media":
+                cmd = str(b.get("cmd", ""))
+                if cmd not in MEDIA_CMDS:
+                    return 400, {"error": "Onbekende opdracht."}
+                sids = self._resolve(targets)
+                if not sids:
+                    return 409, {"error": "Geen scherm dat de muziek kan bedienen. Open SpotiParty op de tv, of koppel Spotify of Home Assistant op het scherm."}
+                for sid in sids:
+                    self.screens[sid]["res"] = ""
+                self._enqueue(sids, cmd)
+                return 200, {"sent": len(sids)}
+            if LICENSING and not self.licence:
                 return 402, {"error": "Hiervoor heb je SpotiParty Pro nodig. Vul je licentiecode in."}
             if action == "notice":
                 text = str(b.get("text", "")).strip()[:280]
@@ -212,7 +281,7 @@ class Hub:
                     return 400, {"error": "Typ eerst een bericht."}
                 secs = max(0, min(int(b.get("seconds", 30) or 0), 24 * 3600))
                 style = b.get("style") if b.get("style") in ("info", "party", "alert") else "info"
-                self.notice = {"id": secrets.token_hex(4), "text": text, "style": style,
+                self.notice = {"id": secrets.token_hex(4), "text": text, "style": style, "secs": secs,
                                "until": self.now_ms() + secs * 1000 if secs else 0, "targets": targets}
                 return 200, {}
             if action == "notice-clear":
@@ -222,14 +291,26 @@ class Hub:
                 mins = float(b.get("minutes", 0) or 0)
                 if not 0 < mins <= 240:
                     return 400, {"error": "Kies 1 tot 240 minuten."}
+                if self.brk and self.brk.get("music") and not self.brk.get("resumed"):
+                    self._enqueue(self.brk["paused"], "play")   # a new break replaces a running one
+                music = bool(b.get("music", True))
+                paused = self._resolve(targets) if music else []
                 self.brk = {"id": secrets.token_hex(4), "title": str(b.get("title", "")).strip()[:60] or "Pauze",
-                            "minutes": mins, "until": self.now_ms() + int(mins * 60000), "targets": targets}
-                return 200, {}
+                            "minutes": mins, "until": self.now_ms() + int(mins * 60000), "targets": targets,
+                            "music": music, "paused": paused, "resumed": False}
+                self._enqueue(paused, "pause")
+                return 200, {"paused": len(paused)}
             if action == "break-extend":
                 if self.brk:
                     self.brk["until"] = max(self.brk["until"], self.now_ms()) + int(float(b.get("minutes", 5)) * 60000)
+                    if self.brk.get("resumed"):   # extended after it ran out: pause the music again
+                        self.brk["resumed"] = False
+                        if self.brk.get("music"):
+                            self._enqueue(self.brk["paused"], "pause")
                 return 200, {}
             if action == "break-clear":
+                if self.brk and self.brk.get("music") and not self.brk.get("resumed"):
+                    self._enqueue(self.brk["paused"], "play")
                 self.brk = None
                 return 200, {}
             if action == "wifi":

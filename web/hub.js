@@ -4,8 +4,9 @@
 "use strict";
 const Hub = (() => {
   const POLL_MS = 2000;
-  const VERSION = "web-1";
-  let timer = 0, offset = 0, last = null, fails = 0, status = "";
+  const VERSION = "web-2";
+  let timer = 0, offset = 0, last = null, fails = 0, status = "", res = "";
+  const done = new Set();   // command ids already run, so a repeated answer never pauses or skips twice
 
   function screenId() {
     let id = store.get("screen_id");
@@ -39,7 +40,8 @@ const Hub = (() => {
       return;
     }
     const q = new URLSearchParams({ id: screenId(), name: name(), kind: kind(), v: VERSION,
-      song: now ? `${now.title} – ${now.artist}` : "" });
+      song: now ? `${now.title} – ${now.artist}` : "", ctl: Media.can() ? "1" : "0",
+      playing: now && now.playing ? "1" : "0", res });
     try {
       const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 4000);
       const r = await fetch(`${b}/api/screen?${q}`, { cache: "no-store", signal: ctl.signal });
@@ -49,20 +51,42 @@ const Hub = (() => {
       fails = 0;
       status = d.pro ? `Verbonden met ${d.hub} als “${d.name}”.` : `Verbonden met ${d.hub}. Activeer Pro in het dashboard voor meldingen en de pauzeknop.`;
       apply(d);
+      runCommands(d.cmds || []);
     } catch {
       if (++fails >= 3) { apply(null); status = `Geen Hub gevonden op ${b}.`; }
     }
   }
 
+  /** Play, pause, skip or the volume, sent from the dashboard (or by the break). The result goes back on the next poll. */
+  async function runCommands(cmds) {
+    for (const c of cmds) {
+      if (!c || done.has(c.id)) continue;
+      done.add(c.id);
+      const why = Media.can() ? await Media.run(c.cmd) : "dit scherm kan de muziek niet bedienen.";
+      res = `${c.id}:${why ? "err:" + why : "ok"}`;
+    }
+    if (done.size > 200) done.clear();
+  }
+
+  const NOTICE = { info: ["📢", "Mededeling"], party: ["🎉", "Feest!"], alert: ["⚠️", "Belangrijk"] };
+
   function apply(d) {
+    // The Jam link set in the dashboard counts on every screen, Pro or not.
+    const jam = d && d.jam && isSpotifyLink(d.jam) ? d.jam : "";
+    if (jam !== hubJam) { hubJam = jam; showJam(); }
     last = d && d.pro ? d : null;
     const n = last && last.notice;
     const box = $("notice");
     if (!n) box.hidden = true;
     else if (box.dataset.id !== n.id || box.hidden) {
       box.dataset.id = n.id;
-      box.className = n.style || "info";
-      box.textContent = n.text;
+      const style = NOTICE[n.style] ? n.style : "info";
+      box.className = style;
+      box.querySelector(".icon").textContent = NOTICE[style][0];
+      box.querySelector(".kind").textContent = NOTICE[style][1];
+      const text = box.querySelector(".text");
+      text.textContent = n.text;
+      text.classList.toggle("long", n.text.length > 70);
       box.hidden = false;
     }
     const w = last && last.wifi, wc = $("wifi");
@@ -90,6 +114,11 @@ const Hub = (() => {
 
   // Every half second: the countdown, from the hub's clock (so all screens agree).
   function tick() {
+    // The notice's time running out, as a bar under the text (none for "until I remove it").
+    const n = last && last.notice, ring = $("notice").querySelector(".ring");
+    ring.hidden = !(n && n.until && n.secs);
+    if (!ring.hidden) ring.firstElementChild.style.width =
+      `${Math.max(0, Math.min(100, (n.until - (Date.now() + offset)) / (n.secs * 1000) * 100))}%`;
     const b = last && last.brk, el = $("pause");
     if (!b) { el.hidden = true; return; }
     const left = b.until - (Date.now() + offset), total = b.minutes * 60000;

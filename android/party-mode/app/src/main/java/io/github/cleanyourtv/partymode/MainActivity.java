@@ -79,8 +79,18 @@ public class MainActivity extends Activity {
     private HubLink hub;
     private HubLink.State hubState;
     private String hubStatus = "";
-    private TextView notice;
+    /** A notice fills the screen like the break: a big card over the dimmed party. */
+    private FrameLayout notice;
+    private LinearLayout noticeCard;
+    private TextView noticeIcon;
+    private TextView noticeKind;
+    private TextView noticeText;
+    private ProgressBar noticeBar;
     private String shownNotice = "";
+    /** The Jam link from the dashboard (for every screen); "" = use the one set from the phone. */
+    private String hubJam = "";
+    /** Command ids already run, so a repeated answer never pauses or skips twice. */
+    private final java.util.Set<String> doneCmds = new java.util.HashSet<>();
     private LinearLayout pauseView;
     private TextView pauseTitle;
     private TextView pauseClock;
@@ -364,20 +374,41 @@ public class MainActivity extends Activity {
         pauseView.setVisibility(View.GONE);
         root.addView(pauseView, match());
 
-        // A notice from the Hub: a banner at the top, above the break too.
-        notice = label(34, 0xFFFFFFFF, Typeface.BOLD);
-        notice.setGravity(Gravity.CENTER);
-        notice.setMaxLines(4);
-        notice.setEllipsize(TextUtils.TruncateAt.END);
-        int np = Math.round(24 * dp);
-        notice.setPadding(np * 2, np, np * 2, np);
-        notice.setElevation(30 * dp);
+        // A notice from the Hub: full screen like the break (and above it): icon, kind, the text big, time left.
+        notice = new FrameLayout(this);
+        notice.setBackgroundColor(0xD9000000);
+        notice.setClickable(true);
         notice.setVisibility(View.GONE);
-        FrameLayout.LayoutParams nl = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
-        nl.topMargin = Math.round(32 * dp);
-        nl.leftMargin = nl.rightMargin = Math.round(80 * dp);
-        root.addView(notice, nl);
+        noticeCard = new LinearLayout(this);
+        noticeCard.setOrientation(LinearLayout.VERTICAL);
+        noticeCard.setGravity(Gravity.CENTER_HORIZONTAL);
+        int np = Math.round(40 * dp);
+        noticeCard.setPadding(np * 2, np, np * 2, np);
+        noticeCard.setElevation(30 * dp);
+        noticeIcon = label(80, 0xFFFFFFFF, Typeface.NORMAL);
+        noticeIcon.setShadowLayer(0, 0, 0, 0);
+        noticeIcon.setGravity(Gravity.CENTER);
+        noticeKind = label(22, 0xFF1ED760, Typeface.BOLD);
+        noticeKind.setGravity(Gravity.CENTER);
+        noticeKind.setLetterSpacing(0.12f);
+        noticeKind.setPadding(0, Math.round(10 * dp), 0, Math.round(8 * dp));
+        noticeText = label(56, 0xFFFFFFFF, Typeface.BOLD);
+        noticeText.setGravity(Gravity.CENTER);
+        noticeText.setMaxLines(5);
+        noticeText.setEllipsize(TextUtils.TruncateAt.END);
+        noticeBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        noticeBar.setMax(1000);
+        noticeCard.addView(noticeIcon);
+        noticeCard.addView(noticeKind);
+        noticeCard.addView(noticeText);
+        LinearLayout.LayoutParams nbl = new LinearLayout.LayoutParams(Math.round(520 * dp), Math.round(10 * dp));
+        nbl.topMargin = Math.round(26 * dp);
+        noticeCard.addView(noticeBar, nbl);
+        FrameLayout.LayoutParams ncl = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
+        ncl.leftMargin = ncl.rightMargin = Math.round(110 * dp);
+        notice.addView(noticeCard, ncl);
+        root.addView(notice, match());
 
         // "Aanwijzen" in the dashboard: this screen's name, big, for a few seconds.
         identView = label(90, 0xFF0B0B10, Typeface.BOLD);
@@ -479,6 +510,7 @@ public class MainActivity extends Activity {
         link.start();
         showQr();
         hub = new HubLink(prefs, this::onHub);
+        reportPlayer();
         hub.start();
         try {
             sessions = getSystemService(MediaSessionManager.class);
@@ -533,8 +565,33 @@ public class MainActivity extends Activity {
     }
 
     /** The Jam's code once a link is set; until then (or with Menu) the code to set it from the phone. */
+    /**
+     * A media command from the Hub, on whatever plays on the TV (Spotify, or any app with a media session).
+     * Returns null when done, or why not, in words for the dashboard.
+     */
+    private String runMedia(String cmd) {
+        if ("volume_up".equals(cmd) || "volume_down".equals(cmd)) {
+            android.media.AudioManager audio = getSystemService(android.media.AudioManager.class);
+            if (audio == null) return "het volume is niet te regelen.";
+            audio.adjustStreamVolume(android.media.AudioManager.STREAM_MUSIC, "volume_up".equals(cmd)
+                    ? android.media.AudioManager.ADJUST_RAISE : android.media.AudioManager.ADJUST_LOWER,
+                    android.media.AudioManager.FLAG_SHOW_UI);
+            return null;
+        }
+        MediaController c = controller;
+        if (c == null) return sessions == null ? "geen meldingstoegang op de tv." : "er speelt niets op de tv.";
+        MediaController.TransportControls t = c.getTransportControls();
+        switch (cmd) {
+            case "play": t.play(); return null;
+            case "pause": t.pause(); return null;
+            case "next": t.skipToNext(); return null;
+            case "previous": t.skipToPrevious(); return null;
+            default: return "onbekende opdracht.";
+        }
+    }
+
     private void showQr() {
-        String jam = prefs.getString("jam", "");
+        String jam = !hubJam.isEmpty() ? hubJam : prefs.getString("jam", "");
         String setup = link == null ? null : link.address(this);
         if (!jam.isEmpty() && !showingSetup) {
             qr.setText(jam);
@@ -575,7 +632,15 @@ public class MainActivity extends Activity {
         update();
     }
 
+    /** Tells the Hub whether this TV can control its music and whether it plays (for the dashboard's buttons). */
+    private void reportPlayer() {
+        MediaController c = controller;
+        PlaybackState s = c == null ? null : c.getPlaybackState();
+        if (hub != null) hub.setPlayer(c != null, s != null && s.getState() == PlaybackState.STATE_PLAYING);
+    }
+
     private void update() {
+        reportPlayer();
         MediaController c = controller;
         MediaMetadata m = c == null ? null : c.getMetadata();
         PlaybackState s = c == null ? null : c.getPlaybackState();
@@ -961,32 +1026,65 @@ public class MainActivity extends Activity {
         hubStatus = status == null ? "" : status;
         float dp = getResources().getDisplayMetrics().density;
 
+        // The Jam link from the dashboard replaces the one set from the phone, on every screen at once.
+        String jam = s == null || !isSpotifyLink(s.jam) ? "" : s.jam;
+        if (!jam.equals(hubJam)) {
+            hubJam = jam;
+            showQr();
+        }
+
+        // Play, pause, skip, volume: from the dashboard's buttons or the break.
+        if (s != null) {
+            for (String[] c : s.cmds) {
+                if (!doneCmds.add(c[0])) continue;
+                String why = runMedia(c[1]);
+                if (hub != null) hub.setResult(c[0] + (why == null ? ":ok" : ":err:" + why));
+            }
+            if (doneCmds.size() > 200) doneCmds.clear();
+        }
+
         if (s == null || s.noticeId == null) {
             notice.setVisibility(View.GONE);
             shownNotice = "";
         } else if (!s.noticeId.equals(shownNotice)) {
             shownNotice = s.noticeId;
             GradientDrawable bg = new GradientDrawable();
-            bg.setCornerRadius(28 * dp);
-            int text = 0xFFFFFFFF;
+            bg.setCornerRadius(40 * dp);
+            int text = 0xFFFFFFFF, kind = 0xFF1ED760, bar = 0xFF1ED760;
+            String icon = "📢", word = getString(R.string.notice_info);
             if ("party".equals(s.noticeStyle)) {
                 bg.setOrientation(GradientDrawable.Orientation.TL_BR);
                 bg.setColors(new int[]{0xFF1ED760, 0xFFFF4FD8, 0xFFFFB547});
-                text = 0xFF000000;
+                text = kind = bar = 0xFF000000;
+                icon = "🎉";
+                word = getString(R.string.notice_party);
             } else if ("alert".equals(s.noticeStyle)) {
-                bg.setColor(0xF0B3261E);
+                bg.setColor(0xF28E1D17);
+                bg.setStroke(Math.round(4 * dp), 0xFFFFB4AB);
+                kind = bar = 0xFFFFDAD6;
+                icon = "⚠️";
+                word = getString(R.string.notice_alert);
             } else {
-                bg.setColor(0xE6111111);
-                bg.setStroke(Math.round(2 * dp), 0xFF1ED760);
+                bg.setColor(0xF015161D);
+                bg.setStroke(Math.round(4 * dp), 0xFF1ED760);
             }
-            notice.setBackground(bg);
-            notice.setTextColor(text);
-            notice.setShadowLayer(text == 0xFF000000 ? 0 : 8 * dp, 0, 2, 0x99000000);
-            notice.setText(s.noticeText);
+            noticeCard.setBackground(bg);
+            noticeIcon.setText(icon);
+            noticeKind.setText(word.toUpperCase(Locale.ROOT));
+            noticeKind.setTextColor(kind);
+            noticeText.setTextColor(text);
+            noticeText.setShadowLayer(text == 0xFF000000 ? 0 : 8 * dp, 0, 2, 0x99000000);
+            noticeText.setTextSize(TypedValue.COMPLEX_UNIT_SP, s.noticeText.length() > 70 ? 40 : 56);
+            noticeText.setText(s.noticeText);
+            noticeBar.setProgressTintList(android.content.res.ColorStateList.valueOf(bar));
+            noticeBar.setProgressBackgroundTintList(android.content.res.ColorStateList.valueOf(0x33FFFFFF));
             notice.setVisibility(View.VISIBLE);
             notice.setAlpha(0f);
-            notice.setTranslationY(-40 * dp);
-            notice.animate().alpha(1f).translationY(0).setDuration(400).start();
+            noticeCard.setScaleX(0.85f);
+            noticeCard.setScaleY(0.85f);
+            notice.animate().alpha(1f).setDuration(300).start();
+            noticeCard.animate().scaleX(1f).scaleY(1f).setDuration(450)
+                    .setInterpolator(new android.view.animation.OvershootInterpolator(1.4f)).start();
         }
 
         String wifi = s == null || s.wifiQr == null || s.wifiQr.isEmpty() ? "" : s.wifiQr;
@@ -1007,6 +1105,12 @@ public class MainActivity extends Activity {
 
     private void showBreak() {
         HubLink.State s = hubState;
+        // The notice's time running out (no bar for "until I remove it").
+        boolean timed = s != null && s.noticeId != null && s.noticeUntil > 0 && s.noticeSecs > 0;
+        noticeBar.setVisibility(timed ? View.VISIBLE : View.GONE);
+        if (timed) {
+            noticeBar.setProgress((int) Math.max(0, Math.min(1000, (s.noticeUntil - s.hubNow()) / Math.max(1, s.noticeSecs))));
+        }
         if (s == null || s.breakUntil == 0) {
             if (pauseView.getVisibility() != View.GONE) pauseView.setVisibility(View.GONE);
             return;

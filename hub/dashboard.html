@@ -71,12 +71,19 @@
   #login.open { display: flex; }
   #login form { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; width: 100%; max-width: 360px; }
   #login input { font-size: 24px; letter-spacing: .3em; text-align: center; }
+  .player { display: flex; gap: 10px; align-items: center; justify-content: center; margin: 14px 0 6px; }
+  .player button { width: 56px; height: 56px; border-radius: 50%; font-size: 22px; padding: 0; }
+  .player button.big { width: 72px; height: 72px; font-size: 30px; background: var(--accent); color: #000; }
+  .nowplaying { text-align: center; color: #fff; min-height: 1.4em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tag { font-size: 12px; padding: 1px 8px; border-radius: 99px; background: #1ed76022; color: var(--accent); }
+  .screen .err { font-size: 12px; color: var(--err); }
+  #jam-qr { width: 140px; height: 140px; background: #fff; border-radius: 10px; padding: 6px; display: block; }
   .locked section.pro { position: relative; }
   .locked section.pro::after { content: "🔒 SpotiParty Pro"; position: absolute; inset: 0; border-radius: 16px;
     background: #0b0b10cc; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--muted); }
 </style>
 </head>
-<body class="locked">
+<body>
 <header>
   <h1>🎛️ SpotiParty Hub <span id="hubname" style="color:var(--muted);font-weight:400"></span></h1>
   <div class="lic" id="lic"></div>
@@ -86,6 +93,38 @@
   <section class="wide">
     <h2>📺 Schermen <small id="count"></small></h2>
     <div id="screens"><p class="empty">Nog geen schermen. Open SpotiParty op je tv, PC of Raspberry Pi: ze melden zich hier vanzelf.</p></div>
+  </section>
+
+  <section>
+    <h2>🎵 Muziek bedienen</h2>
+    <label for="m-screen">Welk scherm speelt de muziek?</label>
+    <select id="m-screen"></select>
+    <div class="nowplaying" id="m-song"></div>
+    <div class="player">
+      <button data-cmd="volume_down" title="Zachter">🔉</button>
+      <button data-cmd="previous" title="Vorige">⏮</button>
+      <button data-cmd="toggle" class="big" id="m-toggle" title="Afspelen of pauzeren">⏯</button>
+      <button data-cmd="next" title="Volgende">⏭</button>
+      <button data-cmd="volume_up" title="Harder">🔊</button>
+    </div>
+    <div class="msg" id="m-msg"></div>
+    <p>Op de tv bedient SpotiParty de muziek die op de tv speelt. Op de PC en in Home Assistant gaat het via je
+      Spotify-koppeling (Premium nodig) of de Home Assistant-speler.</p>
+  </section>
+
+  <section>
+    <h2>🎶 Spotify Jam</h2>
+    <div class="wifi">
+      <div>
+        <p>Plak hier één keer de link van je Jam: alle schermen tonen dan dezelfde QR-code.</p>
+        <label for="j-link">Jam-link</label>
+        <input id="j-link" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://spotify.link/...">
+        <div class="row"><button class="go" id="j-save">Op alle schermen</button><button id="j-clear">Weghalen</button></div>
+        <div class="msg" id="j-msg"></div>
+      </div>
+      <canvas id="jam-qr" width="280" height="280" title="De Jam-code op de schermen"></canvas>
+    </div>
+    <p>In Spotify: Jam starten, <b>Gasten mogen afspelen bedienen</b> uit, dan <b>Uitnodigen → Link kopiëren</b>.</p>
   </section>
 
   <section class="pro">
@@ -121,6 +160,7 @@
       <label>Of zelf<input id="b-min" type="number" min="1" max="240" value="10" inputmode="numeric"></label>
       <label>Tekst<input id="b-title" maxlength="60" placeholder="Pauze"></label>
     </div>
+    <label class="check"><input type="checkbox" id="b-music" checked> Muziek pauzeren, en na afloop weer aanzetten</label>
     <label>Op welke schermen?</label>
     <div class="targets" id="b-targets"></div>
     <div class="row"><button class="go" id="b-start">Pauze starten</button></div>
@@ -147,7 +187,7 @@
     <p>Gebruik een apart <b>gastennetwerk</b>: iedereen die het scherm ziet, kan dit wachtwoord lezen.</p>
   </section>
 
-  <section>
+  <section id="lic-card" hidden>
     <h2>🔑 Licentie</h2>
     <p id="l-status"></p>
     <label for="l-key">Licentiecode</label>
@@ -249,8 +289,9 @@ for (const id of ["n-targets", "b-targets"]) {
 function render() {
   const s = state;
   $("hubname").textContent = "· " + s.name;
-  document.body.classList.toggle("locked", !s.licence);
-  $("lic").innerHTML = s.licence ? `Pro · <b>${esc(s.licence.to)}</b>` : `Gratis versie`;
+  document.body.classList.toggle("locked", !s.unlocked);
+  $("lic-card").hidden = !s.licensing;
+  $("lic").innerHTML = !s.licensing ? "" : s.licence ? `Pro · <b>${esc(s.licence.to)}</b>` : `Gratis versie`;
   $("l-status").innerHTML = s.licence
     ? `✅ SpotiParty Pro, op naam van <b>${esc(s.licence.to)}</b> (licentie ${esc(s.licence.id)}).`
     : "Meldingen, de pauzeknop en de gasten-wifi horen bij SpotiParty Pro.";
@@ -262,9 +303,11 @@ function render() {
     <div class="screen">
       <div class="top"><span class="dot ${x.online ? "on" : ""}"></span><b title="${esc(x.id)}">${esc(x.name)}</b></div>
       <div class="meta">${KIND[x.kind] || x.kind} · ${esc(x.ip)} · ${x.online ? "online" : `${x.ago < 120 ? x.ago + " s" : Math.round(x.ago / 60) + " min"} geleden`}</div>
-      <div class="song">${x.song ? "🎵 " + esc(x.song) : "Geen muziek"}</div>
+      <div class="song">${x.song ? (x.playing ? "▶️ " : "⏸ ") + esc(x.song) : "Geen muziek"}</div>
+      ${x.ctl ? `<div><span class="tag">🎛️ kan de muziek bedienen</span></div>` : ""}
+      ${resText(x.res) ? `<div class="err">${esc(resText(x.res))}</div>` : ""}
       <div class="row">
-        <button data-act="ident" data-id="${esc(x.id)}" ${s.licence ? "" : "disabled"}>Aanwijzen</button>
+        <button data-act="ident" data-id="${esc(x.id)}" ${s.unlocked ? "" : "disabled"}>Aanwijzen</button>
         <button data-act="rename" data-id="${esc(x.id)}">Naam</button>
         <button data-act="forget" data-id="${esc(x.id)}">Vergeten</button>
       </div>
@@ -279,9 +322,12 @@ function render() {
 
   targetsBox("n-targets");
   targetsBox("b-targets");
+  renderPlayer();
 
   if (!formsFilled) {
     formsFilled = true;
+    $("j-link").value = s.jam || "";
+    paintJam(s.jam);
     const w = s.wifi;
     $("w-ssid").value = w.ssid; $("w-pass").value = w.password; $("w-sec").value = w.security;
     $("w-hidden").checked = w.hidden; $("w-show").checked = w.show;
@@ -290,6 +336,69 @@ function render() {
     paintWifi();
   }
 }
+
+// "id:ok" or "id:err:message", as the screen reported its last media command.
+function resText(res) {
+  const m = /^[^:]*:err:(.*)$/.exec(res || "");
+  return m ? "Bediening: " + m[1] : "";
+}
+
+function renderPlayer() {
+  const sel = $("m-screen"), ctl = state.screens.filter(x => x.ctl && x.online);
+  const keep = sel.value;
+  const opts = ctl.map(x => `<option value="${esc(x.id)}">${esc(x.name)}${x.song ? " · " + esc(x.song) : ""}</option>`).join("");
+  if (sel.dataset.opts !== opts) {
+    sel.dataset.opts = opts;
+    sel.innerHTML = opts || `<option value="">Geen scherm kan de muziek bedienen</option>`;
+    // Keep the choice; else the screen that's playing.
+    sel.value = ctl.some(x => x.id === keep) ? keep : ((ctl.find(x => x.playing) || ctl[0] || {}).id || "");
+  }
+  const x = ctl.find(c => c.id === sel.value);
+  $("m-song").textContent = x ? (x.song ? (x.playing ? "▶️ " : "⏸ ") + x.song : "Er speelt niets") : "";
+  $("m-toggle").textContent = x && x.playing ? "⏸" : "▶";
+  document.querySelectorAll(".player button").forEach(b => { b.disabled = !x; });
+  const err = x && resText(x.res);
+  if (err && !$("m-msg").dataset.sent) msg("m-msg", err, true);
+}
+$("m-screen").onchange = () => { msg("m-msg", ""); renderPlayer(); };
+document.querySelector(".player").onclick = async e => {
+  const b = e.target.closest("button[data-cmd]");
+  if (!b) return;
+  const x = state.screens.find(c => c.id === $("m-screen").value);
+  if (!x) return;
+  let cmd = b.dataset.cmd;
+  if (cmd === "toggle") cmd = x.playing ? "pause" : "play";
+  try {
+    await api("media", { cmd, targets: [x.id] });
+    $("m-msg").dataset.sent = "1";
+    msg("m-msg", { play: "Afspelen…", pause: "Pauzeren…", next: "Volgende nummer…", previous: "Vorige nummer…",
+      volume_up: "Harder…", volume_down: "Zachter…" }[cmd]);
+    setTimeout(() => { delete $("m-msg").dataset.sent; refresh().catch(() => {}); }, 3500);
+  } catch (err) { msg("m-msg", err.message, true); }
+};
+
+function paintJam(link) {
+  const c = $("jam-qr");
+  if (link) { c.style.visibility = ""; Qr.paint(c, link); } else c.style.visibility = "hidden";
+}
+$("j-link").addEventListener("input", () => paintJam($("j-link").value.trim()));
+$("j-save").onclick = async () => {
+  try {
+    const r = await api("jam", { jam: $("j-link").value.trim() });
+    paintJam(r.jam);
+    msg("j-msg", r.jam ? "Staat op alle schermen. Je vrienden kunnen scannen." : "Jam-code weggehaald.");
+    refresh();
+  } catch (e) { msg("j-msg", e.message, true); }
+};
+$("j-clear").onclick = async () => {
+  try {
+    await api("jam", { jam: "" });
+    $("j-link").value = "";
+    paintJam("");
+    msg("j-msg", "Jam-code weggehaald van alle schermen.");
+    refresh();
+  } catch (e) { msg("j-msg", e.message, true); }
+};
 
 function renderBreak() {
   const b = state && state.brk;
@@ -347,8 +456,11 @@ $("b-chips").onclick = e => {
 $("b-min").oninput = () => $("b-chips").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.m === $("b-min").value));
 $("b-start").onclick = async () => {
   try {
-    await api("break", { minutes: +$("b-min").value, title: $("b-title").value, targets: targets("b-targets") });
-    msg("b-msg", "Pauze gestart.");
+    const r = await api("break", { minutes: +$("b-min").value, title: $("b-title").value, targets: targets("b-targets"),
+      music: $("b-music").checked });
+    msg("b-msg", !$("b-music").checked ? "Pauze gestart." : r.paused
+      ? "Pauze gestart. De muziek wordt gepauzeerd en gaat na afloop vanzelf verder."
+      : "Pauze gestart. Geen scherm kon de muziek pauzeren: zet hem zelf even stil.");
     refresh();
   } catch (e) { msg("b-msg", e.message, true); }
 };

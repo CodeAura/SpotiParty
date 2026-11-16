@@ -182,7 +182,8 @@ setInterval(() => {
 
 // ---------- Spotify (Web API, authorization code with PKCE) ----------
 const Spotify = (() => {
-  const SCOPES = "user-read-playback-state user-read-currently-playing";
+  // modify-playback-state: for the Hub's play/pause/next buttons and the break (Spotify Premium only).
+  const SCOPES = "user-read-playback-state user-read-currently-playing user-modify-playback-state";
   const REDIRECT = location.origin + location.pathname;
   let pollTimer = 0, backoffUntil = 0;
 
@@ -271,6 +272,33 @@ const Spotify = (() => {
     $("next").hidden = true;
   }
 
+  /** A Hub command on this account's player. Returns "" when done, or why not, in words for the dashboard. */
+  async function control(cmd) {
+    if (!linked()) return "Spotify is niet gekoppeld op dit scherm.";
+    const send = async (method, path) => {
+      let r = await fetch("https://api.spotify.com/v1" + path, { method, headers: { Authorization: "Bearer " + await access() } });
+      if (r.status === 401) r = await fetch("https://api.spotify.com/v1" + path, { method, headers: { Authorization: "Bearer " + await access(true) } });
+      return r;
+    };
+    let r;
+    if (cmd === "volume_up" || cmd === "volume_down") {
+      const p = await api("/me/player").catch(() => null);
+      const vol = p && p.device && p.device.volume_percent;
+      if (vol == null) return "Spotify geeft het volume van dit apparaat niet door.";
+      r = await send("PUT", `/me/player/volume?volume_percent=${Math.max(0, Math.min(100, vol + (cmd === "volume_up" ? 10 : -10)))}`);
+    } else {
+      r = await send({ play: "PUT", pause: "PUT", next: "POST", previous: "POST" }[cmd], "/me/player/" + cmd);
+    }
+    if (r.ok || r.status === 204) { setTimeout(pollNow, 600); return ""; }
+    const body = await r.json().catch(() => ({}));
+    const reason = (body.error && (body.error.reason || body.error.message)) || "";
+    if (r.status === 401 || /scope/i.test(reason)) return "log op dit scherm opnieuw in bij Spotify (⚙), dan mag SpotiParty de muziek bedienen.";
+    if (/PREMIUM/i.test(reason)) return "Spotify staat bediening alleen toe met Premium.";
+    if (r.status === 404 || /NO_ACTIVE_DEVICE/i.test(reason)) return "er speelt nu geen Spotify op dit account.";
+    if (/RESTRICT|already/i.test(reason)) return "";   // already paused / playing: nothing to do
+    return "Spotify zei " + r.status + (reason ? " (" + reason + ")" : "") + ".";
+  }
+
   async function pollNow() {
     if (source !== "spotify" || !linked()) return;
     try {
@@ -318,7 +346,7 @@ const Spotify = (() => {
   function stop() { clearInterval(pollTimer); }
 
   setInterval(pollQueue, 15000);
-  return { REDIRECT, linked, canLogin, login, finishLogin, unlink, start, stop, pollQueue };
+  return { REDIRECT, linked, canLogin, login, finishLogin, unlink, start, stop, pollQueue, control };
 })();
 
 // ---------- Home Assistant ----------
@@ -443,8 +471,40 @@ const HA = (() => {
     if (ws) { const s = ws; ws = null; s.close(); }
   }
 
-  return { embedded, start, stop, players };
+  /** The player this screen shows: the chosen one, or the one playing now. */
+  function current() { return store.get("ha_entity", params.get("entity") || "") || auto(); }
+  function connected() { return mode === "embedded" || (mode === "ws" && ws && ws.readyState === 1); }
+
+  /** A Hub command on the media player. Returns "" when sent, or why not. */
+  async function control(cmd) {
+    const entity = current();
+    if (!entity || !states[entity]) return "geen Home Assistant-speler gevonden.";
+    const service = { play: "media_play", pause: "media_pause", next: "media_next_track", previous: "media_previous_track",
+      volume_up: "volume_up", volume_down: "volume_down" }[cmd];
+    if (mode === "embedded") {
+      try { await embedded().hass.callService("media_player", service, { entity_id: entity }); return ""; }
+      catch (e) { return "Home Assistant zei: " + (e && e.message || e); }
+    }
+    if (!connected()) return "niet verbonden met Home Assistant.";
+    ws.send(JSON.stringify({ id: msgId++, type: "call_service", domain: "media_player", service, service_data: { entity_id: entity } }));
+    return "";
+  }
+
+  return { embedded, start, stop, players, control, connected, current };
 })();
+
+/** Can this screen pause, play and skip the music it shows? (For the Hub's buttons and the break.) */
+const Media = {
+  can() {
+    if (source === "ha") return HA.connected() && !!HA.current();
+    return source === "spotify" && Spotify.linked();
+  },
+  async run(cmd) {
+    try {
+      return await (source === "ha" ? HA.control(cmd) : Spotify.control(cmd));
+    } catch (e) { return "mislukt: " + (e && e.message || e); }
+  },
+};
 
 function idleMsg(t) { $("idle").textContent = t; setNow(null); }
 
@@ -456,8 +516,10 @@ function isSpotifyLink(s) {
       h === "open.spotify.com" || h.endsWith(".spotify.com") || h === "spotify.app.link");
   } catch { return false; }
 }
+/** The Jam link the Hub gives (set once in the dashboard for every screen), else this screen's own. */
+let hubJam = "";
 function showJam() {
-  const jam = store.get("jam");
+  const jam = hubJam || store.get("jam");
   const box = $("jam");
   box.hidden = !jam || params.get("jam") === "0";
   if (!box.hidden) Qr.paint(box.querySelector("canvas"), jam);

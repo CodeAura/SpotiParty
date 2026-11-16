@@ -23,5 +23,8 @@
     <string name="wifi_title">📶 Gasten-wifi</string>
     <string name="wifi_text">Scan met je camera, of typ:\n%1$s</string>
     <string name="break_sub">De muziek gaat zo weer verder</string>
+    <string name="notice_info">Mededeling</string>
+    <string name="notice_party">Feest!</string>
+    <string name="notice_alert">Belangrijk</string>
     <string name="break_done">We gaan weer verder! 🎉</string>
 </resources>
