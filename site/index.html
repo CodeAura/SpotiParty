@@ -181,7 +181,7 @@
     <p class="lead">SpotiParty zet het nummer dat speelt groot op je tv, PC of Home Assistant-dashboard. De songtekst loopt
       in de maat mee en met één QR-code zetten je vrienden hun eigen nummers in de wachtrij.</p>
     <div class="hero-ctas">
-      <a class="btn btn-primary" href="#prijzen">Koop SpotiParty · vanaf €9,99</a>
+      <a class="btn btn-primary" href="#prijzen">Gratis, of Pro voor €14,99</a>
       <a class="btn btn-ghost" href="#hoe">Zo werkt het</a>
     </div>
     <div class="trust"><span>Eenmalig betalen, geen abonnement</span><span>Werkt met je eigen Spotify</span><span>14 dagen geld terug</span></div>
@@ -249,26 +249,26 @@
   </div>
   <div class="wrap prices">
     <div class="price">
-      <h3>Desktop</h3><p class="for">Voor je PC of beamer</p>
-      <div class="amount">€9,99 <small>eenmalig</small></div>
-      <ul><li>Windows-app</li><li>Meelopende songteksten</li><li>Jam-QR en Hierna</li><li class="no">Android TV</li><li class="no">Home Assistant</li></ul>
-      <button class="btn btn-ghost" data-buy="Desktop" data-price="€9,99">Koop Desktop</button>
+      <h3>Gratis</h3><p class="for">Het feestscherm zelf</p>
+      <div class="amount">€0 <small>voor altijd</small></div>
+      <ul><li>PC, Android TV, Raspberry Pi en Home Assistant</li><li>Meelopende songteksten</li><li>Jam-QR en Hierna</li><li class="no">Admin-dashboard</li><li class="no">Meldingen, pauzeknop en gasten-wifi</li></ul>
+      <a class="btn btn-ghost" href="#hoe">Zo installeer je het</a>
     </div>
-    <div class="price hot">
+    <div class="price hot" id="pro">
       <span class="badge">Meest gekozen</span>
-      <h3>Thuis</h3><p class="for">Alle schermen in huis</p>
+      <h3>Pro</h3><p class="for">Alle schermen in huis vanaf één dashboard</p>
       <div class="amount">€14,99 <small>eenmalig</small></div>
-      <ul><li>Alles uit Desktop</li><li>Android TV-app</li><li>Home Assistant-kaart</li><li>Opent vanzelf op de tv</li><li>macOS zodra die er is</li></ul>
-      <button class="btn btn-primary" data-buy="Thuis" data-price="€14,99">Koop Thuis</button>
+      <ul><li>Alles uit Gratis</li><li>Admin-dashboard voor al je schermen</li><li>Meldingen en pauze-aftelklok</li><li>QR-code voor je gasten-wifi</li><li>Home Assistant-kaart op volledig scherm</li></ul>
+      <button class="btn btn-primary" data-buy="pro" data-name="SpotiParty Pro" data-price="€14,99">Koop Pro</button>
     </div>
     <div class="price">
-      <h3>Vrienden</h3><p class="for">Drie keer Thuis, om weg te geven</p>
+      <h3>Vrienden</h3><p class="for">Drie keer Pro, om weg te geven</p>
       <div class="amount">€29,99 <small>eenmalig</small></div>
-      <ul><li>3 × alles uit Thuis</li><li>Per persoon een eigen code</li><li>Leuk als cadeau</li><li>Zelf te verdelen</li><li>Bespaar €15</li></ul>
-      <button class="btn btn-ghost" data-buy="Vrienden" data-price="€29,99">Koop Vrienden</button>
+      <ul><li>3 × SpotiParty Pro</li><li>Per persoon een eigen code</li><li>Leuk als cadeau</li><li>Zelf te verdelen</li><li>Bespaar €15</li></ul>
+      <button class="btn btn-ghost" data-buy="vrienden" data-name="SpotiParty Pro × 3" data-price="€29,99">Koop Vrienden</button>
     </div>
   </div>
-  <p class="note">Concept-prijzen, inclusief btw. Spotify Premium is nodig om een Jam te starten.</p>
+  <p class="note">Inclusief btw. Je licentiecode komt direct na betaling in je mail. Spotify Premium is nodig om een Jam te starten.</p>
 </section>
 
 <section id="faq">
@@ -307,8 +307,7 @@
 
 <dialog id="checkout" aria-labelledby="co-title">
   <h3 id="co-title">Bijna klaar</h3>
-  <p>Hier komt de beveiligde betaalpagina van een betaalprovider (zoals Mollie, Stripe of Lemon Squeezy).
-    In dit concept is die nog niet gekoppeld, dus er wordt niets afgerekend.</p>
+  <p>De winkel gaat binnenkort open. Er wordt nu nog niets afgerekend.</p>
   <div class="summary"><span id="co-plan">SpotiParty</span><span id="co-price"></span></div>
   <div class="dlg-actions">
     <button class="btn btn-primary" id="co-close">Oké</button>
@@ -316,9 +315,13 @@
 </dialog>
 
 <script>
+  // The Shopify product pages (or cart links like https://<winkel>.myshopify.com/cart/<variant-id>:1).
+  // Empty: the "binnenkort" dialog instead.
+  const SHOP = { pro: "", vrienden: "" };
   const dlg = document.getElementById("checkout");
   document.querySelectorAll("[data-buy]").forEach(b => b.addEventListener("click", () => {
-    document.getElementById("co-plan").textContent = "SpotiParty " + b.dataset.buy;
+    if (SHOP[b.dataset.buy]) { location.href = SHOP[b.dataset.buy]; return; }
+    document.getElementById("co-plan").textContent = b.dataset.name;
     document.getElementById("co-price").textContent = b.dataset.price;
     dlg.showModal();
   }));

@@ -461,6 +461,7 @@ function showJam() {
   const box = $("jam");
   box.hidden = !jam || params.get("jam") === "0";
   if (!box.hidden) Qr.paint(box.querySelector("canvas"), jam);
+  $("corner").classList.toggle("both", !box.hidden && !$("wifi").hidden);
 }
 
 // ---------- source ----------
@@ -512,6 +513,7 @@ function openSettings(open) {
   msg("sp-msg", Spotify.linked() ? "Spotify is gekoppeld." : "");
   $("jam-link").value = store.get("jam");
   $("opt-lyrics").checked = store.get("lyrics", "on") === "on";
+  if (typeof Hub !== "undefined") Hub.fillSettings();
 }
 
 $("source").onchange = e => {

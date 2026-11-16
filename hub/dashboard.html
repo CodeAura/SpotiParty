@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpotiParty Hub</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎛️</text></svg>">
+<style>
+  :root { --accent: #1ed760; --bg: #0b0b10; --card: #16171d; --line: #ffffff1f; --muted: #b9bcc6; --err: #ff7b72; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: #fff; font: 15px/1.45 system-ui, "Segoe UI", Roboto, sans-serif; }
+  header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; background: #0b0b10ee; backdrop-filter: blur(8px); z-index: 2; }
+  header h1 { font-size: 18px; margin: 0; flex: 1; }
+  header .lic { font-size: 13px; color: var(--muted); text-align: right; }
+  header .lic b { color: var(--accent); }
+  main { max-width: 1100px; margin: 0 auto; padding: 16px; display: grid; gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; min-width: 0; }
+  section.wide { grid-column: 1 / -1; }
+  h2 { font-size: 16px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+  h2 small { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: auto; }
+  p { color: var(--muted); margin: 6px 0; font-size: 14px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 10px 0 4px; }
+  input, select, textarea { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #fff3;
+    background: var(--bg); color: #fff; font: inherit; }
+  textarea { resize: vertical; min-height: 70px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+  .row > * { flex: 1 1 auto; }
+  .row > label { flex: 1 1 140px; margin: 0; }
+  button { padding: 10px 16px; border-radius: 10px; border: 0; background: #3a3e4a; color: #fff; font: inherit;
+    font-size: 14px; cursor: pointer; flex: 0 0 auto !important; }
+  button.go { background: var(--accent); color: #000; font-weight: 600; }
+  button.bad { background: #5a2a2a; }
+  button:disabled { opacity: .45; cursor: default; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chips button { padding: 8px 12px; }
+  .chips button.on { outline: 2px solid var(--accent); }
+  .msg { font-size: 13px; min-height: 1.2em; margin-top: 6px; color: var(--accent); }
+  .msg.err { color: var(--err); }
+  .check { display: flex; gap: 10px; align-items: center; color: #fff; font-size: 14px; margin-top: 10px; }
+  .check input { width: 20px; height: 20px; flex: none; }
+  code { background: #fff1; padding: 1px 6px; border-radius: 4px; word-break: break-all; color: #fff; }
+
+  #screens { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+  .screen { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 4px; }
+  .screen .top { display: flex; align-items: center; gap: 8px; }
+  .screen .top b { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #666; flex: none; }
+  .dot.on { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+  .screen .song, .screen .meta { font-size: 13px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .screen .row button { padding: 6px 10px; font-size: 13px; }
+  .empty { color: var(--muted); font-size: 14px; }
+
+  .live { border: 1px solid var(--accent); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px;
+    display: flex; gap: 10px; align-items: center; }
+  .live div { flex: 1; min-width: 0; }
+  .live b { display: block; }
+  .clock { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .targets { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .targets label { display: flex; gap: 6px; align-items: center; margin: 0; padding: 4px 10px; border: 1px solid var(--line);
+    border-radius: 99px; color: #fff; font-size: 13px; cursor: pointer; }
+  .targets input { width: 16px; height: 16px; }
+
+  #wifi-qr { width: 160px; height: 160px; background: #fff; border-radius: 10px; padding: 8px; display: block; }
+  .wifi { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+  .wifi > div { flex: 1 1 200px; }
+
+  #login { position: fixed; inset: 0; background: var(--bg); display: none; align-items: center; justify-content: center;
+    padding: 16px; z-index: 5; }
+  #login.open { display: flex; }
+  #login form { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; width: 100%; max-width: 360px; }
+  #login input { font-size: 24px; letter-spacing: .3em; text-align: center; }
+  .locked section.pro { position: relative; }
+  .locked section.pro::after { content: "🔒 SpotiParty Pro"; position: absolute; inset: 0; border-radius: 16px;
+    background: #0b0b10cc; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--muted); }
+</style>
+</head>
+<body class="locked">
+<header>
+  <h1>🎛️ SpotiParty Hub <span id="hubname" style="color:var(--muted);font-weight:400"></span></h1>
+  <div class="lic" id="lic"></div>
+</header>
+
+<main>
+  <section class="wide">
+    <h2>📺 Schermen <small id="count"></small></h2>
+    <div id="screens"><p class="empty">Nog geen schermen. Open SpotiParty op je tv, PC of Raspberry Pi: ze melden zich hier vanzelf.</p></div>
+  </section>
+
+  <section class="pro">
+    <h2>💬 Melding op het scherm</h2>
+    <div id="notice-live"></div>
+    <label for="n-text">Bericht</label>
+    <textarea id="n-text" maxlength="280" placeholder="Bijv. De pizza's zijn er! 🍕"></textarea>
+    <div class="row">
+      <label>Stijl<select id="n-style">
+        <option value="info">Gewoon</option><option value="party">Feest 🎉</option><option value="alert">Belangrijk ⚠️</option>
+      </select></label>
+      <label>Hoe lang<select id="n-secs">
+        <option value="15">15 seconden</option><option value="30" selected>30 seconden</option><option value="60">1 minuut</option>
+        <option value="300">5 minuten</option><option value="900">15 minuten</option><option value="0">Tot ik hem weghaal</option>
+      </select></label>
+    </div>
+    <label>Op welke schermen?</label>
+    <div class="targets" id="n-targets"></div>
+    <div class="row"><button class="go" id="n-send">Op het scherm zetten</button></div>
+    <div class="msg" id="n-msg"></div>
+  </section>
+
+  <section class="pro">
+    <h2>⏸️ Korte pauze</h2>
+    <div id="break-live"></div>
+    <p>Zet een aftelklok op de schermen. Als de tijd om is, staat er dat het feest verdergaat.</p>
+    <label>Hoeveel minuten?</label>
+    <div class="chips" id="b-chips">
+      <button data-m="5">5</button><button data-m="10" class="on">10</button><button data-m="15">15</button>
+      <button data-m="20">20</button><button data-m="30">30</button>
+    </div>
+    <div class="row">
+      <label>Of zelf<input id="b-min" type="number" min="1" max="240" value="10" inputmode="numeric"></label>
+      <label>Tekst<input id="b-title" maxlength="60" placeholder="Pauze"></label>
+    </div>
+    <label>Op welke schermen?</label>
+    <div class="targets" id="b-targets"></div>
+    <div class="row"><button class="go" id="b-start">Pauze starten</button></div>
+    <div class="msg" id="b-msg"></div>
+  </section>
+
+  <section class="pro">
+    <h2>📶 Gasten-wifi</h2>
+    <div class="wifi">
+      <div>
+        <label for="w-ssid">Netwerknaam (SSID)</label>
+        <input id="w-ssid" maxlength="32" autocomplete="off">
+        <label for="w-pass">Wachtwoord</label>
+        <input id="w-pass" maxlength="63" autocomplete="off">
+        <label for="w-sec">Beveiliging</label>
+        <select id="w-sec"><option value="WPA">WPA/WPA2/WPA3</option><option value="WEP">WEP</option><option value="nopass">Geen wachtwoord</option></select>
+        <label class="check"><input type="checkbox" id="w-hidden"> Verborgen netwerk</label>
+        <label class="check"><input type="checkbox" id="w-show"> QR-code op de schermen tonen</label>
+        <div class="row"><button class="go" id="w-save">Opslaan</button></div>
+        <div class="msg" id="w-msg"></div>
+      </div>
+      <canvas id="wifi-qr" width="320" height="320" title="Scan om te verbinden"></canvas>
+    </div>
+    <p>Gebruik een apart <b>gastennetwerk</b>: iedereen die het scherm ziet, kan dit wachtwoord lezen.</p>
+  </section>
+
+  <section>
+    <h2>🔑 Licentie</h2>
+    <p id="l-status"></p>
+    <label for="l-key">Licentiecode</label>
+    <textarea id="l-key" placeholder="SPOTI-…" spellcheck="false"></textarea>
+    <div class="row">
+      <button class="go" id="l-save">Activeren</button>
+      <button id="l-remove">Verwijderen</button>
+    </div>
+    <div class="msg" id="l-msg"></div>
+    <p>Nog geen licentie? <a href="https://spotiparty.netlify.app/#pro" target="_blank" rel="noopener" style="color:var(--accent)">Koop SpotiParty Pro</a>.</p>
+  </section>
+
+  <section>
+    <h2>⚙️ Hub</h2>
+    <p>Open dit dashboard op je telefoon:</p>
+    <p id="urls"></p>
+    <label for="h-name">Naam van deze hub</label>
+    <input id="h-name" maxlength="40">
+    <label for="h-pin">Nieuwe PIN (4–12 cijfers)</label>
+    <input id="h-pin" inputmode="numeric" maxlength="12" autocomplete="new-password">
+    <div class="row"><button id="h-save">Opslaan</button><button id="h-logout">Uitloggen</button></div>
+    <div class="msg" id="h-msg"></div>
+  </section>
+</main>
+
+<div id="login">
+  <form onsubmit="return false">
+    <h2>🎛️ SpotiParty Hub</h2>
+    <p>Vul de PIN in. Je vindt hem in het venster van de SpotiParty-app, of in de terminal van je Raspberry Pi.</p>
+    <input id="pin" inputmode="numeric" autocomplete="current-password" maxlength="12" type="password">
+    <div class="row"><button class="go" id="pin-go">Inloggen</button></div>
+    <div class="msg" id="pin-msg"></div>
+  </form>
+</div>
+
+<script src="qr.js"></script>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const KIND = { tv: "📺 Android TV", web: "💻 Browser", pi: "🍓 Raspberry Pi", ha: "🏠 Home Assistant" };
+let pin = sessionStorage.getItem("hub.pin") || localStorage.getItem("hub.pin") || "";
+let state = null, offset = 0, formsFilled = false;
+
+function msg(id, text, err) { const el = $(id); el.textContent = text || ""; el.classList.toggle("err", !!err); }
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+async function api(path, body) {
+  const r = await fetch("/api/admin/" + path, {
+    method: body === undefined ? "GET" : "POST",
+    headers: { "X-SpotiParty-Pin": pin, "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const data = await r.json().catch(() => ({}));
+  if (r.status === 401) { showLogin(data.error); throw new Error(data.error || "PIN"); }
+  if (!r.ok) throw new Error(data.error || "Er ging iets mis (" + r.status + ").");
+  return data;
+}
+
+function showLogin(err) {
+  $("login").classList.add("open");
+  msg("pin-msg", err && pin ? err : "", !!err);
+  setTimeout(() => $("pin").focus(), 50);
+}
+$("pin-go").onclick = async () => {
+  pin = $("pin").value.trim();
+  try {
+    await refresh();
+    localStorage.setItem("hub.pin", pin);
+    $("login").classList.remove("open");
+  } catch (e) { msg("pin-msg", e.message, true); }
+};
+$("h-logout").onclick = () => { pin = ""; localStorage.removeItem("hub.pin"); showLogin(); };
+
+function mmss(ms) {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}
+
+function targetsBox(id) {
+  const box = $(id), sel = new Set([...box.querySelectorAll("input:checked")].map(i => i.value));
+  const all = box.querySelector("input[value='*']");
+  const allOn = !all || all.checked;
+  box.innerHTML = `<label><input type="checkbox" value="*" ${allOn ? "checked" : ""}> Alle schermen</label>` +
+    state.screens.map(s => `<label><input type="checkbox" value="${esc(s.id)}" ${!allOn && sel.has(s.id) ? "checked" : ""}> ${esc(s.name)}</label>`).join("");
+}
+function targets(id) {
+  const box = $(id);
+  if (box.querySelector("input[value='*']").checked) return [];
+  return [...box.querySelectorAll("input:checked")].map(i => i.value);
+}
+for (const id of ["n-targets", "b-targets"]) {
+  $(id).addEventListener("change", e => {
+    const box = $(id), all = box.querySelector("input[value='*']");
+    if (e.target === all && all.checked) box.querySelectorAll("input:not([value='*'])").forEach(i => { i.checked = false; });
+    else if (e.target !== all) all.checked = !box.querySelector("input:not([value='*']):checked");
+  });
+}
+
+function render() {
+  const s = state;
+  $("hubname").textContent = "· " + s.name;
+  document.body.classList.toggle("locked", !s.licence);
+  $("lic").innerHTML = s.licence ? `Pro · <b>${esc(s.licence.to)}</b>` : `Gratis versie`;
+  $("l-status").innerHTML = s.licence
+    ? `✅ SpotiParty Pro, op naam van <b>${esc(s.licence.to)}</b> (licentie ${esc(s.licence.id)}).`
+    : "Meldingen, de pauzeknop en de gasten-wifi horen bij SpotiParty Pro.";
+  $("urls").innerHTML = s.urls.map(u => `<code>${esc(u)}</code>`).join(" ");
+  const on = s.screens.filter(x => x.online).length;
+  $("count").textContent = s.screens.length ? `${on} van ${s.screens.length} online` : "";
+
+  $("screens").innerHTML = s.screens.length ? s.screens.map(x => `
+    <div class="screen">
+      <div class="top"><span class="dot ${x.online ? "on" : ""}"></span><b title="${esc(x.id)}">${esc(x.name)}</b></div>
+      <div class="meta">${KIND[x.kind] || x.kind} · ${esc(x.ip)} · ${x.online ? "online" : `${x.ago < 120 ? x.ago + " s" : Math.round(x.ago / 60) + " min"} geleden`}</div>
+      <div class="song">${x.song ? "🎵 " + esc(x.song) : "Geen muziek"}</div>
+      <div class="row">
+        <button data-act="ident" data-id="${esc(x.id)}" ${s.licence ? "" : "disabled"}>Aanwijzen</button>
+        <button data-act="rename" data-id="${esc(x.id)}">Naam</button>
+        <button data-act="forget" data-id="${esc(x.id)}">Vergeten</button>
+      </div>
+    </div>`).join("") : `<p class="empty">Nog geen schermen. Open SpotiParty op je tv, PC of Raspberry Pi: ze melden zich hier vanzelf.</p>`;
+
+  const n = s.notice;
+  $("notice-live").innerHTML = n ? `<div class="live"><div><b>Staat nu op het scherm</b>${esc(n.text)}
+      <p>${n.until ? "nog " + mmss(n.until - Date.now() - offset) : "tot je hem weghaalt"}</p></div>
+      <button class="bad" id="n-clear">Weghalen</button></div>` : "";
+  if (n) $("n-clear").onclick = () => api("notice-clear", {}).then(refresh).catch(e => msg("n-msg", e.message, true));
+  renderBreak();
+
+  targetsBox("n-targets");
+  targetsBox("b-targets");
+
+  if (!formsFilled) {
+    formsFilled = true;
+    const w = s.wifi;
+    $("w-ssid").value = w.ssid; $("w-pass").value = w.password; $("w-sec").value = w.security;
+    $("w-hidden").checked = w.hidden; $("w-show").checked = w.show;
+    $("h-name").value = s.name;
+    $("l-key").value = "";
+    paintWifi();
+  }
+}
+
+function renderBreak() {
+  const b = state && state.brk;
+  if (!b) { $("break-live").innerHTML = ""; return; }
+  const left = b.until - Date.now() - offset;
+  if (!$("b-clock")) {
+    $("break-live").innerHTML = `<div class="live"><div><b>${esc(b.title)}</b><span class="clock" id="b-clock"></span></div>
+      <button id="b-more">+5 min</button><button class="bad" id="b-stop">Stoppen</button></div>`;
+    $("b-more").onclick = () => api("break-extend", { minutes: 5 }).then(refresh).catch(e => msg("b-msg", e.message, true));
+    $("b-stop").onclick = () => api("break-clear", {}).then(refresh).catch(e => msg("b-msg", e.message, true));
+  }
+  $("b-clock").textContent = left > 0 ? mmss(left) : "Afgelopen 🎉";
+}
+setInterval(renderBreak, 250);
+
+async function refresh() {
+  state = await api("state");
+  offset = state.now - Date.now();
+  render();
+}
+
+$("screens").onclick = async e => {
+  const b = e.target.closest("button[data-act]");
+  if (!b) return;
+  const id = b.dataset.id, scr = state.screens.find(x => x.id === id);
+  try {
+    if (b.dataset.act === "ident") await api("identify", { id });
+    else if (b.dataset.act === "rename") {
+      const name = prompt("Naam van dit scherm (leeg = standaard)", scr ? scr.name : "");
+      if (name === null) return;
+      await api("screen", { id, name });
+    } else if (b.dataset.act === "forget") {
+      if (!confirm(`${scr ? scr.name : id} vergeten? Als het scherm nog aan staat, meldt het zich vanzelf weer.`)) return;
+      await api("screen", { id, forget: true });
+    }
+    refresh();
+  } catch (err) { alert(err.message); }
+};
+
+$("n-send").onclick = async () => {
+  try {
+    await api("notice", { text: $("n-text").value, style: $("n-style").value, seconds: +$("n-secs").value, targets: targets("n-targets") });
+    msg("n-msg", "Staat op het scherm.");
+    $("n-text").value = "";
+    refresh();
+  } catch (e) { msg("n-msg", e.message, true); }
+};
+
+$("b-chips").onclick = e => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  $("b-chips").querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+  $("b-min").value = b.dataset.m;
+};
+$("b-min").oninput = () => $("b-chips").querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.m === $("b-min").value));
+$("b-start").onclick = async () => {
+  try {
+    await api("break", { minutes: +$("b-min").value, title: $("b-title").value, targets: targets("b-targets") });
+    msg("b-msg", "Pauze gestart.");
+    refresh();
+  } catch (e) { msg("b-msg", e.message, true); }
+};
+
+function wifiText() {
+  const esc2 = t => t.replace(/[\\;,:"]/g, c => "\\" + c), sec = $("w-sec").value;
+  return `WIFI:T:${sec};S:${esc2($("w-ssid").value)};${sec === "nopass" ? "" : `P:${esc2($("w-pass").value)};`}${$("w-hidden").checked ? "H:true;" : ""};`;
+}
+function paintWifi() {
+  const c = $("wifi-qr");
+  if ($("w-ssid").value) { c.style.visibility = ""; Qr.paint(c, wifiText()); }
+  else c.style.visibility = "hidden";
+}
+["w-ssid", "w-pass", "w-sec", "w-hidden"].forEach(id => $(id).addEventListener("input", paintWifi));
+$("w-save").onclick = async () => {
+  try {
+    await api("wifi", { ssid: $("w-ssid").value, password: $("w-pass").value, security: $("w-sec").value,
+      hidden: $("w-hidden").checked, show: $("w-show").checked });
+    msg("w-msg", $("w-show").checked ? "Opgeslagen. De QR-code staat op de schermen." : "Opgeslagen.");
+    refresh();
+  } catch (e) { msg("w-msg", e.message, true); }
+};
+
+$("l-save").onclick = async () => {
+  try {
+    const r = await api("license", { key: $("l-key").value });
+    msg("l-msg", r.licence ? "Geactiveerd! Bedankt voor je steun 💚" : "Licentie verwijderd.");
+    $("l-key").value = "";
+    refresh();
+  } catch (e) { msg("l-msg", e.message, true); }
+};
+$("l-remove").onclick = async () => {
+  if (!confirm("Licentie van deze hub verwijderen?")) return;
+  try { await api("license", { key: "" }); msg("l-msg", "Licentie verwijderd."); refresh(); }
+  catch (e) { msg("l-msg", e.message, true); }
+};
+
+$("h-save").onclick = async () => {
+  try {
+    if ($("h-name").value.trim() !== state.name) await api("name", { name: $("h-name").value });
+    const np = $("h-pin").value.trim();
+    if (np) { await api("pin", { pin: np }); pin = np; localStorage.setItem("hub.pin", pin); $("h-pin").value = ""; }
+    msg("h-msg", "Opgeslagen.");
+    refresh();
+  } catch (e) { msg("h-msg", e.message, true); }
+};
+
+setInterval(() => { if (pin && !$("login").classList.contains("open")) refresh().catch(() => {}); }, 2000);
+if (!pin) showLogin();
+else refresh().catch(() => {});
+</script>
+</body>
+</html>
