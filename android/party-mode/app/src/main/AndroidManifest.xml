@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- The TV's address, for that page's QR code. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- SpotiParty Hub (Pro): the TV finds the hub with a UDP broadcast and asks it over plain http on the home
+         network (hence usesCleartextTraffic below; Spotify and lrclib stay on https). -->
     <!-- Reads the Lyrics add-on (signature permission, granted when both are signed with the same key). -->
     <uses-permission android:name="io.github.cleanyourtv.permission.HOME_WIDGETS" />
     <!-- Opening itself when Spotify starts: Android only lets a background app start a screen with this
@@ -20,6 +22,7 @@
 
     <application
         android:allowBackup="false"
+        android:usesCleartextTraffic="true"
         android:banner="@drawable/banner"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

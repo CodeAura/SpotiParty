@@ -75,6 +75,23 @@ public class MainActivity extends Activity {
     private TextView nextUp;
     private boolean queueLoading;
 
+    // SpotiParty Hub (Pro): notices, the break countdown, guest Wi-Fi and "which screen is this?".
+    private HubLink hub;
+    private HubLink.State hubState;
+    private String hubStatus = "";
+    private TextView notice;
+    private String shownNotice = "";
+    private LinearLayout pauseView;
+    private TextView pauseTitle;
+    private TextView pauseClock;
+    private TextView pauseSub;
+    private ProgressBar pauseBar;
+    private TextView identView;
+    private LinearLayout wifiCard;
+    private QrView wifiQr;
+    private TextView wifiText;
+    private String shownWifi = "";
+
     /** Every 10 s while SpotiParty is open: what comes next in the host's queue (friends add to it in the Jam). */
     private final Runnable queuePoll = new Runnable() {
         @Override
@@ -158,6 +175,7 @@ public class MainActivity extends Activity {
         public void run() {
             if (!started) return;
             showPosition();
+            showBreak();
             handler.postDelayed(this, TICK_MS);
         }
     };
@@ -288,10 +306,86 @@ public class MainActivity extends Activity {
         qrWords.addView(resetButton, bl);
         // A fixed width, so the title and the wrapped text keep their room next to the button.
         card.addView(qrWords, new LinearLayout.LayoutParams(Math.round(250 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
+        // The guest Wi-Fi card (from the Hub) sits to the left of the Jam card.
+        wifiCard = new LinearLayout(this);
+        wifiCard.setOrientation(LinearLayout.HORIZONTAL);
+        wifiCard.setGravity(Gravity.CENTER_VERTICAL);
+        wifiCard.setBackground(glass.getConstantState().newDrawable().mutate());
+        wifiCard.setPadding(cp, cp, Math.round(20 * dp), cp);
+        wifiQr = new QrView(this);
+        wifiCard.addView(wifiQr, new LinearLayout.LayoutParams(qs, qs));
+        LinearLayout wifiWords = new LinearLayout(this);
+        wifiWords.setOrientation(LinearLayout.VERTICAL);
+        wifiWords.setPadding(Math.round(14 * dp), 0, 0, 0);
+        TextView wifiTitle = label(18, 0xFFFFFFFF, Typeface.BOLD);
+        wifiTitle.setText(R.string.wifi_title);
+        wifiText = label(13, 0xCCFFFFFF, Typeface.NORMAL);
+        wifiWords.addView(wifiTitle);
+        wifiWords.addView(wifiText);
+        wifiCard.addView(wifiWords, new LinearLayout.LayoutParams(Math.round(190 * dp), ViewGroup.LayoutParams.WRAP_CONTENT));
+        wifiCard.setVisibility(View.GONE);
+
+        LinearLayout corner = new LinearLayout(this);
+        corner.setOrientation(LinearLayout.HORIZONTAL);
+        corner.setGravity(Gravity.BOTTOM);
+        LinearLayout.LayoutParams wl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        wl.rightMargin = Math.round(16 * dp);
+        corner.addView(wifiCard, wl);
+        corner.addView(card);
         FrameLayout.LayoutParams cl = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM | Gravity.END);
         cl.setMargins(0, 0, Math.round(48 * dp), Math.round(40 * dp));
-        root.addView(card, cl);
+        root.addView(corner, cl);
+
+        // The break: a big countdown over everything.
+        pauseView = new LinearLayout(this);
+        pauseView.setOrientation(LinearLayout.VERTICAL);
+        pauseView.setGravity(Gravity.CENTER);
+        pauseView.setBackgroundColor(0xE6000000);
+        pauseView.setClickable(true);
+        pauseTitle = label(44, 0xFFFFFFFF, Typeface.BOLD);
+        pauseTitle.setGravity(Gravity.CENTER);
+        pauseClock = label(150, 0xFF1ED760, Typeface.BOLD);
+        pauseClock.setGravity(Gravity.CENTER);
+        pauseClock.setFontFeatureSettings("tnum");
+        pauseBar = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        pauseBar.setMax(1000);
+        pauseBar.setProgressTintList(android.content.res.ColorStateList.valueOf(0xFF1ED760));
+        pauseSub = label(22, 0xCCFFFFFF, Typeface.NORMAL);
+        pauseSub.setGravity(Gravity.CENTER);
+        pauseView.addView(pauseTitle);
+        pauseView.addView(pauseClock);
+        LinearLayout.LayoutParams pbl = new LinearLayout.LayoutParams(Math.round(420 * dp), Math.round(8 * dp));
+        pbl.topMargin = Math.round(8 * dp);
+        pbl.bottomMargin = Math.round(16 * dp);
+        pauseView.addView(pauseBar, pbl);
+        pauseView.addView(pauseSub);
+        pauseView.setVisibility(View.GONE);
+        root.addView(pauseView, match());
+
+        // A notice from the Hub: a banner at the top, above the break too.
+        notice = label(34, 0xFFFFFFFF, Typeface.BOLD);
+        notice.setGravity(Gravity.CENTER);
+        notice.setMaxLines(4);
+        notice.setEllipsize(TextUtils.TruncateAt.END);
+        int np = Math.round(24 * dp);
+        notice.setPadding(np * 2, np, np * 2, np);
+        notice.setElevation(30 * dp);
+        notice.setVisibility(View.GONE);
+        FrameLayout.LayoutParams nl = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        nl.topMargin = Math.round(32 * dp);
+        nl.leftMargin = nl.rightMargin = Math.round(80 * dp);
+        root.addView(notice, nl);
+
+        // "Aanwijzen" in the dashboard: this screen's name, big, for a few seconds.
+        identView = label(90, 0xFF0B0B10, Typeface.BOLD);
+        identView.setShadowLayer(0, 0, 0, 0);
+        identView.setGravity(Gravity.CENTER);
+        identView.setBackgroundColor(0xFF1ED760);
+        identView.setVisibility(View.GONE);
+        root.addView(identView, match());
 
         setContentView(root);
         root.setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
@@ -384,6 +478,8 @@ public class MainActivity extends Activity {
         link = new PhoneLink(PORT, this::handle);
         link.start();
         showQr();
+        hub = new HubLink(prefs, this::onHub);
+        hub.start();
         try {
             sessions = getSystemService(MediaSessionManager.class);
             ComponentName listener = new ComponentName(this, PartyListener.class);
@@ -409,6 +505,9 @@ public class MainActivity extends Activity {
         setController(null);
         if (link != null) link.stop();
         link = null;
+        if (hub != null) hub.stop();
+        hub = null;
+        onHub(null, "");
         super.onStop();
     }
 
@@ -488,6 +587,7 @@ public class MainActivity extends Activity {
             songBlock.setVisibility(View.INVISIBLE);
             for (TextView t : lyricViews) t.setText("");
             trackKey = "";
+            if (hub != null) hub.setSong("");
             return;
         }
         idle.setVisibility(View.GONE);
@@ -498,6 +598,7 @@ public class MainActivity extends Activity {
         long duration = m.getLong(MediaMetadata.METADATA_KEY_DURATION);
         title.setText(songTitle);
         artist.setText(songArtist);
+        if (hub != null) hub.setSong(songArtist.isEmpty() ? songTitle : songTitle + " – " + songArtist);
         songBlock.animate().alpha(s.getState() == PlaybackState.STATE_PAUSED ? 0.55f : 1f).setDuration(250).start();
 
         String key = songArtist + "\n" + songTitle;
@@ -735,6 +836,23 @@ public class MainActivity extends Activity {
             runOnUiThread(this::loadNext);
             return PhoneLink.Response.text(200, "Ontkoppeld. De tv vergeet je Spotify-login.");
         }
+        if ("GET".equals(method) && "/hub".equals(path)) {
+            return PhoneLink.Response.text(200, prefs.getString("hub", "") + "\n" + prefs.getString("screen_name", "")
+                    + "\n" + hubStatus);
+        }
+        if ("POST".equals(method) && "/hub".equals(path)) {
+            String[] v = (new String(body, StandardCharsets.UTF_8) + "\n").split("\n", -1);
+            String addr = v[0].trim(), name = v[1].trim();
+            if (!addr.isEmpty() && !addr.matches("(https?://)?[A-Za-z0-9.\\-]+(:\\d{1,5})?/?")) {
+                return PhoneLink.Response.text(400, "Dat is geen adres. Bijvoorbeeld: 192.168.1.20:8770");
+            }
+            if (name.length() > 60) name = name.substring(0, 60);
+            prefs.edit().putString("hub", addr).putString("screen_name", name).apply();
+            runOnUiThread(() -> { if (hub != null) hub.kick(); });
+            return PhoneLink.Response.text(200, addr.isEmpty()
+                    ? "Opgeslagen. De tv zoekt de Hub zelf op het netwerk."
+                    : "Opgeslagen. De tv verbindt met " + addr + ".");
+        }
         if ("GET".equals(method) && "/auto".equals(path)) {
             return PhoneLink.Response.text(200, (prefs.getBoolean("auto_open", true) ? "on" : "off") + "\n"
                     + (android.provider.Settings.canDrawOverlays(this) ? "allowed" : "blocked"));
@@ -784,6 +902,22 @@ public class MainActivity extends Activity {
             + "$('auto').onchange=async()=>{try{const r=await fetch('/auto?k='+k,{method:'POST',body:$('auto').checked?'on':'off'});"
             + "$('automsg').textContent=await r.text();}catch(e){$('automsg').textContent='De tv is niet bereikbaar.';}};"
             + "</script>"
+            + "<h1 style='margin-top:40px'>SpotiParty Hub</h1>"
+            + "<p>Met de Hub (SpotiParty Pro) stuur je meldingen, een pauze-aftelklok en de gasten-wifi naar al je "
+            + "schermen. De tv vindt de Hub zelf; vul alleen een adres in als dat niet lukt.</p>"
+            + "<div id=hubstate style='color:#1ed760'></div>"
+            + "<label for=hub>Adres van de Hub (leeg: zelf zoeken)</label>"
+            + "<input id=hub inputmode=url autocapitalize=off autocomplete=off placeholder='192.168.1.20:8770'>"
+            + "<label for=sname>Naam van deze tv</label>"
+            + "<input id=sname autocomplete=off maxlength=60 placeholder='Woonkamer'>"
+            + "<button id=hubsave>Opslaan</button><div id=hubmsg></div>"
+            + "<script>"
+            + "fetch('/hub?k='+k).then(r=>r.text()).then(t=>{const [a,n,s]=t.split('\\n');$('hub').value=a||'';"
+            + "$('sname').value=n||'';$('hubstate').textContent=s||'';});"
+            + "$('hubsave').onclick=async()=>{$('hubmsg').textContent='Bezig...';try{const r=await fetch('/hub?k='+k,"
+            + "{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:$('hub').value.trim()+'\\n'+$('sname').value.trim()});"
+            + "$('hubmsg').textContent=await r.text();}catch(e){$('hubmsg').textContent='De tv is niet bereikbaar.';}};"
+            + "</script>"
             + "<h1 style='margin-top:40px'>Volgende nummer tonen</h1>"
             + "<p>Spotify geeft de wachtrij niet aan de tv door. Koppel je Spotify-account (alleen lezen), dan "
             + "zet SpotiParty <b>Hierna: nummer</b> onder de artiest. Eenmalig:</p>"
@@ -820,6 +954,80 @@ public class MainActivity extends Activity {
             + "$('unlink').onclick=async()=>{try{const [ok,t]=await sp('/spotify/unlink');$('spmsg').textContent=t;"
             + "$('spstate').textContent='';}catch(e){$('spmsg').textContent='De tv is niet bereikbaar.';}};"
             + "</script>";
+
+    /** What the Hub wants on this screen (null: no hub, or no Pro licence on it). */
+    private void onHub(HubLink.State s, String status) {
+        hubState = s;
+        hubStatus = status == null ? "" : status;
+        float dp = getResources().getDisplayMetrics().density;
+
+        if (s == null || s.noticeId == null) {
+            notice.setVisibility(View.GONE);
+            shownNotice = "";
+        } else if (!s.noticeId.equals(shownNotice)) {
+            shownNotice = s.noticeId;
+            GradientDrawable bg = new GradientDrawable();
+            bg.setCornerRadius(28 * dp);
+            int text = 0xFFFFFFFF;
+            if ("party".equals(s.noticeStyle)) {
+                bg.setOrientation(GradientDrawable.Orientation.TL_BR);
+                bg.setColors(new int[]{0xFF1ED760, 0xFFFF4FD8, 0xFFFFB547});
+                text = 0xFF000000;
+            } else if ("alert".equals(s.noticeStyle)) {
+                bg.setColor(0xF0B3261E);
+            } else {
+                bg.setColor(0xE6111111);
+                bg.setStroke(Math.round(2 * dp), 0xFF1ED760);
+            }
+            notice.setBackground(bg);
+            notice.setTextColor(text);
+            notice.setShadowLayer(text == 0xFF000000 ? 0 : 8 * dp, 0, 2, 0x99000000);
+            notice.setText(s.noticeText);
+            notice.setVisibility(View.VISIBLE);
+            notice.setAlpha(0f);
+            notice.setTranslationY(-40 * dp);
+            notice.animate().alpha(1f).translationY(0).setDuration(400).start();
+        }
+
+        String wifi = s == null || s.wifiQr == null || s.wifiQr.isEmpty() ? "" : s.wifiQr;
+        if (!wifi.equals(shownWifi)) {
+            shownWifi = wifi;
+            boolean on = !wifi.isEmpty() && wifiQr.setText(wifi);
+            if (on) {
+                wifiText.setText(getString(R.string.wifi_text, s.wifiSsid)
+                        + (s.wifiPassword.isEmpty() ? "" : "\n" + s.wifiPassword));
+            }
+            wifiCard.setVisibility(on ? View.VISIBLE : View.GONE);
+        }
+
+        identView.setVisibility(s != null && s.ident ? View.VISIBLE : View.GONE);
+        if (s != null && s.ident) identView.setText(s.name);
+        showBreak();
+    }
+
+    private void showBreak() {
+        HubLink.State s = hubState;
+        if (s == null || s.breakUntil == 0) {
+            if (pauseView.getVisibility() != View.GONE) pauseView.setVisibility(View.GONE);
+            return;
+        }
+        long left = s.breakUntil - s.hubNow();
+        if (pauseView.getVisibility() != View.VISIBLE) pauseView.setVisibility(View.VISIBLE);
+        if (left > 0) {
+            long secs = (left + 999) / 1000;
+            pauseTitle.setText(s.breakTitle);
+            pauseClock.setText(secs >= 3600
+                    ? String.format(Locale.ROOT, "%d:%02d:%02d", secs / 3600, secs / 60 % 60, secs % 60)
+                    : String.format(Locale.ROOT, "%d:%02d", secs / 60, secs % 60));
+            pauseSub.setText(R.string.break_sub);
+            pauseBar.setProgress((int) Math.max(0, Math.min(1000, left * 1000 / Math.max(1, (long) (s.breakMinutes * 60000)))));
+        } else {
+            pauseTitle.setText(R.string.break_done);
+            pauseClock.setText("0:00");
+            pauseSub.setText("");
+            pauseBar.setProgress(0);
+        }
+    }
 
     /** Only a Spotify address goes on the screen, so the code cannot send friends anywhere else. */
     static boolean isSpotifyLink(String s) {

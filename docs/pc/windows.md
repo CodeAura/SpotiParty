@@ -36,7 +36,7 @@ Klik op **Meer informatie** en daarna op **Toch uitvoeren**. Dit hoef je maar é
 {% step %}
 ### Volg de stappen
 
-Accepteer de licentie (MIT) en vink eventueel **Snelkoppeling op het bureaublad** aan. Je hebt **geen beheerdersrechten** nodig: SpotiParty wordt alleen voor jouw gebruikersaccount geïnstalleerd.
+Accepteer de licentievoorwaarden en vink eventueel **Snelkoppeling op het bureaublad** aan. Je hebt **geen beheerdersrechten** nodig: SpotiParty wordt alleen voor jouw gebruikersaccount geïnstalleerd.
 {% endstep %}
 
 {% step %}

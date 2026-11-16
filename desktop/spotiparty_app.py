@@ -1,6 +1,7 @@
 """SpotiParty for the desktop: serves the web app on http://127.0.0.1:8769 and opens it in its own window.
 
 Built into SpotiParty.exe (Windows) and SpotiParty.app in a .dmg (macOS) by PyInstaller; see desktop/README.md.
+It also starts the SpotiParty Hub (hub/): the admin dashboard for every screen, on http://<this-pc>:8770.
 Run from source with:  python desktop/spotiparty_app.py
 
 The address stays the same on every start (Spotify only accepts the exact redirect address
@@ -24,10 +25,18 @@ URL = f"http://127.0.0.1:{PORT}/index.html"
 APP = "SpotiParty"
 
 
-def web_root() -> pathlib.Path:
+def bundle_dir(name: str) -> pathlib.Path:
     if getattr(sys, "frozen", False):
-        return pathlib.Path(sys._MEIPASS) / "web"   # unpacked by PyInstaller
-    return pathlib.Path(__file__).resolve().parent.parent / "web"
+        return pathlib.Path(sys._MEIPASS) / name   # unpacked by PyInstaller
+    return pathlib.Path(__file__).resolve().parent.parent / name
+
+
+def web_root() -> pathlib.Path:
+    return bundle_dir("web")
+
+
+sys.path.insert(0, str(bundle_dir("hub")))
+import spotiparty_hub  # noqa: E402
 
 
 def data_dir() -> pathlib.Path:
@@ -92,6 +101,10 @@ def main():
     handler = functools.partial(Handler, directory=str(web_root()))
     server = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        hub = spotiparty_hub.Hub(data_dir(), web_root(), static_dir=bundle_dir("hub")).start()
+    except OSError:
+        hub = None   # port 8770 taken (another hub runs here): the screen still works
     open_window()
 
     root = tk.Tk()
@@ -102,13 +115,24 @@ def main():
              font=("Segoe UI", 15, "bold")).pack(anchor="w")
     tk.Label(root, text="Sluit dit venster om SpotiParty te stoppen.\nToetsen in het scherm: S instellingen, F volledig scherm.",
              fg="#b9bcc6", bg="#0f1016", justify="left", font=("Segoe UI", 10)).pack(anchor="w", pady=(4, 12))
+    if hub:
+        hub_url = hub.admin_state()["urls"][0]
+        tk.Label(root, text=f"Admin-dashboard (ook op je telefoon):\n{hub_url}    PIN: {hub.cfg['pin']}",
+                 fg="#ffffff", bg="#0f1016", justify="left", font=("Segoe UI", 10)).pack(anchor="w", pady=(0, 12))
     row = tk.Frame(root, bg="#0f1016")
     row.pack(anchor="w")
     button = dict(relief="flat", padx=16, pady=7, font=("Segoe UI", 10, "bold"), cursor="hand2", bd=0)
     tk.Button(row, text="Scherm openen", command=open_window, bg="#1ed760", fg="#000000",
               activebackground="#3be477", **button).pack(side="left")
 
+    if hub:
+        tk.Button(row, text="Dashboard", command=lambda: webbrowser.open(f"http://127.0.0.1:{hub.port}/"),
+                  bg="#3a3e4a", fg="#ffffff", activebackground="#4a4e5a", activeforeground="#ffffff",
+                  **button).pack(side="left", padx=(8, 0))
+
     def stop():
+        if hub:
+            hub.stop()
         server.shutdown()
         root.destroy()
 

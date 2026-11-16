@@ -23,7 +23,7 @@ jobs:
       - name: Build SpotiParty.exe
         run: >
           pyinstaller --noconfirm --onefile --windowed --name SpotiParty
-          --icon desktop/icon.ico --add-data "web;web"
+          --icon desktop/icon.ico --add-data "web;web" --add-data "hub;hub" --paths hub
           --distpath desktop/dist --workpath build --specpath build/spec
           desktop/spotiparty_app.py
         shell: bash
@@ -36,8 +36,11 @@ jobs:
             try { if ((Invoke-WebRequest http://127.0.0.1:8769/index.html -UseBasicParsing).Content -match 'SpotiParty') { $ok = $true; break } } catch {}
             Start-Sleep 1
           }
-          Stop-Process -Id $p.Id -Force
+          $hubOk = $false
+          try { $hubOk = (Invoke-WebRequest http://127.0.0.1:8770/api/ping -UseBasicParsing).Content -match 'hub' } catch {}
+          Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
           if (-not $ok) { throw "SpotiParty.exe did not serve the page" }
+          if (-not $hubOk) { throw "SpotiParty.exe did not start the hub" }
       - name: Build SpotiParty-Setup.exe
         shell: pwsh
         run: |
@@ -72,7 +75,7 @@ jobs:
       - name: Build SpotiParty.app
         run: >
           pyinstaller --noconfirm --windowed --name SpotiParty
-          --icon desktop/icon.png --add-data "web:web"
+          --icon desktop/icon.png --add-data "web:web" --add-data "hub:hub" --paths hub
           --osx-bundle-identifier io.github.codeaura.spotiparty
           --distpath dist --workpath build --specpath build/spec
           desktop/spotiparty_app.py

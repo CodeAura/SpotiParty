@@ -35,5 +35,5 @@ Weet je nog niet welke versie bij je past? Lees eerst [Aan de slag](aan-de-slag/
 * [Problemen oplossen](hulp/problemen-oplossen.md)
 
 {% hint style="info" %}
-SpotiParty is gratis en open source onder de MIT-licentie. Er is geen eigen server, geen account en geen tracking. Zie [Privacy](hulp/privacy.md).
+Het feestscherm is gratis voor persoonlijk gebruik; de [Pro-functies](pro/README.md) vragen een licentiecode. Er is geen account en geen tracking, en de licentie wordt zonder internet gecontroleerd. Zie [Privacy](hulp/privacy.md).
 {% endhint %}

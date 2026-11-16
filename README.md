@@ -44,6 +44,18 @@ SpotiParty **leest** alleen van Spotify: wat er speelt en wat erna komt. Hij bed
 
 ---
 
+## 👑 SpotiParty Pro
+
+Het feestscherm is gratis. **Pro** (eenmalig) voegt de **SpotiParty Hub** toe: een admin-dashboard op
+`http://<pc-of-pi>:8770` voor al je schermen, met **meldingen**, een **pauze-aftelklok**, een **QR-code voor je
+gasten-wifi** en de **Home Assistant-kaart op volledig scherm**. De desktop-app en de Raspberry Pi starten de Hub
+vanzelf; de Android TV vindt hem zelf op het netwerk. Zie [docs/pro](docs/pro/README.md).
+
+Nieuw: SpotiParty op een **Raspberry Pi** als vast feestscherm: `sudo ./pi/install.sh`
+([docs/raspberry-pi](docs/raspberry-pi/README.md)).
+
+---
+
 ## 🧭 Welke versie kies ik?
 
 <img src="docs/images/overview.svg" alt="Drie bronnen (Android TV, PC, Home Assistant) leveren hetzelfde scherm" width="860">
@@ -372,4 +384,4 @@ SpotiParty daar als kaart, en leveren de songteksten ook *Now playing* in de lau
 
 SpotiParty heeft niets met Spotify AB te maken. Spotify is een handelsmerk van Spotify AB.
 
-Uitgegeven onder de [MIT-licentie](LICENSE).
+© 2026 CodeAura. Alle rechten voorbehouden; zie de [licentievoorwaarden](LICENSE). Het feestscherm is gratis voor persoonlijk gebruik, de Pro-functies vragen een licentiecode.

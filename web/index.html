@@ -48,13 +48,41 @@
   body.idle #idle { display: flex; }
   body.idle #song, body.idle #lyrics { visibility: hidden; }
 
-  #jam { position: absolute; right: 3.5cqw; bottom: 4cqh; display: flex; align-items: center; gap: 1.6cqh;
+  #corner { position: absolute; right: 3.5cqw; bottom: 4cqh; display: flex; gap: 1.6cqh; align-items: flex-end;
+    max-width: 70cqw; }
+  .qrcard { display: flex; align-items: center; gap: 1.6cqh;
     padding: 1.4cqh 2.4cqh 1.4cqh 1.4cqh; background: #0009; border: 1px solid #fff3; border-radius: 2.6cqh;
-    backdrop-filter: blur(8px); max-width: 60cqw; }
-  #jam canvas { width: clamp(64px, 15cqh, 170px); height: auto; aspect-ratio: 1; display: block; }
-  #jam b { display: block; font-size: clamp(12px, 2.4cqh, 24px); }
-  #jam span { display: block; font-size: clamp(10px, 1.7cqh, 17px); color: #fffc; margin-top: .3em; max-width: 22em; }
-  #jam[hidden] { display: none; }
+    backdrop-filter: blur(8px); min-width: 0; }
+  .qrcard canvas { width: clamp(64px, 15cqh, 170px); height: auto; aspect-ratio: 1; display: block; flex: none; }
+  .qrcard b { display: block; font-size: clamp(12px, 2.4cqh, 24px); }
+  .qrcard span { display: block; font-size: clamp(10px, 1.7cqh, 17px); color: #fffc; margin-top: .3em; max-width: 22em; }
+  .qrcard span code { font: inherit; color: #fff; font-weight: 700; word-break: break-all; }
+  .qrcard[hidden] { display: none; }
+  #corner.both .qrcard span { max-width: 13em; }
+
+  /* From the SpotiParty Hub (Pro): a notice, a break countdown, a screen's name. */
+  #notice { position: absolute; left: 50%; top: 4cqh; transform: translateX(-50%); width: max-content;
+    max-width: 84cqw; padding: 2.2cqh 4cqh; border-radius: 3cqh; background: #111c; border: 2px solid var(--accent);
+    backdrop-filter: blur(14px); box-shadow: 0 2cqh 6cqh #000a; text-align: center; font-weight: 700;
+    font-size: clamp(16px, 5.4cqh, 60px); line-height: 1.2; animation: drop .45s cubic-bezier(.2, 1.4, .4, 1); z-index: 6; }
+  #notice.party { background: linear-gradient(120deg, var(--accent), #ff4fd8 55%, #ffb547); color: #000; border-color: #fff6; }
+  #notice.alert { background: #b3261ee6; border-color: #fff8; }
+  #notice[hidden] { display: none; }
+  @keyframes drop { from { opacity: 0; transform: translate(-50%, -4cqh) scale(.92); } }
+  #pause { position: absolute; inset: 0; z-index: 4; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center; background: #000d; backdrop-filter: blur(24px); gap: 2cqh; }
+  #pause[hidden] { display: none; }
+  #pause .t { font-size: clamp(20px, 7cqh, 80px); font-weight: 700; }
+  #pause .clock { font-size: clamp(48px, 28cqh, 340px); font-weight: 800; font-variant-numeric: tabular-nums;
+    line-height: 1; color: var(--accent); text-shadow: 0 0 6cqh color-mix(in srgb, var(--accent) 40%, transparent); }
+  #pause .sub { font-size: clamp(13px, 3.4cqh, 36px); color: #fffc; }
+  #pause .ring { width: min(60cqw, 60cqh); height: 1.2cqh; border-radius: 99px; background: #fff2; overflow: hidden; }
+  #pause .ring > div { height: 100%; background: var(--accent); transition: width .5s linear; }
+  #pause.done .clock { animation: pulse 1s ease-in-out infinite alternate; }
+  @keyframes pulse { to { transform: scale(1.06); } }
+  #ident { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center;
+    background: var(--accent); color: #000; font-weight: 800; font-size: clamp(28px, 14cqh, 180px); text-align: center; padding: 5cqw; }
+  #ident[hidden] { display: none; }
 
   /* Narrow (a small dashboard card, a phone): stacked, lyrics below. */
   @container (max-aspect-ratio: 1/1) {
@@ -62,13 +90,14 @@
     #song { width: min(32cqh, 70cqw); }
     #lyrics { flex: none; width: 100%; padding: 0 0 20cqh; }
     #lyrics .l0, #lyrics .l3 { display: none; }
-    #jam { right: auto; left: 50%; transform: translateX(-50%); bottom: 2.5cqh; padding: 1cqh; }
-    #jam canvas { width: clamp(56px, 14cqh, 150px); }
-    #jam > div { display: none; }
+    #corner { right: auto; left: 50%; transform: translateX(-50%); bottom: 2.5cqh; }
+    .qrcard { padding: 1cqh; }
+    .qrcard canvas { width: clamp(56px, 14cqh, 150px); }
+    .qrcard > div { display: none; }
   }
   @container (max-height: 260px) {
     #lyrics .l0, #lyrics .l2, #lyrics .l3 { display: none; }
-    #jam { display: none; }
+    #corner { display: none; }
   }
 
   /* Controls: only while the mouse moves. */
@@ -121,10 +150,25 @@
 
 <div id="idle">Zet muziek aan 🎉</div>
 
-<aside id="jam" hidden>
-  <canvas width="340" height="340"></canvas>
-  <div><b>Doe mee met de Jam</b><span>Scan met je camera en zet je nummer in de wachtrij.</span></div>
-</aside>
+<div id="corner">
+  <aside id="wifi" class="qrcard" hidden>
+    <canvas width="340" height="340"></canvas>
+    <div><b>📶 Gasten-wifi</b><span>Scan met je camera, of typ:<br><code class="ssid"></code><br><code class="pass"></code></span></div>
+  </aside>
+  <aside id="jam" class="qrcard" hidden>
+    <canvas width="340" height="340"></canvas>
+    <div><b>Doe mee met de Jam</b><span>Scan met je camera en zet je nummer in de wachtrij.</span></div>
+  </aside>
+</div>
+
+<div id="notice" hidden></div>
+<div id="pause" hidden>
+  <div class="t"></div>
+  <div class="clock"></div>
+  <div class="ring"><div></div></div>
+  <div class="sub"></div>
+</div>
+<div id="ident" hidden></div>
 
 <div id="tools">
   <button id="fs" title="Volledig scherm (F)">⛶</button>
@@ -186,6 +230,16 @@
     </div>
     <div class="msg" id="jam-msg"></div>
 
+    <h3>SpotiParty Hub <small style="font-weight:400;color:#b9bcc6">(Pro)</small></h3>
+    <p>Met de Hub stuur je meldingen, een pauze-aftelklok en de gasten-wifi naar al je schermen. De desktop-app en
+      de Raspberry Pi starten hem vanzelf; open het dashboard op <code>http://&lt;die-computer&gt;:8770</code>.</p>
+    <label for="hub-url">Adres van de Hub</label>
+    <input id="hub-url" inputmode="url" autocomplete="off" placeholder="http://192.168.1.20:8770 (leeg: deze computer)">
+    <label for="screen-name">Naam van dit scherm</label>
+    <input id="screen-name" maxlength="60" autocomplete="off" placeholder="Woonkamer">
+    <div class="row"><button id="hub-save" class="go">Verbinden</button></div>
+    <div class="msg" id="hub-msg"></div>
+
     <h3>Weergave</h3>
     <label class="check"><input type="checkbox" id="opt-lyrics" checked> Songteksten (lrclib.net)</label>
     <div class="row"><button id="close" class="go">Klaar</button></div>
@@ -194,5 +248,6 @@
 
 <script src="qr.js"></script>
 <script src="party.js"></script>
+<script src="hub.js"></script>
 </body>
 </html>
