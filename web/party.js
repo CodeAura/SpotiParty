@@ -246,6 +246,7 @@ const Spotify = (() => {
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error_description || j.error || r.status);
     store.set("sp_access", j.access_token);
+    if (j.scope) store.set("sp_scope", j.scope);   // what this login allows: older logins can't control the music
     if (j.refresh_token) store.set("sp_refresh", j.refresh_token);
     store.set("sp_expires", Date.now() + (j.expires_in - 60) * 1000);
     return j.access_token;
@@ -275,6 +276,8 @@ const Spotify = (() => {
   /** A Hub command on this account's player. Returns "" when done, or why not, in words for the dashboard. */
   async function control(cmd) {
     if (!linked()) return "Spotify is niet gekoppeld op dit scherm.";
+    if (!store.get("sp_scope").includes("user-modify-playback-state"))
+      return "log op dit scherm opnieuw in bij Spotify (⚙ of S), dan mag SpotiParty de muziek bedienen.";
     const send = async (method, path) => {
       let r = await fetch("https://api.spotify.com/v1" + path, { method, headers: { Authorization: "Bearer " + await access() } });
       if (r.status === 401) r = await fetch("https://api.spotify.com/v1" + path, { method, headers: { Authorization: "Bearer " + await access(true) } });
@@ -346,7 +349,9 @@ const Spotify = (() => {
   function stop() { clearInterval(pollTimer); }
 
   setInterval(pollQueue, 15000);
-  return { REDIRECT, linked, canLogin, login, finishLogin, unlink, start, stop, pollQueue, control };
+  /** False for a login from before the Hub's music buttons: it lacks the scope to pause, play and skip. */
+  const canControl = () => linked() && store.get("sp_scope").includes("user-modify-playback-state");
+  return { REDIRECT, linked, canLogin, login, finishLogin, unlink, start, stop, pollQueue, control, canControl };
 })();
 
 // ---------- Home Assistant ----------
@@ -572,7 +577,9 @@ function openSettings(open) {
   $("sp-login").disabled = !Spotify.canLogin();
   $("sp-client").value = store.get("sp_client");
   $("sp-head").textContent = source === "ha" ? "Spotify-wachtrij (optioneel)" : "Spotify koppelen";
-  msg("sp-msg", Spotify.linked() ? "Spotify is gekoppeld." : "");
+  msg("sp-msg", !Spotify.linked() ? "" : Spotify.canControl() ? "Spotify is gekoppeld."
+    : "Spotify is gekoppeld, maar nog zonder bediening. Log opnieuw in, dan kan het dashboard de muziek pauzeren en overslaan.",
+    Spotify.linked() && !Spotify.canControl());
   $("jam-link").value = store.get("jam");
   $("opt-lyrics").checked = store.get("lyrics", "on") === "on";
   if (typeof Hub !== "undefined") Hub.fillSettings();

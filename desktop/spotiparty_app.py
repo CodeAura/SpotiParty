@@ -88,8 +88,12 @@ def open_window():
         # A profile of its own: the Spotify login and settings stay with SpotiParty, apart from your normal browser.
         profile = data_dir() / "browser"
         flags = 0x08000000 if platform.system() == "Windows" else 0   # CREATE_NO_WINDOW
+        # The screen must keep talking to the Hub (and run its play/pause commands) when it is behind another
+        # window or minimised: without these flags Edge and Chrome slow its timers to once a minute.
         subprocess.Popen([browser, f"--app={URL}", f"--user-data-dir={profile}", "--window-size=1280,760",
-                          "--no-first-run", "--no-default-browser-check"], creationflags=flags)
+                          "--no-first-run", "--no-default-browser-check",
+                          "--disable-background-timer-throttling", "--disable-renderer-backgrounding",
+                          "--disable-backgrounding-occluded-windows"], creationflags=flags)
     else:
         webbrowser.open(URL)
 
