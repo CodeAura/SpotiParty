@@ -226,7 +226,7 @@ final class SpotifyApi {
             }
             if (now == null || now.optJSONObject("item") == null || now.optLong("progress_ms", -1) < 0) return null;
             long t1 = android.os.SystemClock.elapsedRealtime();
-            if (t1 - t0 > 3000) return null;   // too slow to trust to the second
+            if (t1 - t0 > 6000) return null;   // too slow to trust
             return new Progress(now.optLong("progress_ms"), now.optBoolean("is_playing"),
                     now.optJSONObject("item").optString("name"), (t0 + t1) / 2);
         } catch (Exception e) {

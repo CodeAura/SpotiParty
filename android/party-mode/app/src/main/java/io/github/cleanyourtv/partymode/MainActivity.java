@@ -52,6 +52,7 @@ public class MainActivity extends Activity {
     private static final int PORT = 8768;
     private static final Uri LYRICS = Uri.parse("content://io.github.cleanyourtv.lyrics.widget/lyrics");
     private static final long TICK_MS = 150;
+    private static final long LYRIC_LEAD_MS = 700;
     /** Which of the lyric lines on screen is the one being sung. */
     private static final int NOW = 1;
 
@@ -71,7 +72,18 @@ public class MainActivity extends Activity {
                 syncLoading = true;
                 syncWorker.execute(() -> {
                     SpotifyApi.Progress p = SpotifyApi.progress(prefs);
+                    // Keep the last good answer for this song when a request fails; a new song clears it.
                     if (p != null) apiProgress = p;
+                    android.util.Log.i(SpotifyApi.TAG, p == null ? "sync: no answer from Spotify"
+                            : "sync: " + p.ms + " ms, playing=" + p.playing + ", title match="
+                            + sameSong(p.title, lastTitle));
+                    if (p != null && !sameSong(p.title, lastTitle)) {
+                        // Spotify still reports the song before: ask again in a second.
+                        handler.post(() -> {
+                            handler.removeCallbacks(progressPoll);
+                            handler.postDelayed(progressPoll, 1000);
+                        });
+                    }
                     syncLoading = false;
                 });
             }
@@ -108,6 +120,8 @@ public class MainActivity extends Activity {
     private String shownNotice = "";
     /** When this song was first seen (elapsedRealtime), for a position of our own when the session's is useless. */
     private long songSeenAt;
+    /** The title on screen, for the sync log (read off the main thread). */
+    private volatile String lastTitle = "";
     /** The position Spotify's servers report (fetched with the queue), for songs that play on another device. */
     private volatile SpotifyApi.Progress apiProgress;
     /** The Jam link from the dashboard (for every screen); "" = use the one set from the phone. */
@@ -698,6 +712,7 @@ public class MainActivity extends Activity {
         String songArtist = text(m, MediaMetadata.METADATA_KEY_ARTIST);
         String album = text(m, MediaMetadata.METADATA_KEY_ALBUM);
         long duration = m.getLong(MediaMetadata.METADATA_KEY_DURATION);
+        lastTitle = songTitle;
         title.setText(songTitle);
         artist.setText(songArtist);
         if (hub != null) hub.setSong(songArtist.isEmpty() ? songTitle : songTitle + " – " + songArtist);
@@ -864,8 +879,10 @@ public class MainActivity extends Activity {
         // Spotify's own position comes first: the TV's session is often wrong for a song that plays on another
         // device (Spotify Connect). It keeps a frozen position that, counted on, drifts away from the song or
         // lands far past its end (the lyrics then stay on the last, empty line).
+        // One good answer from Spotify holds for the whole song: counted on from then it stays right, also when a
+        // later request fails on a shaky Wi-Fi (the TV's own clock would start late and run behind).
         SpotifyApi.Progress p = apiProgress;
-        if (p != null && now - p.at < 15_000 && sameSong(p.title, title.getText().toString())) {
+        if (p != null && sameSong(p.title, title.getText().toString())) {
             position = p.ms + (p.playing ? now - p.at : 0);
         } else if (position < 0 || (duration > 0 && position > duration + 3000)
                 || s.getPosition() == PlaybackState.PLAYBACK_POSITION_UNKNOWN) {
@@ -874,7 +891,8 @@ public class MainActivity extends Activity {
         if (duration > 0) position = Math.min(position, duration);
         if (duration > 0) progress.setProgress((int) Math.min(1000, position * 1000 / duration));
         if (!synced) return;
-        long ahead = position + 250;
+        // A line shows a little before it is sung: reading takes a moment, and sound reaches you after the TV draws.
+        long ahead = position + LYRIC_LEAD_MS;
         int index = -1;
         for (int i = 0; i < times.length; i++) {
             if (times[i] <= ahead) index = i; else break;
