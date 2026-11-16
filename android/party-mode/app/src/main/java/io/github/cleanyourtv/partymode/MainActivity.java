@@ -52,7 +52,7 @@ public class MainActivity extends Activity {
     private static final int PORT = 8768;
     private static final Uri LYRICS = Uri.parse("content://io.github.cleanyourtv.lyrics.widget/lyrics");
     private static final long TICK_MS = 150;
-    private static final long LYRIC_LEAD_MS = 700;
+    private static final long LYRIC_LEAD_MS = 200;
     /** Which of the lyric lines on screen is the one being sung. */
     private static final int NOW = 1;
 
