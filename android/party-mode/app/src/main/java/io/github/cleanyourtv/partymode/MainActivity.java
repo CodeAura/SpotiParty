@@ -112,6 +112,8 @@ public class MainActivity extends Activity {
     private volatile SpotifyApi.Progress apiProgress;
     /** The Jam link from the dashboard (for every screen); "" = use the one set from the phone. */
     private String hubJam = "";
+    /** The hub state the Jam card was last drawn for (null = no hub). */
+    private HubLink.State hubShown;
     /** Command ids already run, so a repeated answer never pauses or skips twice. */
     private final java.util.Set<String> doneCmds = new java.util.HashSet<>();
     private LinearLayout pauseView;
@@ -619,6 +621,14 @@ public class MainActivity extends Activity {
     private void showQr() {
         String jam = !hubJam.isEmpty() ? hubJam : prefs.getString("jam", "");
         String setup = link == null ? null : link.address(this);
+        View card = (View) qr.getParent();
+        // With a Hub the Jam link is set in the dashboard: no "set the Jam" code on the TV then (Menu still shows it).
+        if (jam.isEmpty() && hubState != null && !showingSetup) {
+            card.setVisibility(View.GONE);
+            resetButton.setVisibility(View.GONE);
+            return;
+        }
+        card.setVisibility(View.VISIBLE);
         if (!jam.isEmpty() && !showingSetup) {
             qr.setText(jam);
             qrTitle.setText(R.string.jam_title);
@@ -628,8 +638,9 @@ public class MainActivity extends Activity {
             qrTitle.setText(R.string.setup_title);
             qrText.setText(setup == null ? getString(R.string.no_network) : getString(R.string.setup_text));
         }
-        // The reset button only while a Jam link is set; it has the remote's focus then, so OK reaches it.
-        boolean hasJam = !jam.isEmpty();
+        // The reset button only for a Jam link set from the phone (the dashboard's has its own Weghalen); it has the
+        // remote's focus then, so OK reaches it.
+        boolean hasJam = !jam.isEmpty() && hubJam.isEmpty();
         resetButton.setVisibility(hasJam ? View.VISIBLE : View.GONE);
         resetButton.setText(R.string.reset_jam);
         if (hasJam) resetButton.requestFocus();
@@ -1076,7 +1087,9 @@ public class MainActivity extends Activity {
 
         // The Jam link from the dashboard replaces the one set from the phone, on every screen at once.
         String jam = s == null || !isSpotifyLink(s.jam) ? "" : s.jam;
-        if (!jam.equals(hubJam)) {
+        boolean linkChanged = (s == null) != (hubShown == null);
+        hubShown = s;
+        if (!jam.equals(hubJam) || linkChanged) {
             hubJam = jam;
             showQr();
         }
