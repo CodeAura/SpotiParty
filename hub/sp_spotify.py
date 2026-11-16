@@ -125,7 +125,10 @@ class Spotify:
             try:
                 with urllib.request.urlopen(req, timeout=8) as r:
                     raw = r.read()
-                    return r.status, (json.loads(raw) if raw else None)
+                    try:
+                        return r.status, (json.loads(raw) if raw.strip() else None)
+                    except ValueError:
+                        return r.status, None   # a control call can answer with a bare id instead of JSON
             except urllib.error.HTTPError as e:
                 if e.code == 401 and not force:
                     continue
