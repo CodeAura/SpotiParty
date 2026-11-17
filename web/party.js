@@ -441,7 +441,7 @@ const HA = (() => {
   }
 
   async function connect(onMsg) {
-    let url = (store.get("ha_url") || (location.pathname.startsWith("/local/") ? location.origin : "")).replace(/\/+$/, "");
+    let url = (store.get("ha_url") || (/^\/(local|hacsfiles)\//.test(location.pathname) ? location.origin : "")).replace(/\/+$/, "");
     if (!url) { onMsg && onMsg("Vul het adres van Home Assistant in.", true); idleMsg("Kies in ⚙ je Home Assistant"); return; }
     base = url;
     const tok = await authToken(url);

@@ -258,11 +258,26 @@ SpotiParty past als kaart in elk dashboard en volgt elke `media_player`, dus nie
 
 <img src="docs/images/ha-install.svg" alt="Drie stappen: map kopiëren naar www/spotiparty, kaart toevoegen, adres invullen" width="860">
 
-### Stap 1: Bestanden kopiëren
+### Installeren via HACS (makkelijkst)
 
-Kopieer de inhoud van de map **`web/`** naar **`/config/www/spotiparty/`** in Home Assistant. Dat kan met de
-add-on **Samba share**, **File editor** of **Studio Code Server**. Bestond de map `www` nog niet? Herstart Home
-Assistant dan één keer.
+Met [HACS](https://hacs.xyz) krijg je SpotiParty als kaart, met updates erbij:
+
+1. **HACS → ⋮ → Aangepaste repositories**: plak `https://github.com/CodeAura/SpotiParty`, kies type **Dashboard**
+   en klik **Toevoegen**.
+2. Zoek **SpotiParty** in HACS en klik **Downloaden**. HACS zet de kaart erbij als bron; herlaad de browser.
+3. Ga verder bij **Stap 2: Kaart toevoegen** (de kaart heet `custom:spotiparty-card`).
+
+> [!NOTE]
+> HACS kan alleen bij een **openbare** repository. Is SpotiParty privé, gebruik dan stap 1 hieronder.
+
+### Stap 1: Bestanden kopiëren (zonder HACS)
+
+Kopieer de bestanden uit **`dist/`** (of pak `spotiparty-homeassistant.zip` uit) naar **`/config/www/spotiparty/`**
+in Home Assistant. Dat kan met de add-on **Samba share**, **File editor** of **Studio Code Server**. Bestond de map
+`www` nog niet? Herstart Home Assistant dan één keer. Voeg daarna bij **Instellingen → Dashboards → ⋮ → Bronnen**
+toe: `/local/spotiparty/spotiparty-card.js`, type **JavaScript-module**.
+
+`dist/` en de zip maak je opnieuw met `python tools/build_ha.py` na elke wijziging in `web/`.
 
 ### Stap 2: Kaart toevoegen
 
