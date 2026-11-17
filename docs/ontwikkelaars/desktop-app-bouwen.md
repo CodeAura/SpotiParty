@@ -26,14 +26,19 @@ De app wordt gebouwd voor de processor van de Mac waarop je bouwt. Voor de Intel
 {% endtab %}
 
 {% tab title="Windows" %}
-Met **Python 3.12**, in de SpotiParty-map:
+Eén commando in PowerShell, op een Windows-pc met **Python 3.10 of nieuwer (64-bit)** en voor de installer **Inno Setup 6**:
 
-```bash
-pip install pyinstaller pillow
-pyinstaller --noconfirm --onefile --windowed --name SpotiParty --icon "%CD%\desktop\icon.ico" --add-data "%CD%\web;web" --add-data "%CD%\hub;hub" --paths "%CD%\hub" --distpath desktop/dist desktop/spotiparty_app.py
+```powershell
+winget install Python.Python.3.12 JRSoftware.InnoSetup
+powershell -ExecutionPolicy Bypass -File desktop\build-windows.ps1 -Version 2.4.0
 ```
 
-Resultaat: `desktop/dist/SpotiParty.exe`. Gebruik volledige paden bij `--icon` en `--add-data`: PyInstaller zoekt ze anders naast het `.spec`-bestand.
+Het script maakt een eigen bouwomgeving in `desktop\build\`, bouwt `SpotiParty.exe`, start hem één keer om te controleren of de pagina en de Hub antwoorden, en maakt de installer. Resultaat:
+
+* `desktop\dist\SpotiParty.exe`
+* `desktop\dist\SpotiParty-Setup-2.4.0.exe`
+
+Een Windows-VM op een Mac (bijvoorbeeld Parallels met Windows 11 op ARM) werkt ook. Gebruik daar een **x64**-Python (`py install 3.13-64`), zodat de `.exe` op gewone pc's draait.
 {% endtab %}
 {% endtabs %}
 
