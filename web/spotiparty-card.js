@@ -12,6 +12,9 @@
 //   name: Woonkamer-tablet              # optional: this screen's name in the hub
 //   height: 480px                       # card height when not full screen
 const BASE = new URL(".", import.meta.url).pathname.replace(/\/$/, "");
+// The screen itself, inlined by tools/build_ha.py for the HACS / one-file version (null in web/: then the card
+// loads index.html next to it).
+const SRCDOC = /*SPOTIPARTY_SRCDOC*/null;
 
 class SpotiPartyCard extends HTMLElement {
   setConfig(config) {
@@ -26,20 +29,22 @@ class SpotiPartyCard extends HTMLElement {
   getGridOptions() { return { columns: 12, rows: 6, min_rows: 3 }; }
   static getStubConfig() { return { fullscreen: false }; }
 
-  _src() {
+  _query() {
     const c = this._config, q = new URLSearchParams({ source: "ha", kiosk: "1", kind: "ha" });
     if (c.entity) q.set("entity", c.entity);
     if (c.hub) q.set("hub", c.hub);
     if (c.name) q.set("name", c.name);
-    return `${BASE}/index.html?${q}`;
+    return q.toString();
   }
+
+  _src() { return SRCDOC ? "" : `${BASE}/index.html?${this._query()}`; }
 
   _render() {
     if (!this._config) return;
     if (!this.shadowRoot) this.attachShadow({ mode: "open" });
     const c = this._config, full = c.fullscreen && !this._exited;
     const src = this._src();
-    const key = `${src}|${full}`;
+    const key = `${src || this._query()}|${full}`;
     if (this._shown === key) return;
     this._shown = key;
     this.shadowRoot.innerHTML = `
@@ -60,6 +65,12 @@ class SpotiPartyCard extends HTMLElement {
         ? `<ha-card></ha-card><div class="full"><button class="exit" title="Terug naar het dashboard">✕</button>
              <iframe src="${src}" allow="fullscreen; autoplay"></iframe></div>`
         : `<ha-card><iframe src="${src}" allow="fullscreen; autoplay"></iframe></ha-card>`}`;
+    if (SRCDOC) {
+      // One-file version: the page goes in as srcdoc (same origin as the dashboard, so it reads Home Assistant's
+      // states), with the card's options in front of the scripts.
+      const opts = `<script>window.SP_PARAMS=${JSON.stringify(this._query())};<\/script>`;
+      this.shadowRoot.querySelector("iframe").srcdoc = SRCDOC.replace("<head>", "<head>" + opts);
+    }
     const exit = this.shadowRoot.querySelector(".exit");
     if (exit) exit.onclick = () => { this._exited = true; this._render(); };
   }

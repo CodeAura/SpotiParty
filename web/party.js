@@ -4,7 +4,8 @@
 "use strict";
 
 const $ = id => document.getElementById(id);
-const params = new URLSearchParams(location.search);
+// The Home Assistant card (one file, page inlined) hands its options over as SP_PARAMS instead of a URL.
+const params = new URLSearchParams(window.SP_PARAMS || location.search);
 const TICK_MS = 150;
 
 // ---------- storage ----------
