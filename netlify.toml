@@ -1,8 +1,0 @@
-# Netlify: the website is the site/ folder; the Shopify order webhook is a function in site/netlify/functions.
-# Paths are from the repository root (leave the Base directory empty in Netlify's build settings).
-[build]
-  publish = "site"
-
-[functions]
-  directory = "site/netlify/functions"
-  node_bundler = "esbuild"

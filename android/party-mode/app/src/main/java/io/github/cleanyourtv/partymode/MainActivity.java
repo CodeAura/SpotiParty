@@ -119,7 +119,7 @@ public class MainActivity extends Activity {
     private TextView nextUp;
     private boolean queueLoading;
 
-    // SpotiParty Hub (Pro): notices, the break countdown, guest Wi-Fi and "which screen is this?".
+    // SpotiParty Hub: notices, the break countdown, guest Wi-Fi and "which screen is this?".
     private HubLink hub;
     private HubLink.State hubState;
     private String hubStatus = "";
@@ -1070,7 +1070,7 @@ public class MainActivity extends Activity {
             + "$('automsg').textContent=await r.text();}catch(e){$('automsg').textContent='De tv is niet bereikbaar.';}};"
             + "</script>"
             + "<h1 style='margin-top:40px'>SpotiParty Hub</h1>"
-            + "<p>Met de Hub (SpotiParty Pro) stuur je meldingen, een pauze-aftelklok en de gasten-wifi naar al je "
+            + "<p>Met de Hub stuur je meldingen, een pauze-aftelklok en de gasten-wifi naar al je "
             + "schermen. De tv vindt de Hub zelf; vul alleen een adres in als dat niet lukt.</p>"
             + "<div id=hubstate style='color:#1ed760'></div>"
             + "<label for=hub>Adres van de Hub (leeg: zelf zoeken)</label>"
@@ -1122,7 +1122,7 @@ public class MainActivity extends Activity {
             + "$('spstate').textContent='';}catch(e){$('spmsg').textContent='De tv is niet bereikbaar.';}};"
             + "</script>";
 
-    /** What the Hub wants on this screen (null: no hub, or no Pro licence on it). */
+    /** What the Hub wants on this screen (null: no hub). */
     private void onHub(HubLink.State s, String status) {
         hubState = s;
         hubStatus = status == null ? "" : status;

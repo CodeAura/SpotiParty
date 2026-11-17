@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 
 /**
- * The TV as a screen of the SpotiParty Hub (Pro): notices, the break countdown, the guest Wi-Fi QR and
+ * The TV as a screen of the SpotiParty Hub: notices, the break countdown, the guest Wi-Fi QR and
  * "which screen is this?". Only while the screen is open (start in onStart, stop in onStop).
  *
  * The hub is found with a UDP broadcast ("SPOTIPARTY_HUB?" to port 8771), or set by hand from the phone page.
@@ -30,14 +30,14 @@ final class HubLink {
     private static final int POLL_MS = 2000;
 
     interface Listener {
-        /** On the main thread; null when there is no hub (or no Pro licence on it). */
+        /** On the main thread; null when there is no hub. */
         void onHub(State state, String status);
     }
 
     static final class State {
         long offset;            // hub clock minus the TV's clock, ms
         String name = "";
-        boolean pro;            // notices, break, Wi-Fi and "identify" (always on while licences are switched off)
+        boolean pro;            // notices, break, Wi-Fi and "identify" (the hub always sends true)
         String jam = "";        // the Jam link set in the dashboard, for every screen; "" = none
         final java.util.List<String[]> cmds = new java.util.ArrayList<>();   // {id, cmd} to run once
         String noticeId, noticeText, noticeStyle;

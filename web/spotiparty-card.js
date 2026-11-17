@@ -1,44 +1,23 @@
 // SpotiParty card for Home Assistant: `type: custom:spotiparty-card`.
-// Free: SpotiParty as a card in your dashboard. Pro (licence key): full screen over the whole Home Assistant
-// window, without the sidebar and header: for a wall tablet or a TV running the dashboard.
+// SpotiParty as a card in your dashboard, or full screen over the whole Home Assistant window (without the
+// sidebar and header): for a wall tablet or a TV running the dashboard.
 //
 // Install: copy web/ to /config/www/spotiparty/ and add the resource
 //   /local/spotiparty/spotiparty-card.js   (type: JavaScript module)
 //
 //   type: custom:spotiparty-card
 //   entity: media_player.woonkamer      # optional: else whatever plays
-//   fullscreen: true                    # Pro
-//   license: SPOTI-...                  # Pro: the key from your purchase mail
+//   fullscreen: true                    # over the whole Home Assistant window
 //   hub: http://192.168.1.20:8770       # optional: notices, break and Wi-Fi from the SpotiParty Hub
 //   name: Woonkamer-tablet              # optional: this screen's name in the hub
 //   height: 480px                       # card height when not full screen
 const BASE = new URL(".", import.meta.url).pathname.replace(/\/$/, "");
 
-let licenceLib;
-function loadLicence() {
-  if (!licenceLib) {
-    licenceLib = new Promise(resolve => {
-      if (window.SpotiPartyLicense) return resolve(window.SpotiPartyLicense);
-      const s = document.createElement("script");
-      s.src = `${BASE}/license.js`;
-      s.onload = () => resolve(window.SpotiPartyLicense || null);
-      s.onerror = () => resolve(null);
-      document.head.appendChild(s);
-    });
-  }
-  return licenceLib;
-}
-
 class SpotiPartyCard extends HTMLElement {
   setConfig(config) {
     if (config.entity && !/^media_player\./.test(config.entity)) throw new Error("entity moet een media_player zijn");
     this._config = { height: "480px", fullscreen: false, ...config };
-    this._licence = undefined;
     this._render();
-    loadLicence().then(lib => {
-      this._licence = lib && config.license ? lib.check(config.license) : null;
-      this._render();
-    });
   }
 
   set hass(hass) { this._hass = hass; }   // the page inside reads the states from the dashboard itself
@@ -58,9 +37,9 @@ class SpotiPartyCard extends HTMLElement {
   _render() {
     if (!this._config) return;
     if (!this.shadowRoot) this.attachShadow({ mode: "open" });
-    const c = this._config, pro = !!this._licence, full = c.fullscreen && pro && !this._exited;
+    const c = this._config, full = c.fullscreen && !this._exited;
     const src = this._src();
-    const key = `${src}|${full}|${c.fullscreen && this._licence === null}`;
+    const key = `${src}|${full}`;
     if (this._shown === key) return;
     this._shown = key;
     this.shadowRoot.innerHTML = `
@@ -80,9 +59,7 @@ class SpotiPartyCard extends HTMLElement {
       ${full
         ? `<ha-card></ha-card><div class="full"><button class="exit" title="Terug naar het dashboard">✕</button>
              <iframe src="${src}" allow="fullscreen; autoplay"></iframe></div>`
-        : `<ha-card><iframe src="${src}" allow="fullscreen; autoplay"></iframe>${c.fullscreen && this._licence === null
-            ? `<div class="badge">Volledig scherm is SpotiParty Pro · <a href="https://spotiparty.netlify.app/#prijzen" target="_blank" rel="noopener">licentie</a></div>`
-            : ""}</ha-card>`}`;
+        : `<ha-card><iframe src="${src}" allow="fullscreen; autoplay"></iframe></ha-card>`}`;
     const exit = this.shadowRoot.querySelector(".exit");
     if (exit) exit.onclick = () => { this._exited = true; this._render(); };
   }
@@ -99,7 +76,7 @@ if (!customElements.get("spotiparty-card")) {
   window.customCards.push({
     type: "spotiparty-card",
     name: "SpotiParty",
-    description: "Wat er speelt, met songtekst en Jam-QR. Met Pro: volledig scherm over heel Home Assistant.",
+    description: "Wat er speelt, met songtekst en Jam-QR. Ook volledig scherm over heel Home Assistant.",
     preview: false,
   });
 }

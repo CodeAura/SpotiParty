@@ -35,5 +35,5 @@ Weet je nog niet welke versie bij je past? Lees eerst [Aan de slag](aan-de-slag/
 * [Problemen oplossen](hulp/problemen-oplossen.md)
 
 {% hint style="info" %}
-Het feestscherm is gratis voor persoonlijk gebruik; de [Pro-functies](pro/README.md) vragen een licentiecode. Er is geen account en geen tracking, en de licentie wordt zonder internet gecontroleerd. Zie [Privacy](hulp/privacy.md).
+Er is geen account en geen tracking. Met de [SpotiParty Hub](hub/README.md) bestuur je al je schermen vanaf één plek. Zie [Privacy](hulp/privacy.md).
 {% endhint %}

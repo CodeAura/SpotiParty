@@ -13,23 +13,21 @@ SpotiParty/
 ├── web/              De webversie voor PC, Raspberry Pi en Home Assistant
 │   ├── index.html
 │   ├── party.js      Spotify, Home Assistant, lrclib en de weergave
-│   ├── hub.js        Meldingen, pauze en gasten-wifi van de Hub (Pro)
-│   ├── license.js    Licentiecontrole in de browser
-│   ├── spotiparty-card.js  De Home Assistant-kaart (volledig scherm met Pro)
+│   ├── hub.js        Meldingen, pauze en gasten-wifi van de Hub
+│   ├── spotiparty-card.js  De Home Assistant-kaart (ook volledig scherm)
 │   ├── qr.js         QR-codes zonder bibliotheek
 │   ├── serve.py      Kleine server op 127.0.0.1:8769
 │   └── start.cmd     Dubbelklik-starter voor Windows
-├── hub/              De SpotiParty Hub: admin-dashboard op :8770 (Pro)
+├── hub/              De SpotiParty Hub: admin-dashboard op :8770
 │   ├── spotiparty_hub.py   Server, UDP-discovery op :8771
 │   ├── dashboard.html
-│   └── sp_license.py       Licentiecodes (ECDSA P-256)
+│   └── sp_spotify.py       Spotify-account voor de muziekknoppen en de pauze
 ├── pi/               Raspberry Pi: install.sh en kiosk.sh
-├── tools/license.py  Licentiecodes maken (alleen voor de verkoper)
 ├── desktop/
 │   ├── spotiparty_app.py   De desktop-app (server + venster)
 │   ├── installer.iss       Inno Setup-script voor de Windows-installer
 │   └── icon.ico / icon.png
-├── site/             De website (spotiparty.netlify.app) en de Shopify-webhook (netlify/functions)
+├── site/             De website (spotiparty.netlify.app)
 ├── docs/             Deze documentatie (Git Sync met GitBook)
 └── .github/workflows/desktop.yml   Bouwt de desktop-apps
 ```

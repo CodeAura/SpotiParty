@@ -12,8 +12,6 @@
   header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line);
     position: sticky; top: 0; background: #0b0b10ee; backdrop-filter: blur(8px); z-index: 2; }
   header h1 { font-size: 18px; margin: 0; flex: 1; }
-  header .lic { font-size: 13px; color: var(--muted); text-align: right; }
-  header .lic b { color: var(--accent); }
   main { max-width: 1100px; margin: 0 auto; padding: 16px; display: grid; gap: 16px;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
   section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; min-width: 0; }
@@ -78,15 +76,11 @@
   .tag { font-size: 12px; padding: 1px 8px; border-radius: 99px; background: #1ed76022; color: var(--accent); }
   .screen .err { font-size: 12px; color: var(--err); }
   #jam-qr { width: 140px; height: 140px; background: #fff; border-radius: 10px; padding: 6px; display: block; }
-  .locked section.pro { position: relative; }
-  .locked section.pro::after { content: "🔒 SpotiParty Pro"; position: absolute; inset: 0; border-radius: 16px;
-    background: #0b0b10cc; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--muted); }
 </style>
 </head>
 <body>
 <header>
   <h1>🎛️ SpotiParty Hub <span id="hubname" style="color:var(--muted);font-weight:400"></span></h1>
-  <div class="lic" id="lic"></div>
 </header>
 
 <main>
@@ -145,7 +139,7 @@
     <p>In Spotify: Jam starten, <b>Gasten mogen afspelen bedienen</b> uit, dan <b>Uitnodigen → Link kopiëren</b>.</p>
   </section>
 
-  <section class="pro">
+  <section>
     <h2>💬 Melding op het scherm</h2>
     <div id="notice-live"></div>
     <label for="n-text">Bericht</label>
@@ -165,7 +159,7 @@
     <div class="msg" id="n-msg"></div>
   </section>
 
-  <section class="pro">
+  <section>
     <h2>⏸️ Korte pauze</h2>
     <div id="break-live"></div>
     <p>Zet een aftelklok op de schermen. Als de tijd om is, staat er dat het feest verdergaat.</p>
@@ -185,7 +179,7 @@
     <div class="msg" id="b-msg"></div>
   </section>
 
-  <section class="pro">
+  <section>
     <h2>📶 Gasten-wifi</h2>
     <div class="wifi">
       <div>
@@ -203,19 +197,6 @@
       <canvas id="wifi-qr" width="320" height="320" title="Scan om te verbinden"></canvas>
     </div>
     <p>Gebruik een apart <b>gastennetwerk</b>: iedereen die het scherm ziet, kan dit wachtwoord lezen.</p>
-  </section>
-
-  <section id="lic-card" hidden>
-    <h2>🔑 Licentie</h2>
-    <p id="l-status"></p>
-    <label for="l-key">Licentiecode</label>
-    <textarea id="l-key" placeholder="SPOTI-…" spellcheck="false"></textarea>
-    <div class="row">
-      <button class="go" id="l-save">Activeren</button>
-      <button id="l-remove">Verwijderen</button>
-    </div>
-    <div class="msg" id="l-msg"></div>
-    <p>Nog geen licentie? <a href="https://spotiparty.netlify.app/#pro" target="_blank" rel="noopener" style="color:var(--accent)">Koop SpotiParty Pro</a>.</p>
   </section>
 
   <section>
@@ -307,12 +288,6 @@ for (const id of ["n-targets", "b-targets"]) {
 function render() {
   const s = state;
   $("hubname").textContent = "· " + s.name;
-  document.body.classList.toggle("locked", !s.unlocked);
-  $("lic-card").hidden = !s.licensing;
-  $("lic").innerHTML = !s.licensing ? "" : s.licence ? `Pro · <b>${esc(s.licence.to)}</b>` : `Gratis versie`;
-  $("l-status").innerHTML = s.licence
-    ? `✅ SpotiParty Pro, op naam van <b>${esc(s.licence.to)}</b> (licentie ${esc(s.licence.id)}).`
-    : "Meldingen, de pauzeknop en de gasten-wifi horen bij SpotiParty Pro.";
   $("urls").innerHTML = s.urls.map(u => `<code>${esc(u)}</code>`).join(" ");
   const on = s.screens.filter(x => x.online).length;
   $("count").textContent = s.screens.length ? `${on} van ${s.screens.length} online` : "";
@@ -324,7 +299,7 @@ function render() {
       <div class="song">${x.song ? (x.playing ? "▶️ " : "⏸ ") + esc(x.song) : "Geen muziek"}</div>
       ${resText(x.res) ? `<div class="err">${esc(resText(x.res))}</div>` : ""}
       <div class="row">
-        <button data-act="ident" data-id="${esc(x.id)}" ${s.unlocked ? "" : "disabled"}>Aanwijzen</button>
+        <button data-act="ident" data-id="${esc(x.id)}">Aanwijzen</button>
         <button data-act="rename" data-id="${esc(x.id)}">Naam</button>
         <button data-act="forget" data-id="${esc(x.id)}">Vergeten</button>
       </div>
@@ -349,7 +324,6 @@ function render() {
     $("w-ssid").value = w.ssid; $("w-pass").value = w.password; $("w-sec").value = w.security;
     $("w-hidden").checked = w.hidden; $("w-show").checked = w.show;
     $("h-name").value = s.name;
-    $("l-key").value = "";
     paintWifi();
   }
 }
@@ -514,19 +488,6 @@ $("w-save").onclick = async () => {
   } catch (e) { msg("w-msg", e.message, true); }
 };
 
-$("l-save").onclick = async () => {
-  try {
-    const r = await api("license", { key: $("l-key").value });
-    msg("l-msg", r.licence ? "Geactiveerd! Bedankt voor je steun 💚" : "Licentie verwijderd.");
-    $("l-key").value = "";
-    refresh();
-  } catch (e) { msg("l-msg", e.message, true); }
-};
-$("l-remove").onclick = async () => {
-  if (!confirm("Licentie van deze hub verwijderen?")) return;
-  try { await api("license", { key: "" }); msg("l-msg", "Licentie verwijderd."); refresh(); }
-  catch (e) { msg("l-msg", e.message, true); }
-};
 
 $("h-save").onclick = async () => {
   try {

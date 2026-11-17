@@ -5,7 +5,7 @@ icon: microchip
 
 # Raspberry Pi
 
-Een Raspberry Pi aan een tv of beamer is een prima vast feestscherm. Hij start SpotiParty vanzelf op volledig scherm, en kan ook de [Hub](../pro/hub-dashboard.md) zijn voor al je andere schermen.
+Een Raspberry Pi aan een tv of beamer is een prima vast feestscherm. Hij start SpotiParty vanzelf op volledig scherm, en kan ook de [Hub](../hub/hub-dashboard.md) zijn voor al je andere schermen.
 
 ## Wat heb je nodig?
 

@@ -1,4 +1,4 @@
-"""SpotiParty Hub: the admin dashboard for every SpotiParty screen on your network (SpotiParty Pro).
+"""SpotiParty Hub: the admin dashboard for every SpotiParty screen on your network.
 
     python hub/spotiparty_hub.py                 # dashboard on http://<this-computer>:8770/
     python hub/spotiparty_hub.py --data DIR --port 8770
@@ -29,7 +29,6 @@ import time
 import urllib.parse
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
-import sp_license  # noqa: E402
 import sp_spotify  # noqa: E402
 
 PORT = 8770
@@ -38,9 +37,6 @@ HERE = pathlib.Path(__file__).resolve().parent
 ONLINE_S = 8            # a screen that polled in the last 8 s is online
 AFTER_BREAK_S = 15      # "we gaan weer verder" stays this long after a break
 SCREEN_KINDS = {"web", "tv", "pi", "ha"}
-# The hub features need a SpotiParty Pro key (bought in the Shopify store; the shopify-order Netlify function signs
-# and mails it). Set to False to give every hub every feature without a key (the licence card is then hidden).
-LICENSING = True
 MEDIA_CMDS = {"play", "pause", "next", "previous", "volume_up", "volume_down"}
 CMD_TTL_S = 20          # a command a screen hasn't picked up in 20 s is dropped (the moment has passed)
 
@@ -121,7 +117,6 @@ class Hub:
             cfg = {}
         cfg.setdefault("pin", f"{secrets.randbelow(10 ** 6):06d}")
         cfg.setdefault("name", platform.node().split(".")[0] or "SpotiParty")
-        cfg.setdefault("license", "")
         cfg.setdefault("jam", "")
         cfg.setdefault("wifi", {"ssid": "", "password": "", "security": "WPA", "hidden": False, "show": False})
         cfg.setdefault("names", {})
@@ -155,14 +150,6 @@ class Hub:
         tmp = self.file.with_suffix(".tmp")
         tmp.write_text(json.dumps(self.cfg, indent=2), "utf-8")
         os.replace(tmp, self.file)
-
-    @property
-    def licence(self):
-        return sp_license.check(self.cfg.get("license", ""))
-
-    @property
-    def unlocked(self):
-        return not LICENSING or bool(self.licence)
 
     @staticmethod
     def now_ms():
@@ -219,20 +206,18 @@ class Hub:
                                  "res": res or prev.get("res", "")}
             if first and len(self.screens) > 200:   # forget the longest-gone screen
                 del self.screens[min(self.screens, key=lambda k: self.screens[k]["seen"])]
-            lic = self.licence
-            out = {"now": self.now_ms(), "hub": self.cfg["name"], "pro": self.unlocked,
+            # "pro" stays in the answer, always true: older screens only show the hub features when it is.
+            out = {"now": self.now_ms(), "hub": self.cfg["name"], "pro": True,
                    "name": self.cfg["names"].get(sid) or self.screens[sid]["name"],
                    "jam": self.cfg.get("jam", ""), "cmds": [{"id": c["id"], "cmd": c["cmd"]} for c in self.queue.pop(sid, [])]}
-            if self.unlocked:
-                w = self.cfg["wifi"]
-                out.update(to=(lic or {}).get("to", ""),
-                           notice=self._for(self.notice, sid), brk=self._for(self.brk, sid),
-                           wifi={"ssid": w["ssid"], "password": "" if w["security"] == "nopass" else w["password"],
-                                 "qr": wifi_qr(w)} if w.get("show") and w.get("ssid") else None,
-                           ident=sid in self.ident)
-                for k in ("notice", "brk"):
-                    if out[k]:
-                        out[k] = {x: y for x, y in out[k].items() if x not in ("targets", "paused", "resumed", "music")}
+            w = self.cfg["wifi"]
+            out.update(notice=self._for(self.notice, sid), brk=self._for(self.brk, sid),
+                       wifi={"ssid": w["ssid"], "password": "" if w["security"] == "nopass" else w["password"],
+                             "qr": wifi_qr(w)} if w.get("show") and w.get("ssid") else None,
+                       ident=sid in self.ident)
+            for k in ("notice", "brk"):
+                if out[k]:
+                    out[k] = {x: y for x, y in out[k].items() if x not in ("targets", "paused", "resumed", "music")}
             return 200, out
 
     # ---------- admin ----------
@@ -248,8 +233,7 @@ class Hub:
             sp = self.spotify
             spotify = {"linked": sp.linked(), "client": self.cfg.get("sp_client", ""), "redirect": sp.redirect,
                        "player": sp.player, "error": sp.player_err}
-            return {"now": self.now_ms(), "name": self.cfg["name"], "licensing": LICENSING, "spotify": spotify,
-                    "licence": self.licence, "unlocked": self.unlocked, "jam": self.cfg.get("jam", ""),
+            return {"now": self.now_ms(), "name": self.cfg["name"], "spotify": spotify, "jam": self.cfg.get("jam", ""),
                     "notice": self.notice, "brk": brk, "wifi": self.cfg["wifi"], "screens": screens,
                     "urls": [f"http://{a}:{self.port}/" for a in lan_addresses()]}
 
@@ -281,13 +265,6 @@ class Hub:
             return 400, {"error": str(e)}
         targets = [str(x) for x in b.get("targets", []) if isinstance(x, str)][:200]
         with self.lock:
-            if action == "license":
-                key = str(b.get("key", "")).strip()
-                if key and not sp_license.check(key):
-                    return 400, {"error": "Deze licentiecode klopt niet. Kopieer hem in één keer uit je mail."}
-                self.cfg["license"] = key
-                self._save()
-                return 200, {"licence": self.licence}
             if action == "pin":
                 pin = str(b.get("pin", ""))
                 if not (pin.isdigit() and 4 <= len(pin) <= 12):
@@ -317,8 +294,6 @@ class Hub:
                 self.cfg["jam"] = jam
                 self._save()
                 return 200, {"jam": jam}
-            if LICENSING and not self.licence:
-                return 402, {"error": "Hiervoor heb je SpotiParty Pro nodig. Vul je licentiecode in."}
             if action == "notice":
                 text = str(b.get("text", "")).strip()[:280]
                 if not text:

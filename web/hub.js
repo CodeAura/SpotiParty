@@ -1,4 +1,4 @@
-// SpotiParty Hub on a browser screen (Pro): notices, the break countdown, the guest Wi-Fi QR and "which screen
+// SpotiParty Hub on a browser screen: notices, the break countdown, the guest Wi-Fi QR and "which screen
 // is this?". The screen asks the hub every 2 s (GET /api/screen); the hub never needs to reach the screen.
 // Where the hub is: ?hub=http://ip:8770, the address in ⚙, or this computer (the desktop app and the Pi run one).
 "use strict";
@@ -49,7 +49,7 @@ const Hub = (() => {
       const d = await r.json();
       offset = d.now - Date.now();
       fails = 0;
-      status = d.pro ? `Verbonden met ${d.hub} als “${d.name}”.` : `Verbonden met ${d.hub}. Activeer Pro in het dashboard voor meldingen en de pauzeknop.`;
+      status = `Verbonden met ${d.hub} als “${d.name}”.`;
       apply(d);
       runCommands(d.cmds || []);
     } catch {
@@ -71,7 +71,7 @@ const Hub = (() => {
   const NOTICE = { info: ["📢", "Mededeling"], party: ["🎉", "Feest!"], alert: ["⚠️", "Belangrijk"] };
 
   function apply(d) {
-    // The Jam link set in the dashboard counts on every screen, Pro or not.
+    // The Jam link set in the dashboard counts on every screen.
     const jam = d && d.jam && isSpotifyLink(d.jam) ? d.jam : "";
     if (jam !== hubJam) { hubJam = jam; showJam(); }
     last = d && d.pro ? d : null;
