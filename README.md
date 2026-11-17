@@ -256,84 +256,90 @@ tweede scherm of beamer aan, dan heb je zo een feestscherm.
 
 ## 🏠 Home Assistant
 
-SpotiParty past als kaart in elk dashboard en volgt elke `media_player`, dus niet alleen Spotify.
+SpotiParty is een kaart voor je Home Assistant-dashboard: als gewone kaart of over het hele scherm, voor een
+wandtablet of een tv met je dashboard. De kaart volgt elke `media_player` (Spotify, Sonos, Cast, Music Assistant…)
+en toont met de Hub het nummer van je Spotify-account, met songtekst, Jam-code, meldingen en de pauze.
 
-<img src="docs/images/ha-install.svg" alt="Drie stappen: map kopiëren naar www/spotiparty, kaart toevoegen, adres invullen" width="860">
+### Stap 1: Installeren via HACS (aanbevolen)
 
-### Installeren via HACS (makkelijkst)
-
-Met [HACS](https://hacs.xyz) krijg je SpotiParty als kaart, met updates erbij. Klik op de knop: je eigen Home
-Assistant opent en HACS voegt SpotiParty toe.
+Met [HACS](https://hacs.xyz) installeer je SpotiParty in één klik, en krijg je updates vanzelf te zien.
 
 [![Open je Home Assistant en voeg SpotiParty toe aan HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=CodeAura&repository=SpotiParty&category=plugin)
 
-1. Klik op de knop hierboven, controleer het adres van je Home Assistant en klik **Open link**.
-2. Klik in HACS op **Downloaden**. HACS zet de kaart erbij als bron; herlaad de browser.
+1. Klik op de knop, controleer het adres van je Home Assistant en klik **Open link**.
+2. Klik in HACS op **Downloaden** en herlaad de browser met **Ctrl+F5**.
 
-Werkt de knop niet? Voeg hem dan met de hand toe: **HACS → ⋮ → Aangepaste repositories**, plak
-`https://github.com/CodeAura/SpotiParty`, kies type **Dashboard**, **Toevoegen**, en daarna **Downloaden**.
-3. Ga verder bij **Stap 2: Kaart toevoegen** (de kaart heet `custom:spotiparty-card`).
+Werkt de knop niet? Ga dan naar **HACS → ⋮ → Aangepaste repositories**, plak `https://github.com/CodeAura/SpotiParty`,
+kies type **Dashboard**, klik **Toevoegen** en daarna **Downloaden**.
 
-> [!NOTE]
-> HACS kan alleen bij een **openbare** repository. Is SpotiParty privé, gebruik dan stap 1 hieronder.
+<details>
+<summary><b>Zonder HACS installeren</b></summary>
 
-### Stap 1: Bestanden kopiëren (zonder HACS)
+1. Download **`spotiparty-card.js`** bij de [nieuwste release](../../releases/latest). Het is één bestand; het hele
+   scherm zit erin.
+2. Zet het in **`/config/www/spotiparty/`**, met de add-on **File editor**, **Studio Code Server** of **Samba share**.
+   Bestond de map `www` nog niet? Herstart Home Assistant dan één keer.
+3. Voeg het toe bij **Instellingen → Dashboards → ⋮ → Bronnen**: `/local/spotiparty/spotiparty-card.js`, type
+   **JavaScript-module**.
 
-Kopieer de bestanden uit **`dist/`** (of pak `spotiparty-homeassistant.zip` uit) naar **`/config/www/spotiparty/`**
-in Home Assistant. Dat kan met de add-on **Samba share**, **File editor** of **Studio Code Server**. Bestond de map
-`www` nog niet? Herstart Home Assistant dan één keer. Voeg daarna bij **Instellingen → Dashboards → ⋮ → Bronnen**
-toe: `/local/spotiparty/spotiparty-card.js`, type **JavaScript-module**.
-
-`dist/` en de zip maak je opnieuw met `python tools/build_ha.py` na elke wijziging in `web/`.
+Een update is hetzelfde bestand opnieuw neerzetten, en daarna **Ctrl+F5**.
+</details>
 
 ### Stap 2: Kaart toevoegen
 
-Open je dashboard en kies **✏️ Dashboard bewerken → + Kaart toevoegen → Webpagina**.
-
-### Stap 3: Adres invullen
-
-Vul bij de kaart als URL in:
-
-```text
-/local/spotiparty/index.html?source=ha&entity=media_player.woonkamer
-```
-
-Vervang `media_player.woonkamer` door je eigen speler. Laat je `&entity=…` weg, dan volgt SpotiParty vanzelf
-de speler die op dat moment speelt.
-
-Of plak dit in de **code-editor** van de kaart:
+Kies **✏️ Dashboard bewerken → + Kaart toevoegen**, zoek **SpotiParty**, of plak dit in de code-editor van een
+handmatige kaart:
 
 ```yaml
-type: iframe
-url: /local/spotiparty/index.html?source=ha&entity=media_player.woonkamer
-aspect_ratio: 16:9
+type: custom:spotiparty-card
+hub: http://192.168.1.20:8770
+fullscreen: true
 ```
+
+Vervang `192.168.1.20` door het adres van de pc waar de Hub draait. Dat staat in het SpotiParty-venster op die pc,
+en bovenaan het Hub-dashboard.
+
+### Stap 3: Instellingen van de kaart
+
+| Instelling | Wat het doet |
+|---|---|
+| `hub: http://…:8770` | Het adres van je SpotiParty Hub. **Nodig** voor de Jam-code, meldingen, de pauze en het nummer van je Spotify-account: een webpagina in Home Assistant kan de Hub niet zelf vinden. |
+| `fullscreen: true` | Over het hele Home Assistant-venster, zonder zijbalk en kopregel. Met **✕** linksboven ga je terug naar het dashboard; kom je terug, dan staat hij weer op volledig scherm. |
+| `height: 600px` | De hoogte als gewone kaart (standaard `480px`). |
+| `entity: media_player.woonkamer` | Een vaste speler. Zonder deze regel volgt SpotiParty de speler die op dat moment speelt. |
+| `name: Woonkamer-tablet` | De naam van dit scherm in het Hub-dashboard. |
 
 <table><tr>
 <td><img src="docs/images/web-card.png" alt="SpotiParty als smalle kaart in een dashboard" width="260"></td>
 <td>
 
-**Werkt meteen, zonder token.** De kaart wordt door je eigen Home Assistant geserveerd en leest de standen van
-je dashboard.
+**Werkt meteen, zonder token.** De kaart leest de spelers uit je eigen dashboard.
 
 **Smalle kaart?** Dan zet SpotiParty alles onder elkaar, zoals links.
 
-**Wandtablet of tv-browser?** Maak een heel dashboard van het type **Webpagina** met hetzelfde adres en
-`&kiosk=1` erachter.
+**Wandtablet of tv met je dashboard?** Gebruik `fullscreen: true`, of zet de kaart alleen in een weergave van het
+type **Paneel**.
 
-**Jam-link?** Klik in de kaart en druk op **S**, of beweeg de muis en klik op ⚙.
+**Instellingen in de kaart:** klik erin en druk op **S**, of beweeg de muis en klik op ⚙. Daar zie je ook of de
+kaart met de Hub verbonden is.
 
 </td>
 </tr></table>
 
-### Optioneel
+### Lukt het niet?
 
-- **Hierna: … in Home Assistant.** Spotify accepteert alleen `https://`-adressen om na het inloggen naar terug te
-  gaan, plus `http://127.0.0.1`. Open je Home Assistant via HTTPS, bijvoorbeeld met Nabu Casa of een eigen
-  certificaat? Zet dan het adres dat de ⚙ toont als Redirect URI in je Spotify-app.
-- **Vanaf een andere computer.** Open SpotiParty op die PC en kies in de ⚙ **Home Assistant media player**. Vul het
-  adres van Home Assistant in en een **Long-lived access token**: je profiel → **Beveiliging** → onderaan
-  **Token aanmaken**.
+| Wat je ziet | Oplossing |
+|---|---|
+| HACS: *"The installed content has no spotiparty-card.js"* | De release mist het kaartbestand. Download opnieuw zodra de nieuwste release `spotiparty-card.js` als bijlage heeft. |
+| De kaart toont geen Jam-code, meldingen of pauze | Vul `hub:` in (zie stap 3). Druk in de kaart op **S**: onder Hub staat of hij verbonden is. |
+| *"Deze pagina draait via https://, de Hub via http://"* | Open je dashboard thuis via `http://` (bijv. `http://homeassistant.local:8123`); een https-pagina mag de Hub niet bereiken. |
+| Na een update verandert er niets | Herlaad met **Ctrl+F5**, en kijk bij **Bronnen** dat er maar één `spotiparty-card.js` staat (niet ook een oude `/local/`-versie). |
+
+> [!NOTE]
+> Voor wie SpotiParty bouwt: na een wijziging in `web/` maakt `python tools/build_ha.py` de kaart opnieuw in
+> `dist/spotiparty-card.js`. Zet dat bestand bij elke release als bijlage, naast de Windows-setup: HACS installeert
+> de bijlagen van een release.
+
 
 ---
 
