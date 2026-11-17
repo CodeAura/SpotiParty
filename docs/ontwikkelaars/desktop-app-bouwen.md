@@ -5,29 +5,35 @@ icon: box
 
 # Desktop-app zelf bouwen
 
-De kant-en-klare apps worden door GitHub Actions gebouwd (zie [Een release maken](release-maken.md)). Wil je ze zelf bouwen, dan heb je **Python 3.12** nodig.
-
-```bash
-pip install pyinstaller pillow
-```
+De kant-en-klare apps worden door GitHub Actions gebouwd (zie [Een release maken](release-maken.md)). Je kunt ze ook zelf bouwen.
 
 ## De app bouwen
 
 {% tabs %}
-{% tab title="Windows" %}
+{% tab title="macOS" %}
+Eén commando, op een Mac met **Python 3.10 of nieuwer met Tk 8.6** (de Python van python.org, of `brew install python@3.13 python-tk@3.13`):
+
 ```bash
-pyinstaller --noconfirm --onefile --windowed --name SpotiParty --icon desktop/icon.ico --add-data "web;web" --distpath desktop/dist desktop/spotiparty_app.py
+./desktop/build-macos.sh
 ```
 
-Resultaat: `desktop/dist/SpotiParty.exe`.
+Het script maakt een eigen bouwomgeving in `desktop/build/`, bouwt de app, ondertekent hem ad hoc en maakt de `.dmg`. Resultaat:
+
+* `desktop/dist/SpotiParty.app`
+* `desktop/dist/SpotiParty-macos-apple-silicon.dmg` (of `-intel.dmg` op een Mac met Intel)
+
+De app wordt gebouwd voor de processor van de Mac waarop je bouwt. Voor de Intel-versie bouw je op een Intel-Mac.
 {% endtab %}
 
-{% tab title="macOS" %}
+{% tab title="Windows" %}
+Met **Python 3.12**, in de SpotiParty-map:
+
 ```bash
-pyinstaller --noconfirm --windowed --name SpotiParty --icon desktop/icon.png --add-data "web:web" --distpath desktop/dist desktop/spotiparty_app.py
+pip install pyinstaller pillow
+pyinstaller --noconfirm --onefile --windowed --name SpotiParty --icon "%CD%\desktop\icon.ico" --add-data "%CD%\web;web" --add-data "%CD%\hub;hub" --paths "%CD%\hub" --distpath desktop/dist desktop/spotiparty_app.py
 ```
 
-Resultaat: `desktop/dist/SpotiParty.app`. Let op het scheidingsteken bij `--add-data`: `;` op Windows, `:` op macOS.
+Resultaat: `desktop/dist/SpotiParty.exe`. Gebruik volledige paden bij `--icon` en `--add-data`: PyInstaller zoekt ze anders naast het `.spec`-bestand.
 {% endtab %}
 {% endtabs %}
 
@@ -48,9 +54,4 @@ Resultaat: `desktop/dist/SpotiParty-Setup-1.0.0.exe`. Laat je `/DAppVersion` weg
 
 ## Een .dmg maken (macOS)
 
-```bash
-mkdir -p dmg
-cp -R desktop/dist/SpotiParty.app dmg/
-ln -s /Applications dmg/Applications
-hdiutil create -volname SpotiParty -srcfolder dmg -ov -format UDZO SpotiParty.dmg
-```
+Dat doet `desktop/build-macos.sh` al. De `.dmg` bevat de app en een snelkoppeling naar **Apps**, zodat je hem er meteen in kunt slepen.

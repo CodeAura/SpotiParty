@@ -57,6 +57,12 @@ Zie [Instellen op de PC](instellen.md).
 Voor een eigen venster zonder tabbladen gebruikt SpotiParty **Google Chrome, Microsoft Edge, Brave of Chromium**, als je er een hebt. Met alleen Safari opent SpotiParty in Safari; dat werkt ook.
 {% endhint %}
 
+## Goed om te weten
+
+* **Inkomende verbindingen:** is de firewall van je Mac aan, dan vraagt macOS de eerste keer of SpotiParty inkomende verbindingen mag accepteren. Kies **Sta toe**: zo kunnen je tv en telefoon de Hub en het dashboard bereiken.
+* **Dock-icoon:** klik je op het SpotiParty-icoon in het Dock terwijl SpotiParty al draait, dan opent het scherm opnieuw.
+* **Stoppen:** met **Stoppen** in het SpotiParty-venster, het venster sluiten, of **⌘Q**.
+
 ## Waar staan mijn gegevens?
 
 In `~/Library/Application Support/SpotiParty`.

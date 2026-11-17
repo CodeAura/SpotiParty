@@ -11,16 +11,17 @@ To build one yourself, you need Python 3.12:
 pip install pyinstaller pillow
 ```
 
-Windows:
+Windows (absolute paths: PyInstaller resolves `--icon` and `--add-data` next to the `.spec` file):
 
 ```bash
-pyinstaller --noconfirm --onefile --windowed --name SpotiParty --icon desktop/icon.ico --add-data "web;web" --distpath desktop/dist desktop/spotiparty_app.py
+pyinstaller --noconfirm --onefile --windowed --name SpotiParty --icon "%CD%\desktop\icon.ico" --add-data "%CD%\web;web" --add-data "%CD%\hub;hub" --paths "%CD%\hub" --distpath desktop/dist desktop/spotiparty_app.py
 ```
 
-macOS (`.app` in `desktop/dist/`):
+macOS: one script builds `desktop/dist/SpotiParty.app` and `SpotiParty-macos-<arch>.dmg` (it makes its own
+virtual environment in `desktop/build/`; needs Python 3.10+ with Tk 8.6):
 
 ```bash
-pyinstaller --noconfirm --windowed --name SpotiParty --icon desktop/icon.png --add-data "web:web" --distpath desktop/dist desktop/spotiparty_app.py
+./desktop/build-macos.sh
 ```
 
 Run it from source without building:

@@ -80,8 +80,8 @@ def find_browser():
                  r"BraveSoftware\Brave-Browser\Application\brave.exe"]
         candidates = [os.path.join(r, n) for r in roots if r for n in names]
     elif system == "Darwin":
-        candidates = [f"/Applications/{a}.app/Contents/MacOS/{a}" for a in
-                      ("Google Chrome", "Microsoft Edge", "Brave Browser", "Chromium")]
+        candidates = [f"{root}/Applications/{a}.app/Contents/MacOS/{a}" for root in ("", str(pathlib.Path.home()))
+                      for a in ("Google Chrome", "Microsoft Edge", "Brave Browser", "Chromium")]
     else:
         candidates = [shutil.which(n) or "" for n in ("google-chrome", "chromium", "microsoft-edge", "brave-browser")]
     return next((c for c in candidates if c and os.path.exists(c)), None)
@@ -146,6 +146,30 @@ def open_window():
         webbrowser.open(SCREEN_URL)
 
 
+# ---------- the small window ----------
+MAC = platform.system() == "Darwin"
+FONT = "Segoe UI" if platform.system() == "Windows" else "Helvetica Neue" if MAC else "DejaVu Sans"
+THIS = "deze Mac" if MAC else "deze pc"
+
+
+def font(size, *style):
+    # Tk on macOS draws points at 72 dpi: a little bigger there, so it reads like on Windows.
+    return (FONT, size + 3 if MAC else size, *style)
+
+
+def button(parent, text, command, bg, fg, active, **kw):
+    """A coloured button. On macOS a tk.Button is drawn by the system and ignores its colours (white text on a
+    white button), so there it is a label that behaves like a button."""
+    if not MAC:
+        return tk.Button(parent, text=text, command=command, bg=bg, fg=fg, activebackground=active,
+                         activeforeground=fg, relief="flat", bd=0, cursor="hand2", **kw)
+    b = tk.Label(parent, text=text, bg=bg, fg=fg, cursor="pointinghand", **kw)
+    b.bind("<Button-1>", lambda e: command())
+    b.bind("<Enter>", lambda e: b.config(bg=active))
+    b.bind("<Leave>", lambda e: b.config(bg=bg))
+    return b
+
+
 def main():
     global SCREEN_URL
     if already_running():
@@ -183,43 +207,42 @@ def main():
     root.resizable(False, False)
     root.configure(bg="#0f1016", padx=22, pady=18)
     tk.Label(root, text="🎉 SpotiParty draait", fg="#ffffff", bg="#0f1016",
-             font=("Segoe UI", 15, "bold")).pack(anchor="w")
+             font=font(15, "bold")).pack(anchor="w")
     tk.Label(root, text="Sluit dit venster om SpotiParty te stoppen.\nToetsen in het scherm: S instellingen, F volledig scherm.",
-             fg="#b9bcc6", bg="#0f1016", justify="left", font=("Segoe UI", 10)).pack(anchor="w", pady=(4, 12))
+             fg="#b9bcc6", bg="#0f1016", justify="left", font=font(10)).pack(anchor="w", pady=(4, 12))
     if hub:
         hub_url = hub.admin_state()["urls"][0]
-        tk.Label(root, text=f"Deze pc is de Hub. Admin-dashboard (ook op je telefoon):\n{hub_url}    PIN: {hub.cfg['pin']}",
-                 fg="#ffffff", bg="#0f1016", justify="left", font=("Segoe UI", 10)).pack(anchor="w", pady=(0, 12))
+        tk.Label(root, text=f"{THIS[0].upper() + THIS[1:]} is de Hub. Admin-dashboard (ook op je telefoon):\n{hub_url}    PIN: {hub.cfg['pin']}",
+                 fg="#ffffff", bg="#0f1016", justify="left", font=font(10)).pack(anchor="w", pady=(0, 12))
     elif remote:
         name = hub_name(remote)
         tk.Label(root, text=(f"Scherm van de Hub {name} ({remote})." if name else
                              f"Scherm van de Hub op {remote}: die is nu niet bereikbaar, het scherm wacht erop.")
-                 + "\nHet dashboard en de PIN staan op die pc.",
-                 fg="#ffffff", bg="#0f1016", justify="left", font=("Segoe UI", 10)).pack(anchor="w", pady=(0, 12))
+                 + "\nHet dashboard en de PIN staan op die computer.",
+                 fg="#ffffff", bg="#0f1016", justify="left", font=font(10)).pack(anchor="w", pady=(0, 12))
     row = tk.Frame(root, bg="#0f1016")
     row.pack(anchor="w")
-    button = dict(relief="flat", padx=16, pady=7, font=("Segoe UI", 10, "bold"), cursor="hand2", bd=0)
-    tk.Button(row, text="Scherm openen", command=open_window, bg="#1ed760", fg="#000000",
-              activebackground="#3be477", **button).pack(side="left")
+    size = dict(padx=16, pady=7, font=font(10, "bold"))
+    button(row, "Scherm openen", open_window, "#1ed760", "#000000", "#3be477", **size).pack(side="left")
 
-    grey = dict(bg="#3a3e4a", fg="#ffffff", activebackground="#4a4e5a", activeforeground="#ffffff")
+    grey = ("#3a3e4a", "#ffffff", "#4a4e5a")
     if hub or remote:
         dash = f"http://127.0.0.1:{hub.port}/" if hub else f"http://{remote}/"
-        tk.Button(row, text="Dashboard", command=lambda: webbrowser.open(dash), **grey, **button).pack(side="left", padx=(8, 0))
+        button(row, "Dashboard", lambda: webbrowser.open(dash), *grey, **size).pack(side="left", padx=(8, 0))
 
     def switch(role):
         save_role(role)
         note.config(text="Opgeslagen. Sluit SpotiParty en start hem opnieuw." if role == "hub" else
                     "Opgeslagen. Bij de volgende start zoekt SpotiParty de Hub op het netwerk.")
 
-    small = dict(relief="flat", padx=0, pady=2, font=("Segoe UI", 9, "underline"), cursor="hand2", bd=0,
-                 bg="#0f1016", fg="#b9bcc6", activebackground="#0f1016", activeforeground="#ffffff")
+    small = ("#0f1016", "#b9bcc6", "#0f1016")
+    link = dict(padx=0, pady=2, font=font(9, "underline"))
     if remote:
-        tk.Button(root, text="Deze pc wordt de Hub", command=lambda: switch("hub"), **small).pack(anchor="w", pady=(10, 0))
+        button(root, f"{THIS[0].upper() + THIS[1:]} wordt de Hub", lambda: switch("hub"), *small, **link).pack(anchor="w", pady=(10, 0))
     elif hub:
-        tk.Button(root, text="Geen Hub op deze pc (de Hub draait op een andere pc)", command=lambda: switch(""),
-                  **small).pack(anchor="w", pady=(10, 0))
-    note = tk.Label(root, text="", fg="#1ed760", bg="#0f1016", font=("Segoe UI", 9))
+        button(root, f"Geen Hub op {THIS} (de Hub draait op een andere computer)", lambda: switch(""),
+               *small, **link).pack(anchor="w", pady=(10, 0))
+    note = tk.Label(root, text="", fg="#1ed760", bg="#0f1016", font=font(9))
     note.pack(anchor="w")
 
     def stop():
@@ -228,8 +251,12 @@ def main():
         server.shutdown()
         root.destroy()
 
-    tk.Button(row, text="Stoppen", command=stop, **grey, **button).pack(side="left", padx=(8, 0))
+    button(row, "Stoppen", stop, *grey, **size).pack(side="left", padx=(8, 0))
     root.protocol("WM_DELETE_WINDOW", stop)
+    if MAC:
+        # Dock icon of the running app clicked: open the screen again. Cmd+Q: stop like the Stop button.
+        root.createcommand("::tk::mac::ReopenApplication", open_window)
+        root.createcommand("::tk::mac::Quit", stop)
     root.mainloop()
 
 

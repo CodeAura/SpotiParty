@@ -23,7 +23,8 @@ jobs:
       - name: Build SpotiParty.exe
         run: >
           pyinstaller --noconfirm --onefile --windowed --name SpotiParty
-          --icon desktop/icon.ico --add-data "web;web" --add-data "hub;hub" --paths hub
+          --icon "${{ github.workspace }}/desktop/icon.ico" --add-data "${{ github.workspace }}/web;web"
+          --add-data "${{ github.workspace }}/hub;hub" --paths "${{ github.workspace }}/hub"
           --distpath desktop/dist --workpath build --specpath build/spec
           desktop/spotiparty_app.py
         shell: bash
@@ -71,20 +72,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install pyinstaller pillow
-      - name: Build SpotiParty.app
-        run: >
-          pyinstaller --noconfirm --windowed --name SpotiParty
-          --icon desktop/icon.png --add-data "web:web" --add-data "hub:hub" --paths hub
-          --osx-bundle-identifier io.github.codeaura.spotiparty
-          --distpath dist --workpath build --specpath build/spec
-          desktop/spotiparty_app.py
-      - name: Pack SpotiParty.dmg
+      - name: Build SpotiParty.app and .dmg
         run: |
-          mkdir -p dmg
-          cp -R dist/SpotiParty.app dmg/
-          ln -s /Applications dmg/Applications
-          hdiutil create -volname SpotiParty -srcfolder dmg -ov -format UDZO "SpotiParty-macos-${{ matrix.arch }}.dmg"
+          ./desktop/build-macos.sh
+          cp "desktop/dist/SpotiParty-macos-${{ matrix.arch }}.dmg" .
+        env:
+          PYTHON: python
       - uses: actions/upload-artifact@v4
         with:
           name: SpotiParty-macos-${{ matrix.arch }}
