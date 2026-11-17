@@ -40,7 +40,7 @@ flowchart LR
 1. **Winkel**: de Shopify-winkel **SpotiParty** (Nederland, euro, prijzen inclusief btw) heeft twee actieve producten in de Online Store, zonder verzending:
    * **SpotiParty Pro**, SKU `SPOTIPARTY-PRO`, €14,99
    * **SpotiParty Pro × 3**, SKU `SPOTIPARTY-PRO-3`, €29,99
-2. **Netlify**: zet de *Base directory* van de site op `site` (dan geldt `site/netlify.toml`) en voeg de omgevingsvariabelen toe die bovenin `site/netlify/functions/shopify-order.mjs` staan. `SPOTIPARTY_LICENSE_JWK` is de inhoud van `~/.spotiparty/license-private.json`.
+2. **Netlify**: `netlify.toml` in de hoofdmap publiceert `site/` en de functie in `site/netlify/functions` (laat de *Base directory* leeg). Voeg de omgevingsvariabelen toe die bovenin `site/netlify/functions/shopify-order.mjs` staan, als **geheim** waar het om sleutels gaat. `SPOTIPARTY_LICENSE_JWK` is de inhoud van `~/.spotiparty/license-private.json`. Controle: `https://spotiparty.netlify.app/.netlify/functions/shopify-order` geeft *POST only* (405) als de functie draait.
 3. **Mail**: maak een account bij [Resend](https://resend.com), verifieer je domein en zet `RESEND_API_KEY` en `MAIL_FROM`.
 4. **Webhook**: in Shopify **Instellingen → Meldingen → Webhooks → Webhook maken**: gebeurtenis **Betaling van bestelling**, JSON, URL `https://spotiparty.netlify.app/.netlify/functions/shopify-order`. Kopieer de geheime sleutel onder de lijst naar `SHOPIFY_WEBHOOK_SECRET`.
 5. **Website**: zet het adres van de winkel in `STORE` onderaan `site/index.html`. De knoppen gaan dan via de winkelwagen-link (`/cart/<variant-id>:1`) direct naar de checkout; de variant-ID's staan al in `VARIANTS`. Kortingscodes maak je in Shopify onder **Kortingen** en werken in die checkout.

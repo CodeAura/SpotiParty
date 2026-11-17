@@ -38,9 +38,9 @@ HERE = pathlib.Path(__file__).resolve().parent
 ONLINE_S = 8            # a screen that polled in the last 8 s is online
 AFTER_BREAK_S = 15      # "we gaan weer verder" stays this long after a break
 SCREEN_KINDS = {"web", "tv", "pi", "ha"}
-# Licences are switched off for now: every hub has every feature. Set to True to require a Pro key again
-# (sp_license.py, the dashboard's licence card and the screens' "pro" flag still work as before then).
-LICENSING = False
+# The hub features need a SpotiParty Pro key (bought in the Shopify store; the shopify-order Netlify function signs
+# and mails it). Set to False to give every hub every feature without a key (the licence card is then hidden).
+LICENSING = True
 MEDIA_CMDS = {"play", "pause", "next", "previous", "volume_up", "volume_down"}
 CMD_TTL_S = 20          # a command a screen hasn't picked up in 20 s is dropped (the moment has passed)
 

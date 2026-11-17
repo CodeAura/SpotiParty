@@ -1,7 +1,0 @@
-# Netlify: set the site's Base directory to "site" (Site configuration → Build & deploy), so this file is used.
-[build]
-  publish = "."
-
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
