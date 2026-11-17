@@ -65,6 +65,7 @@ Je instellingen en je Spotify-login staan in `%LOCALAPPDATA%\SpotiParty`. Nergen
 
 ## Updaten en verwijderen
 
-* **Updaten:** download de nieuwe `SpotiParty-Setup-<versie>.exe` en voer hem uit. Hij installeert over de oude versie heen en sluit een draaiende SpotiParty vanzelf af. Je instellingen blijven bewaard.
+* **Updaten gaat vanzelf** (vanaf versie 2.7.0): SpotiParty kijkt bij het starten en daarna elke 6 uur of er een nieuwe versie op GitHub staat, en downloadt die op de achtergrond. In het venster van SpotiParty staat dan **Versie … staat klaar**. De update wordt geïnstalleerd bij de volgende start, of meteen met **Nu bijwerken** (de muziek op de schermen stopt dan even). Je instellingen blijven bewaard.
+* **Met de hand updaten:** download de nieuwe `SpotiParty-Setup-<versie>.exe` en voer hem uit. Hij installeert over de oude versie heen en sluit een draaiende SpotiParty vanzelf af. Van versie 2.6.0 of ouder naar 2.7.0 moet dit één keer met de hand.
 * **Verwijderen:** ga naar **Instellingen → Apps → Geïnstalleerde apps**, zoek **SpotiParty** en kies **Verwijderen**. Je krijgt de vraag of je ook je instellingen en Spotify-login wilt wissen. Standaard blijven die bewaard.
 * **Losse `.exe`:** verwijder het bestand. Wil je ook je instellingen kwijt, verwijder dan de map `%LOCALAPPDATA%\SpotiParty`.

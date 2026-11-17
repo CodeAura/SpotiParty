@@ -41,7 +41,10 @@ def web_root() -> pathlib.Path:
 
 
 sys.path.insert(0, str(bundle_dir("hub")))
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import spotiparty_hub  # noqa: E402
+import sp_update  # noqa: E402
+from sp_version import VERSION  # noqa: E402
 
 
 def data_dir() -> pathlib.Path:
@@ -172,9 +175,18 @@ def button(parent, text, command, bg, fg, active, **kw):
 
 def main():
     global SCREEN_URL
+    updated = "--updated" in sys.argv   # started again by the updater: the screen window is still open
     if already_running():
-        open_window()   # a second start: just another window on the running SpotiParty
+        if not updated:
+            open_window()   # a second start: just another window on the running SpotiParty
         return
+    # A new version downloaded earlier: install it now, before anything starts (no party is interrupted).
+    upd = sp_update.Updater(VERSION, data_dir()) if sp_update.installed() else None
+    if upd and not updated:
+        p = upd.pending()
+        if p:
+            upd.install(p[1])
+            return
     handler = functools.partial(Handler, directory=str(web_root()))
     server = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), handler)
     threading.Thread(target=server.serve_forever, daemon=True).start()
@@ -200,10 +212,11 @@ def main():
             hub = spotiparty_hub.Hub(data_dir(), web_root(), static_dir=bundle_dir("hub")).start()
         except OSError:
             hub = None   # port 8770 taken (another hub runs here): the screen still works
-    open_window()
+    if not updated:
+        open_window()
 
     root = tk.Tk()
-    root.title(APP)
+    root.title(f"{APP} {VERSION}")
     root.resizable(False, False)
     root.configure(bg="#0f1016", padx=22, pady=18)
     tk.Label(root, text="🎉 SpotiParty draait", fg="#ffffff", bg="#0f1016",
@@ -253,6 +266,45 @@ def main():
 
     button(row, "Stoppen", stop, *grey, **size).pack(side="left", padx=(8, 0))
     root.protocol("WM_DELETE_WINDOW", stop)
+
+    # ---------- updates ----------
+    if updated:
+        note.config(text=f"Bijgewerkt naar versie {VERSION}.")
+    if upd:
+        bar = tk.Frame(root, bg="#16341f", padx=12, pady=8)
+        bar_text = tk.Label(bar, text="", fg="#ffffff", bg="#16341f", justify="left", font=font(10))
+        bar_text.pack(side="left")
+
+        def install_now():
+            if upd.ready:
+                upd.install(upd.ready[1])
+                stop()
+
+        bar_btn = button(bar, "Nu bijwerken", install_now, "#1ed760", "#000000", "#3be477",
+                         padx=12, pady=4, font=font(9, "bold"))
+
+        def check_loop():
+            while True:
+                upd.check()
+                threading.Event().wait(6 * 3600)
+
+        threading.Thread(target=check_loop, daemon=True, name="updater").start()
+
+        def show():
+            if upd.ready:
+                bar_text.config(text=f"Versie {upd.ready[0]} staat klaar.\nWordt bij de volgende start vanzelf "
+                                     "geïnstalleerd, of nu (de muziek stopt even).")
+                bar_btn.pack(side="left", padx=(12, 0))
+                bar.pack(anchor="w", fill="x", pady=(12, 0))
+            elif upd.status:
+                bar_text.config(text=upd.status)
+                bar_btn.pack_forget()
+                bar.pack(anchor="w", fill="x", pady=(12, 0))
+            else:
+                bar.pack_forget()
+            root.after(2000, show)
+
+        show()
     if MAC:
         # Dock icon of the running app clicked: open the screen again. Cmd+Q: stop like the Stop button.
         root.createcommand("::tk::mac::ReopenApplication", open_window)

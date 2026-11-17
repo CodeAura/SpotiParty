@@ -7,7 +7,7 @@
 # Inno Setup 6 (`winget install JRSoftware.InnoSetup`). It makes its own virtual environment in desktop\build\,
 # so nothing is installed system-wide, and it starts the .exe once to check the page and the Hub answer.
 param(
-  [string]$Version = "0.0.0-dev",
+  [string]$Version = "",
   [string]$Python = ""
 )
 $ErrorActionPreference = "Stop"
@@ -34,10 +34,15 @@ if (-not (Test-Path (Join-Path $Venv "Scripts\python.exe"))) { & $Python -m venv
 & (Join-Path $Venv "Scripts\python.exe") -m pip install --quiet --disable-pip-version-check --upgrade pyinstaller pillow
 if ($LASTEXITCODE) { throw "pip install failed" }
 
+if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw "Geef een versie mee, zoals -Version 2.7.0: de auto-updater vergelijkt ermee." }
+# The version inside the .exe, for the auto-updater (it compares it with the newest GitHub release).
+[IO.File]::WriteAllText((Join-Path $Root "desktop\sp_version.py"),
+  "# The version of this build. desktop/build-windows.ps1 -Version writes it; the auto-updater compares with it.`nVERSION = `"$Version`"`n")
+
 Write-Host "-> SpotiParty.exe"
 # Absolute paths: PyInstaller resolves --icon and --add-data relative to the spec folder.
 & (Join-Path $Venv "Scripts\pyinstaller.exe") --noconfirm --clean --onefile --windowed --name SpotiParty `
-  --icon "$Root\desktop\icon.ico" --add-data "$Root\web;web" --add-data "$Root\hub;hub" --paths "$Root\hub" `
+  --icon "$Root\desktop\icon.ico" --add-data "$Root\web;web" --add-data "$Root\hub;hub" --paths "$Root\hub" --hidden-import sp_party `
   --distpath $Out --workpath "$Work\work" --specpath "$Work\spec" "$Root\desktop\spotiparty_app.py"
 if ($LASTEXITCODE) { throw "PyInstaller failed" }
 
