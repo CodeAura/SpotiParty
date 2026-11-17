@@ -15,6 +15,8 @@ Voor je **Android TV**, je **PC** en je **Home Assistant**-dashboard.
 
 ---
 
+**Home Assistant?** [![Open je Home Assistant en voeg SpotiParty toe aan HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=CodeAura&repository=SpotiParty&category=plugin)
+
 ## Inhoud
 
 - [Wat het doet](#-wat-het-doet)
@@ -260,11 +262,16 @@ SpotiParty past als kaart in elk dashboard en volgt elke `media_player`, dus nie
 
 ### Installeren via HACS (makkelijkst)
 
-Met [HACS](https://hacs.xyz) krijg je SpotiParty als kaart, met updates erbij:
+Met [HACS](https://hacs.xyz) krijg je SpotiParty als kaart, met updates erbij. Klik op de knop: je eigen Home
+Assistant opent en HACS voegt SpotiParty toe.
 
-1. **HACS → ⋮ → Aangepaste repositories**: plak `https://github.com/CodeAura/SpotiParty`, kies type **Dashboard**
-   en klik **Toevoegen**.
-2. Zoek **SpotiParty** in HACS en klik **Downloaden**. HACS zet de kaart erbij als bron; herlaad de browser.
+[![Open je Home Assistant en voeg SpotiParty toe aan HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=CodeAura&repository=SpotiParty&category=plugin)
+
+1. Klik op de knop hierboven, controleer het adres van je Home Assistant en klik **Open link**.
+2. Klik in HACS op **Downloaden**. HACS zet de kaart erbij als bron; herlaad de browser.
+
+Werkt de knop niet? Voeg hem dan met de hand toe: **HACS → ⋮ → Aangepaste repositories**, plak
+`https://github.com/CodeAura/SpotiParty`, kies type **Dashboard**, **Toevoegen**, en daarna **Downloaden**.
 3. Ga verder bij **Stap 2: Kaart toevoegen** (de kaart heet `custom:spotiparty-card`).
 
 > [!NOTE]
