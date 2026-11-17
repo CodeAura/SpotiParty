@@ -24,22 +24,29 @@ Beweeg je de muis, dan verschijnt het tandwiel **⚙** voor de instellingen. Na 
 
 ## Toevoegingen aan het adres
 
-Op de PC en in Home Assistant kun je SpotiParty sturen met toevoegingen achter het adres. De eerste begint met `?`, de volgende met `&`.
+Op de PC kun je SpotiParty sturen met toevoegingen achter het adres. De eerste begint met `?`, de volgende met `&`. In Home Assistant gebruik je in plaats daarvan de [opties van de kaart](../home-assistant/volledig-scherm.md).
 
-| Toevoeging               | Wat het doet                                                     |
-| ------------------------ | ---------------------------------------------------------------- |
-| `?source=ha`             | Volg een Home Assistant-speler, zonder de instellingen te openen |
-| `?source=spotify`        | Volg je Spotify-account                                          |
-| `&entity=media_player.x` | De Home Assistant-speler die SpotiParty volgt                    |
-| `&kiosk=1`               | Geen knoppen in beeld (**S** werkt nog wel)                      |
-| `&jam=0`                 | De Jam-QR-code niet tonen                                        |
+| Toevoeging               | Wat het doet                                                        |
+| ------------------------ | ------------------------------------------------------------------- |
+| `?source=spotify`        | Volg je Spotify-account via de Hub                                  |
+| `?source=ha`             | Volg een Home Assistant-speler, zonder de instellingen te openen   |
+| `&entity=media_player.x` | De Home Assistant-speler die SpotiParty volgt                       |
+| `&hub=192.168.1.20:8770` | Het adres van de Hub (de app op de Hub-pc vindt hem zelf)           |
+| `&kiosk=1`               | Geen knoppen in beeld (**S** werkt nog wel)                         |
+| `&jam=0`                 | De Jam-QR-code niet tonen                                           |
 
-### Voorbeelden
+### Voorbeeld
 
 ```
-# Home Assistant: vaste speler, schermvullend zonder knoppen
-/local/spotiparty/index.html?source=ha&entity=media_player.woonkamer&kiosk=1
-
 # PC: alleen hoes en songtekst, zonder Jam-code
 http://127.0.0.1:8769/index.html?source=spotify&jam=0
+```
+
+In Home Assistant is het equivalent van een vaste speler zonder knoppen, schermvullend:
+
+```yaml
+type: custom:spotiparty-card
+hub: http://192.168.1.20:8770
+entity: media_player.woonkamer
+fullscreen: true
 ```

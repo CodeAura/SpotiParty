@@ -1,40 +1,36 @@
 ---
-description: De SpotiParty-kaart, ook op volledig scherm over heel Home Assistant.
+description: Volledig scherm over heel Home Assistant, en alle opties van de kaart.
 icon: expand
 ---
 
-# Volledig scherm in Home Assistant
+# Volledig scherm en alle opties
 
-Naast de Webpagina-kaart is er een eigen **SpotiParty-kaart**. Hij werkt als gewone kaart, of legt zich over heel Home Assistant, zonder zijbalk en kop: ideaal voor een wandtablet of een tv met je dashboard.
-
-## Installeren
-
-1. Kopieer de map `web/` naar `/config/www/spotiparty/` (zie [Bestanden kopiëren](bestanden-kopieren.md)); daar zit `spotiparty-card.js` al in.
-2. Ga naar **Instellingen → Dashboards → ⋮ → Bronnen** (_Resources_) en voeg toe:
-   * URL: `/local/spotiparty/spotiparty-card.js`
-   * Type: **JavaScript-module**
-3. Ververs de browser.
-
-## De kaart
-
-Voeg in je dashboard een kaart toe via **Handmatig** (_Manual_) en plak:
+Met `fullscreen: true` legt SpotiParty zich over het hele Home Assistant-venster, zonder zijbalk en kopregel: ideaal voor een wandtablet of een tv met je dashboard.
 
 ```yaml
 type: custom:spotiparty-card
-entity: media_player.woonkamer
+hub: http://192.168.1.20:8770
 fullscreen: true
 ```
 
+Linksboven staat een **✕** (zichtbaar als je de muis beweegt of hem selecteert) om terug te gaan naar het dashboard. Kom je later terug op dat dashboard, dan staat SpotiParty weer op volledig scherm.
+
+## Alle opties
+
 | Optie | Betekenis |
 | --- | --- |
-| `entity` | De speler. Weglaten: wat er op dat moment speelt. |
-| `fullscreen` | `true`: over het hele scherm. |
-| `hub` | Adres van je [Hub](../hub/hub-dashboard.md), voor meldingen, de pauze en de gasten-wifi. |
-| `name` | De naam van dit scherm in het dashboard van de Hub. |
-| `height` | Hoogte als gewone kaart, standaard `480px`. |
+| `hub` | Het adres van je [Hub](../hub/hub-dashboard.md), bijvoorbeeld `http://192.168.1.20:8770`. **Nodig** voor je Spotify-account, de Jam-code, meldingen, de pauze en de gasten-wifi. |
+| `fullscreen` | `true`: over het hele Home Assistant-venster. |
+| `height` | De hoogte als gewone kaart, standaard `480px`. |
+| `entity` | Een vaste speler, bijvoorbeeld `media_player.woonkamer`. Weglaten: de speler die op dat moment speelt. |
+| `name` | De naam van dit scherm in het Hub-dashboard, bijvoorbeeld `Woonkamer-tablet`. |
 
-Op volledig scherm staat linksboven een ✕ (zichtbaar als je de muis beweegt) om terug te gaan naar het dashboard.
+## Instellingen in de kaart
+
+Klik in de kaart en druk op **S**, of beweeg de muis en klik op **⚙**. Daar zie je onder **Hub** of de kaart verbonden is ("Verbonden met …"), en kun je de naam van dit scherm aanpassen.
 
 {% hint style="info" %}
-Zet de kaart op een eigen dashboard, bijvoorbeeld **Feest**, en open dat op de tablet. De andere dashboards blijven gewoon.
+Zet de kaart op een eigen dashboard, bijvoorbeeld **Feest**, en open dat op de tablet. Je andere dashboards blijven gewoon. Een dashboardweergave van het type **Paneel** met alleen deze kaart werkt ook, als je de zijbalk wel wilt houden.
 {% endhint %}
+
+Volgende: [Extra's en problemen oplossen](extras.md).

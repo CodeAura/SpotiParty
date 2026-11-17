@@ -1,43 +1,24 @@
 ---
-description: >-
-  Volledig scherm op een wandtablet, de regel Hierna en SpotiParty buiten Home
-  Assistant.
+description: Bijwerken, SpotiParty buiten Home Assistant, en problemen oplossen.
 icon: wand-magic-sparkles
 ---
 
-# Extra's: kiosk, Hierna en andere computers
+# Extra's en problemen oplossen
 
-## Een heel scherm voor SpotiParty (wandtablet of tv-browser)
+## SpotiParty bijwerken
 
-Wil je SpotiParty schermvullend op een wandtablet of in de browser van je tv? Maak dan een apart dashboard:
+* **Via HACS:** HACS meldt een update vanzelf. Klik bij SpotiParty op **Bijwerken** (of **⋮ → Opnieuw downloaden**) en herlaad de browser met **Ctrl+F5**.
+* **Met de hand:** zet de nieuwe `spotiparty-card.js` uit de [nieuwste release](https://github.com/CodeAura/SpotiParty/releases/latest) over de oude in `/config/www/spotiparty/`, en herlaad met **Ctrl+F5**. Browsers bewaren bestanden uit `/local/` soms een tijdje.
 
-1. Ga naar **Instellingen → Dashboards → + Dashboard toevoegen**.
-2. Kies **Webpagina** en vul hetzelfde adres in, met `&kiosk=1` erachter:
+## Spotify, "Hierna" en bediening
 
-```
-/local/spotiparty/index.html?source=ha&entity=media_player.woonkamer&kiosk=1
-```
+Spotify koppel je **alleen in het dashboard van de Hub** (bij **🎵 Muziek bedienen**). Alle schermen, ook de kaart in Home Assistant, tonen dan het nummer van dat account, met **Hierna**, en de knoppen en de pauze bedienen dat account. Heeft de Hub nog geen Spotify-koppeling, dan staat er op de kaart **"Koppel je Spotify aan de Hub"**.
 
-Met `kiosk=1` staan er geen knoppen in beeld. De toets **S** werkt nog wel voor de instellingen.
-
-## De regel Hierna: …
-
-De regel **Hierna: …** komt rechtstreeks van Spotify en vraagt een [eigen Spotify-app](../aan-de-slag/spotify-app.md). Dat heeft één voorwaarde:
-
-{% hint style="warning" %}
-Spotify accepteert na het inloggen alleen `https://`-adressen, plus `http://127.0.0.1`. Een gewoon adres als `http://homeassistant.local:8123` werkt dus **niet**. Je hebt Home Assistant via **HTTPS** nodig, bijvoorbeeld met **Home Assistant Cloud (Nabu Casa)** of een eigen certificaat.
-{% endhint %}
-
-Heb je HTTPS?
-
-1. Open SpotiParty via je HTTPS-adres en klik op **⚙**.
-2. Kopieer het adres dat daar als Redirect URI staat, bijvoorbeeld `https://xxxx.ui.nabu.casa/local/spotiparty/index.html`.
-3. Voeg dat toe aan de Redirect URI's van je Spotify-app.
-4. Vul in de ⚙ je Client ID in en log in bij Spotify.
+De kaart zelf heeft geen Spotify-login en geen eigen Spotify-app nodig, ook niet via HTTPS.
 
 ## Vanaf een andere computer
 
-Wil je SpotiParty op een PC draaien (met de [app](../pc/) of [Python](../pc/python.md)) maar de muziek van een Home Assistant-speler volgen? Dat kan:
+Wil je SpotiParty op een PC draaien (met de [app](../pc/)) maar de muziek van een Home Assistant-speler volgen? Dat kan:
 
 1. Maak in Home Assistant een token: klik linksonder op je **profiel → Beveiliging** en kies onderaan bij **Langlevende toegangstokens** op **Token aanmaken**. Kopieer het token meteen; je ziet het maar één keer.
 2. Open SpotiParty op die PC en klik op **⚙**.
@@ -48,6 +29,14 @@ Wil je SpotiParty op een PC draaien (met de [app](../pc/) of [Python](../pc/pyth
 Een langlevend token geeft volledige toegang tot je Home Assistant. Gebruik dit alleen op een computer die je vertrouwt, en trek het token in (in hetzelfde menu) als je het niet meer gebruikt.
 {% endhint %}
 
-## SpotiParty bijwerken
+## Problemen oplossen
 
-Vervang de bestanden in `/config/www/spotiparty/` door de nieuwe versie uit `web/`. Ververs daarna het dashboard met een harde refresh (**Ctrl+Shift+R** of **Cmd+Shift+R**), want browsers bewaren bestanden uit `/local/` soms een tijdje.
+| Wat je ziet | Oplossing |
+| --- | --- |
+| HACS: _"The installed content has no spotiparty-card.js"_ | De release mist het kaartbestand. Download opnieuw zodra de [nieuwste release](https://github.com/CodeAura/SpotiParty/releases/latest) `spotiparty-card.js` als bijlage heeft. |
+| _"Koppel je Spotify aan de Hub"_ | Koppel Spotify in het Hub-dashboard, bij **🎵 Muziek bedienen**. |
+| Geen Jam-code, meldingen of pauze | Vul `hub:` in de kaart in. Druk in de kaart op **S**: onder **Hub** staat of hij verbonden is. |
+| _"Geen Hub gevonden op …"_ | Staat SpotiParty aan op de Hub-pc? Klopt het IP-adres in `hub:`? |
+| _"Deze pagina draait via https://, de Hub via http://"_ | Open je dashboard thuis via `http://` (bijvoorbeeld `http://homeassistant.local:8123`). Een https-pagina, zoals via Nabu Casa, mag de Hub op `http://` niet bereiken. |
+| De kaart is klein, niet volledig scherm | Zet `fullscreen: true` in de kaart. |
+| Na een update verandert er niets | Herlaad met **Ctrl+F5**, en kijk bij **Bronnen** dat er maar één `spotiparty-card.js` staat. |

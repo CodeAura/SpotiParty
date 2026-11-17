@@ -1,5 +1,5 @@
 ---
-description: SpotiParty als Webpagina-kaart in je dashboard zetten.
+description: De SpotiParty-kaart in je dashboard zetten en aan de Hub koppelen.
 icon: table-cells-large
 ---
 
@@ -13,53 +13,53 @@ Open het dashboard waar SpotiParty moet komen en klik rechtsboven op het **potlo
 {% endstep %}
 
 {% step %}
-### Voeg een Webpagina-kaart toe
+### Voeg de SpotiParty-kaart toe
 
-Kies **+ Kaart toevoegen** en zoek de kaart **Webpagina** (_Webpage_).
+Kies **+ Kaart toevoegen** en zoek **SpotiParty**. Staat hij er niet tussen, kies dan onderaan **Handmatig** (_Manual_).
 {% endstep %}
 
 {% step %}
-### Vul het adres in
+### Vul de kaart in
 
-Vul als URL in:
+Plak dit in de code-editor van de kaart:
 
+```yaml
+type: custom:spotiparty-card
+hub: http://192.168.1.20:8770
+fullscreen: true
 ```
-/local/spotiparty/index.html?source=ha&entity=media_player.woonkamer
-```
 
-Vervang `media_player.woonkamer` door je eigen speler. De naam vind je onder **Instellingen → Apparaten en diensten → Entiteiten**.
+Vervang `192.168.1.20` door het adres van de pc waar de [Hub](../hub/hub-dashboard.md) draait. Dat staat in het SpotiParty-venster op die pc, en bovenaan het Hub-dashboard.
 
-Laat je `&entity=…` weg, dan kiest SpotiParty zelf: de speler die op dat moment speelt, en anders een speler die gepauzeerd is met een nummer.
+Wil je liever een gewone kaart in je dashboard, laat `fullscreen: true` dan weg.
 {% endstep %}
 
 {% step %}
 ### Opslaan
 
-Klik op **Opslaan** en daarna op **Gereed**. Zet muziek aan en je ziet de hoes, de titel en de songtekst.
+Klik op **Opslaan** en **Gereed**. Zet muziek aan: je ziet de hoes, de titel, de songtekst en de Jam-code.
 {% endstep %}
 {% endstepper %}
 
-## Liever YAML?
+## Waarom het Hub-adres?
 
-Kies bij de kaart **Code-editor weergeven** en plak:
+De tv en de pc-app vinden de Hub zelf op het netwerk. Een webpagina in Home Assistant mag dat niet, dus vertel je de kaart waar de Hub staat met `hub:`. Via de Hub krijgt de kaart:
 
-```yaml
-type: iframe
-url: /local/spotiparty/index.html?source=ha&entity=media_player.woonkamer
-aspect_ratio: 16:9
-```
+* het nummer van **je Spotify-account** (gekoppeld in het Hub-dashboard), met **Hierna**;
+* de **Jam-code** die je in het Hub-dashboard plakt;
+* **meldingen**, de **pauze** en de **gasten-wifi**.
+
+{% hint style="success" %}
+**Geen token nodig.** De kaart leest de spelers uit je eigen dashboard.
+{% endhint %}
+
+{% hint style="warning" %}
+**Geef de Hub-pc een vast adres** in je router. Verandert het IP-adres van die pc, dan moet je `hub:` aanpassen.
+{% endhint %}
 
 ## Hoe ziet het eruit?
 
-* **Brede kaart:** hoes links, songtekst in het midden, QR-code rechtsonder. Net als op de tv.
+* **Brede kaart of volledig scherm:** hoes links, songtekst in het midden, QR-code rechtsonder. Net als op de tv.
 * **Smalle kaart:** SpotiParty zet alles vanzelf onder elkaar.
 
-## De Jam-link instellen
-
-Klik in de kaart en druk op **S**, of beweeg de muis en klik op **⚙**. Plak je Jam-link (zie [Een Spotify Jam starten](../aan-de-slag/spotify-jam.md)) en klik op **Op het scherm zetten**.
-
-{% hint style="success" %}
-**Geen token nodig.** Omdat de kaart door je eigen Home Assistant wordt geserveerd, gebruikt SpotiParty de login van je dashboard om de standen van je spelers te lezen.
-{% endhint %}
-
-Volgende: [Extra's: kiosk, Hierna en andere computers](extras.md).
+Volgende: [Volledig scherm en alle opties](volledig-scherm.md).
