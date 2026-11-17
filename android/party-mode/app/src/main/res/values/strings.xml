@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SpotiParty</string>
+    <string name="hub_down">⚠️ Hub niet verbonden</string>
     <string name="idle_hub">Koppel je Spotify aan de Hub</string>
     <string name="idle_no_hub">Geen SpotiParty Hub gevonden. Start SpotiParty op de pc met de Hub.</string>
     <string name="idle">Zet muziek aan in Spotify 🎉</string>

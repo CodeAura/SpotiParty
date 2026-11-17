@@ -97,6 +97,12 @@
   #pause .ring > div { height: 100%; background: var(--accent); transition: width .5s linear; }
   #pause.done .clock { animation: pulse 1s ease-in-out infinite alternate; }
   @keyframes pulse { to { transform: scale(1.06); } }
+  /* The Hub can't be reached: a red pill on top of everything, until it is back. */
+  #hubdown { position: absolute; top: 2.4cqh; left: 50%; transform: translateX(-50%); z-index: 7; max-width: 90cqw;
+    padding: 1.1cqh 2.6cqh; border-radius: 99px; background: #b3261ef2; border: 1px solid #ffb4ab; color: #fff;
+    font-weight: 700; font-size: clamp(12px, 2.6cqh, 28px); box-shadow: 0 1cqh 4cqh #000a; text-align: center; }
+  #hubdown small { display: block; font-weight: 500; font-size: .7em; opacity: .85; }
+  #hubdown[hidden] { display: none; }
   #ident { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center;
     background: var(--accent); color: #000; font-weight: 800; font-size: clamp(28px, 14cqh, 180px); text-align: center; padding: 5cqw; }
   #ident[hidden] { display: none; }
@@ -193,6 +199,7 @@
   <div class="sub"></div>
 </div>
 <div id="ident" hidden></div>
+<div id="hubdown" hidden>⚠️ Hub niet verbonden<small></small></div>
 
 <div id="tools">
   <button id="fs" title="Volledig scherm (F)">⛶</button>

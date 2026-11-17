@@ -153,6 +153,8 @@ public class MainActivity extends Activity {
     private TextView pauseSub;
     private ProgressBar pauseBar;
     private TextView identView;
+    /** "Hub niet verbonden": shown while the Hub can't be found or doesn't answer. */
+    private TextView hubDownView;
     private LinearLayout wifiCard;
     private QrView wifiQr;
     private TextView wifiText;
@@ -466,6 +468,24 @@ public class MainActivity extends Activity {
         ncl.leftMargin = ncl.rightMargin = Math.round(110 * dp);
         notice.addView(noticeCard, ncl);
         root.addView(notice, match());
+
+        // The Hub can't be reached: a red pill at the top, over everything, until it is back.
+        hubDownView = label(17, 0xFFFFFFFF, Typeface.BOLD);
+        hubDownView.setShadowLayer(0, 0, 0, 0);
+        hubDownView.setGravity(Gravity.CENTER);
+        GradientDrawable pill = new GradientDrawable();
+        pill.setColor(0xF2B3261E);
+        pill.setCornerRadius(40 * dp);
+        pill.setStroke(Math.max(1, Math.round(dp)), 0xFFFFB4AB);
+        hubDownView.setBackground(pill);
+        int hp = Math.round(22 * dp), vp = Math.round(9 * dp);
+        hubDownView.setPadding(hp, vp, hp, vp);
+        hubDownView.setElevation(40 * dp);
+        hubDownView.setVisibility(View.GONE);
+        FrameLayout.LayoutParams hdl = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
+        hdl.topMargin = Math.round(20 * dp);
+        root.addView(hubDownView, hdl);
 
         // "Aanwijzen" in the dashboard: this screen's name, big, for a few seconds.
         identView = label(90, 0xFF0B0B10, Typeface.BOLD);
@@ -1167,6 +1187,12 @@ public class MainActivity extends Activity {
     private void onHub(HubLink.State s, String status) {
         hubState = s;
         hubStatus = status == null ? "" : status;
+        if (s == null) {
+            hubDownView.setText(getString(R.string.hub_down) + (hubStatus.isEmpty() ? "" : "\n" + hubStatus));
+            hubDownView.setVisibility(View.VISIBLE);
+        } else {
+            hubDownView.setVisibility(View.GONE);
+        }
         if (sessions != null) idle.setText(idleText());
         if (s != null && s.musicTitle != null) {
             applyHubMusic(s);

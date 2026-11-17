@@ -32,11 +32,19 @@ const Hub = (() => {
     try { const x = new URL(u); if (!x.port && x.protocol === "http:") x.port = "8770"; return x.origin; } catch { return ""; }
   }
 
+  /** The red "Hub niet verbonden" pill, with why; null hides it. */
+  function hubDown(why) {
+    const el = $("hubdown");
+    el.hidden = why === null;
+    if (why !== null) el.querySelector("small").textContent = why;
+  }
+
   async function poll() {
     const b = base();
-    if (!b) { apply(null); status = ""; return; }
+    if (!b) { apply(null); status = ""; hubDown("Geen Hub-adres ingesteld: druk op S (of ⚙) en vul het in bij Hub."); return; }
     if (location.protocol === "https:" && b.startsWith("http:")) {
       status = "Deze pagina draait via https://, de Hub via http://: de browser blokkeert dat. Open SpotiParty via http:// op je eigen netwerk.";
+      hubDown("Open deze pagina via http:// op je eigen netwerk.");
       return;
     }
     const q = new URLSearchParams({ id: screenId(), name: name(), kind: kind(), v: VERSION,
@@ -50,10 +58,15 @@ const Hub = (() => {
       offset = d.now - Date.now();
       fails = 0;
       status = `Verbonden met ${d.hub} als “${d.name}”.`;
+      hubDown(null);
       apply(d);
       runCommands(d.cmds || []);
     } catch {
-      if (++fails >= 3) { apply(null); status = `Geen Hub gevonden op ${b}.`; }
+      if (++fails >= 3) {
+        apply(null);
+        status = `Geen Hub gevonden op ${b}.`;
+        hubDown(`${b.replace(/^https?:\/\//, "")} antwoordt niet. Staat SpotiParty aan op de Hub-pc?`);
+      }
     }
   }
 
