@@ -28,6 +28,14 @@ function position() {
   return Math.max(0, p);
 }
 
+/** Until then the Hub's account decides what this screen shows (the account the music comes from). */
+let hubMusicUntil = 0;
+/** The song from this screen's own source (its Spotify login, Home Assistant): only when the Hub has none. */
+function setOwn(track) {
+  if (Date.now() < hubMusicUntil) return;
+  setNow(track);
+}
+
 function setNow(track) {
   now = track;
   document.body.classList.toggle("idle", !now);
@@ -308,10 +316,10 @@ const Spotify = (() => {
       const j = await api("/me/player/currently-playing");
       if (j === undefined) return;
       const item = j && j.item;
-      if (!item) { setNow(null); return; }
+      if (!item) { setOwn(null); return; }
       const artists = (item.artists || item.show && [item.show] || []).map(a => a.name).join(", ");
       const images = (item.album || item.show || {}).images || [];
-      setNow({
+      setOwn({
         key: artists + "\n" + item.name, title: item.name, artist: artists,
         album: item.album ? item.album.name : "", durationMs: item.duration_ms || 0,
         positionMs: j.progress_ms || 0, sampledAt: Date.now(), playing: !!j.is_playing,
@@ -320,12 +328,13 @@ const Spotify = (() => {
     } catch (e) {
       $("idle").textContent = "Spotify: " + (e.message === "forbidden"
         ? "geen toegang. Staat je account onder User Management in het dashboard?" : "niet bereikbaar.");
-      setNow(null);
+      setOwn(null);
     }
   }
 
   async function pollQueue() {
     const el = $("next");
+    if (Date.now() < hubMusicUntil) return;   // the Hub tells what comes next on the account that plays
     if (!linked()) { el.hidden = true; return; }
     try {
       const q = await api("/me/player/queue");
@@ -395,7 +404,7 @@ const HA = (() => {
       .map(id => [id, states[id].attributes.friendly_name || id]);
   }
 
-  function render() { if (source === "ha") setNow(track(store.get("ha_entity", params.get("entity") || ""))); }
+  function render() { if (source === "ha") setOwn(track(store.get("ha_entity", params.get("entity") || ""))); }
 
   function start(onMsg) {
     stop();
@@ -511,7 +520,7 @@ const Media = {
   },
 };
 
-function idleMsg(t) { $("idle").textContent = t; setNow(null); }
+function idleMsg(t) { $("idle").textContent = t; setOwn(null); }
 
 // ---------- Jam QR ----------
 function isSpotifyLink(s) {

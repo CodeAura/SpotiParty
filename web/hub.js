@@ -70,7 +70,23 @@ const Hub = (() => {
 
   const NOTICE = { info: ["📢", "Mededeling"], party: ["🎉", "Feest!"], alert: ["⚠️", "Belangrijk"] };
 
+  /** The song of the account the music comes from, as the Hub reports it: it goes before this screen's own source. */
+  function applyMusic(m) {
+    if (!m || !m.title) return;
+    hubMusicUntil = Date.now() + 8000;
+    setNow({
+      key: m.artist + "\n" + m.title, title: m.title, artist: m.artist || "", album: m.album || "",
+      durationMs: m.duration || 0, positionMs: m.progress || 0,
+      sampledAt: (m.progress_at || Date.now() + offset) - offset,   // the hub's clock to this screen's
+      playing: !!m.playing, art: m.art || "",
+    });
+    const el = $("next");
+    el.textContent = m.next ? "Hierna: " + m.next : "";
+    el.hidden = !m.next;
+  }
+
   function apply(d) {
+    applyMusic(d && d.music);
     // The Jam link set in the dashboard counts on every screen.
     const jam = d && d.jam && isSpotifyLink(d.jam) ? d.jam : "";
     if (jam !== hubJam) { hubJam = jam; showJam(); }

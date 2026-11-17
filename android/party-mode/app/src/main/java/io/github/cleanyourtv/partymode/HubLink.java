@@ -40,6 +40,10 @@ final class HubLink {
         boolean pro;            // notices, break, Wi-Fi and "identify" (the hub always sends true)
         String jam = "";        // the Jam link set in the dashboard, for every screen; "" = none
         final java.util.List<String[]> cmds = new java.util.ArrayList<>();   // {id, cmd} to run once
+        // The song of the account the music comes from (the hub's Spotify login); musicTitle null = none.
+        String musicTitle, musicArtist, musicAlbum, musicArt, musicNext;
+        long musicDuration, musicProgress, musicProgressAt;   // ms; progressAt on the hub's clock
+        boolean musicPlaying;
         String noticeId, noticeText, noticeStyle;
         long noticeUntil;       // hub clock, ms; 0 = until removed
         int noticeSecs;
@@ -197,6 +201,18 @@ final class HubLink {
             for (int i = 0; cmds != null && i < cmds.length(); i++) {
                 JSONObject x = cmds.optJSONObject(i);
                 if (x != null) s.cmds.add(new String[]{x.optString("id"), x.optString("cmd")});
+            }
+            JSONObject mu = o.optJSONObject("music");
+            if (mu != null && !mu.optString("title").isEmpty()) {
+                s.musicTitle = mu.optString("title");
+                s.musicArtist = mu.optString("artist");
+                s.musicAlbum = mu.optString("album");
+                s.musicArt = mu.optString("art");
+                s.musicNext = mu.optString("next");
+                s.musicDuration = mu.optLong("duration");
+                s.musicProgress = mu.optLong("progress");
+                s.musicProgressAt = mu.optLong("progress_at");
+                s.musicPlaying = mu.optBoolean("playing");
             }
             JSONObject n = o.optJSONObject("notice");
             if (n != null) {

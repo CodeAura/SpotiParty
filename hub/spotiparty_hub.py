@@ -138,13 +138,28 @@ class Hub:
         threading.Thread(target=run, daemon=True, name="hub-spotify").start()
 
     def _spotify_loop(self):
-        # While the dashboard is open (or a break runs): what the account plays, every 4 s.
+        # While the dashboard is open, a break runs or a screen is on: what the account plays, every 4 s
+        # (the queue every 20 s), so every screen shows the song of the account the music comes from.
+        last_queue = 0.0
         while self.httpd:
-            busy = time.time() - self.admin_seen < 90 or bool(self.brk)
+            t = time.time()
+            screens_on = any(t - s["seen"] < ONLINE_S for s in list(self.screens.values()))
+            busy = t - self.admin_seen < 90 or bool(self.brk) or screens_on
             p = self.spotify.player
-            if busy and self.spotify.linked() and (not p or time.time() - p["at"] >= 4):
-                self.spotify.refresh()
+            if busy and self.spotify.linked() and (not p or t - p["at"] >= 4):
+                queue = t - last_queue >= 20
+                self.spotify.refresh(with_queue=queue)
+                if queue:
+                    last_queue = t
             time.sleep(1)
+
+    def music(self):
+        """The linked account's song for the screens, or None (no account, nothing playing, or not fresh)."""
+        p = self.spotify.player
+        if not p or not p.get("title") or time.time() - p["at"] > 15:
+            return None
+        return {k: p.get(k) for k in ("title", "artist", "album", "art", "duration", "progress", "progress_at",
+                                      "playing", "next", "device", "id")}
 
     def _save(self):
         tmp = self.file.with_suffix(".tmp")
@@ -214,7 +229,10 @@ class Hub:
             out.update(notice=self._for(self.notice, sid), brk=self._for(self.brk, sid),
                        wifi={"ssid": w["ssid"], "password": "" if w["security"] == "nopass" else w["password"],
                              "qr": wifi_qr(w)} if w.get("show") and w.get("ssid") else None,
-                       ident=sid in self.ident)
+                       ident=sid in self.ident,
+                       # The song of the account the music comes from (the hub's Spotify login): screens show this
+                       # one, not whatever account happens to be signed in on the TV or in the browser.
+                       music=self.music())
             for k in ("notice", "brk"):
                 if out[k]:
                     out[k] = {x: y for x, y in out[k].items() if x not in ("targets", "paused", "resumed", "music")}

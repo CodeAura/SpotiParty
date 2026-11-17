@@ -171,13 +171,15 @@ class Spotify:
             return   # already playing / already paused: nothing to do
         raise SpotifyError(f"Spotify zei {st}" + (f" ({message})" if message else "") + ".")
 
-    def refresh(self):
-        """What the account plays now, for the dashboard."""
+    def refresh(self, with_queue=False):
+        """What the account plays now: for the dashboard, and for every screen (they show this account's song)."""
         if not self.linked():
             self.player = None
             return
         try:
+            t0 = time.time()
             st, p = self._call("GET", "/me/player?additional_types=episode")
+            t1 = time.time()
         except SpotifyError as e:
             self.player_err = str(e)
             return
@@ -190,5 +192,22 @@ class Spotify:
         item = p["item"]
         artists = ", ".join(a.get("name", "") for a in item.get("artists", [])) or (item.get("show") or {}).get("name", "")
         dev = p.get("device") or {}
+        images = (item.get("album") or item.get("show") or {}).get("images") or []
+        prev = self.player or {}
+        same = prev.get("id") == item.get("id")
         self.player = {"title": item.get("name", ""), "artist": artists, "playing": bool(p.get("is_playing")),
-                       "device": dev.get("name", ""), "volume": dev.get("volume_percent"), "at": time.time()}
+                       "device": dev.get("name", ""), "volume": dev.get("volume_percent"), "at": time.time(),
+                       "id": item.get("id", ""), "album": (item.get("album") or {}).get("name", ""),
+                       "art": images[0]["url"] if images else "", "duration": int(item.get("duration_ms") or 0),
+                       # where the song was at the middle of the request, in ms since the epoch (the hub's clock)
+                       "progress": int(p.get("progress_ms") or 0), "progress_at": int((t0 + t1) / 2 * 1000),
+                       "next": prev.get("next", "") if same and not with_queue else ""}
+        if with_queue or not same:
+            try:
+                st, q = self._call("GET", "/me/player/queue")
+                n = (q or {}).get("queue") or []
+                if n:
+                    who = ", ".join(a.get("name", "") for a in n[0].get("artists", []))
+                    self.player["next"] = n[0].get("name", "") + (" · " + who if who else "")
+            except SpotifyError:
+                pass

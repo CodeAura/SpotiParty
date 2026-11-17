@@ -69,7 +69,7 @@ public class MainActivity extends Activity {
         public void run() {
             handler.removeCallbacks(this);   // one chain, also after a song change asked early
             if (!started) return;
-            if (!syncLoading && SpotifyApi.linked(prefs)) {
+            if (!syncLoading && SpotifyApi.linked(prefs) && !hubMusicActive()) {
                 syncLoading = true;
                 syncWorker.execute(() -> {
                     SpotifyApi.Progress p = SpotifyApi.progress(prefs);
@@ -183,6 +183,7 @@ public class MainActivity extends Activity {
     }
 
     private void loadNext() {
+        if (hubMusicActive()) return;   // the Hub tells what comes next on the account that plays
         if (queueLoading || !SpotifyApi.linked(prefs)) {
             if (!SpotifyApi.linked(prefs)) nextUp.setVisibility(View.GONE);
             return;
@@ -711,8 +712,59 @@ public class MainActivity extends Activity {
         if (hub != null) hub.setPlayer(c != null, s != null && s.getState() == PlaybackState.STATE_PLAYING);
     }
 
+    /** Until then (elapsedRealtime) the Hub's account decides what the TV shows, not the TV's own Spotify. */
+    private long hubMusicUntil;
+
+    private boolean hubMusicActive() {
+        return SystemClock.elapsedRealtime() < hubMusicUntil;
+    }
+
+    /**
+     * The song of the account the music comes from, as the Hub reports it (its Spotify login). It goes before
+     * the TV's own media session, which can show another account or a stale Spotify Connect song.
+     */
+    private void applyHubMusic(HubLink.State s) {
+        long now = SystemClock.elapsedRealtime();
+        hubMusicUntil = now + 8000;
+        idle.setVisibility(View.GONE);
+        songBlock.setVisibility(View.VISIBLE);
+        title.setText(s.musicTitle);
+        artist.setText(s.musicArtist);
+        lastTitle = s.musicTitle;
+        lastArtist = s.musicArtist;
+        lastAlbum = s.musicAlbum;
+        if (hub != null) hub.setSong(s.musicArtist.isEmpty() ? s.musicTitle : s.musicTitle + " – " + s.musicArtist);
+        songBlock.animate().alpha(s.musicPlaying ? 1f : 0.55f).setDuration(250).start();
+        if (s.musicNext.isEmpty()) {
+            nextUp.setVisibility(View.GONE);
+        } else {
+            nextUp.setText(getString(R.string.next_up, s.musicNext, ""));
+            nextUp.setVisibility(View.VISIBLE);
+        }
+        // Where the song is: the hub's measurement, moved onto this TV's clock.
+        long at = now - Math.max(0, s.hubNow() - s.musicProgressAt);
+        apiProgress = new SpotifyApi.Progress(s.musicProgress, s.musicPlaying, s.musicTitle, at, s.musicDuration);
+
+        String key = s.musicArtist + "\n" + s.musicTitle;
+        if (key.equals(trackKey)) return;
+        trackKey = key;
+        songSeenAt = now - s.musicProgress;
+        cover.setImageDrawable(null);
+        shownArt = null;
+        loadArtUri(s.musicArt, key);
+        times = new long[0];
+        lines = new String[0];
+        synced = false;
+        shownLine = -2;
+        for (TextView t : lyricViews) t.setText("");
+        lyricsDuration = s.musicDuration;
+        loadLyrics(key, s.musicArtist, s.musicTitle, s.musicAlbum, s.musicDuration);
+        fitCover();
+    }
+
     private void update() {
         reportPlayer();
+        if (hubMusicActive()) return;   // the Hub's account decides what is shown
         MediaController c = controller;
         MediaMetadata m = c == null ? null : c.getMetadata();
         PlaybackState s = c == null ? null : c.getPlaybackState();
@@ -893,13 +945,25 @@ public class MainActivity extends Activity {
         MediaController c = controller;
         PlaybackState s = c == null ? null : c.getPlaybackState();
         MediaMetadata m = c == null ? null : c.getMetadata();
-        if (s == null || m == null) return;
         long now = SystemClock.elapsedRealtime();
-        long position = s.getPosition();
+        long position;
+        long duration;
+        if (hubMusicActive() && apiProgress != null) {
+            // The Hub's account: its position and length, counted on from the hub's measurement.
+            SpotifyApi.Progress hp = apiProgress;
+            position = hp.ms + (hp.playing ? now - hp.at : 0);
+            duration = hp.durationMs;
+            if (duration > 0) position = Math.min(position, duration);
+            if (duration > 0) progress.setProgress((int) Math.min(1000, position * 1000 / duration));
+            showLyricsAt(position);
+            return;
+        }
+        if (s == null || m == null) return;
+        position = s.getPosition();
         if (s.getState() == PlaybackState.STATE_PLAYING) {
             position += (long) ((now - s.getLastPositionUpdateTime()) * s.getPlaybackSpeed());
         }
-        long duration = m.getLong(MediaMetadata.METADATA_KEY_DURATION);
+        duration = m.getLong(MediaMetadata.METADATA_KEY_DURATION);
         // Spotify's own position comes first: the TV's session is often wrong for a song that plays on another
         // device (Spotify Connect). It keeps a frozen position that, counted on, drifts away from the song or
         // lands far past its end (the lyrics then stay on the last, empty line).
@@ -915,6 +979,10 @@ public class MainActivity extends Activity {
         }
         if (duration > 0) position = Math.min(position, duration);
         if (duration > 0) progress.setProgress((int) Math.min(1000, position * 1000 / duration));
+        showLyricsAt(position);
+    }
+
+    private void showLyricsAt(long position) {
         if (!synced) return;
         // A line shows a little before it is sung: reading takes a moment, and sound reaches you after the TV draws.
         long ahead = position + LYRIC_LEAD_MS;
@@ -1126,6 +1194,13 @@ public class MainActivity extends Activity {
     private void onHub(HubLink.State s, String status) {
         hubState = s;
         hubStatus = status == null ? "" : status;
+        if (s != null && s.musicTitle != null) {
+            applyHubMusic(s);
+        } else if (hubMusicUntil != 0 && !hubMusicActive()) {
+            hubMusicUntil = 0;
+            trackKey = "";
+            update();   // back to what the TV itself plays
+        }
         float dp = getResources().getDisplayMetrics().density;
 
         // The Jam link from the dashboard replaces the one set from the phone, on every screen at once.
