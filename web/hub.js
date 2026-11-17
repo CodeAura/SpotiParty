@@ -87,6 +87,11 @@ const Hub = (() => {
 
   function apply(d) {
     applyMusic(d && d.music);
+    // What the empty screen says: Spotify is linked at the Hub only.
+    if (source !== "ha") {
+      $("idle").textContent = !d ? "Geen SpotiParty Hub gevonden. Start SpotiParty op de pc met de Hub."
+        : d.spotify === false ? HUB_NEEDED : "Zet muziek aan in Spotify \u{1F389}";
+    }
     // The Jam link set in the dashboard counts on every screen.
     const jam = d && d.jam && isSpotifyLink(d.jam) ? d.jam : "";
     if (jam !== hubJam) { hubJam = jam; showJam(); }

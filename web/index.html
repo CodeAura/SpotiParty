@@ -206,7 +206,7 @@
 
     <label for="source">Wat speelt er?</label>
     <select id="source">
-      <option value="spotify">Spotify-account (deze PC, telefoon, speaker: overal)</option>
+      <option value="spotify">Spotify via de Hub (je account, op elk apparaat)</option>
       <option value="ha">Home Assistant media player</option>
     </select>
 
@@ -224,7 +224,14 @@
       <div class="msg" id="ha-msg"></div>
     </div>
 
-    <div data-src="spotify ha">
+    <div data-src="spotify">
+      <h3>Spotify</h3>
+      <p>Spotify koppel je één keer in het <b>Hub-dashboard</b> (bij <b>🎵 Muziek bedienen</b>). Alle schermen tonen
+        dan het nummer van dat account, met songtekst en "Hierna".</p>
+    </div>
+
+    <!-- Spotify is linked at the Hub only: the screen's own login is kept out of sight (the script still finds it). -->
+    <div data-src="none" hidden>
       <h3 id="sp-head">Spotify koppelen</h3>
       <p data-src="ha">Optioneel: dan staat <b>Hierna: nummer</b> uit je Spotify-wachtrij onder de artiest.</p>
       <ol>

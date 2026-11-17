@@ -581,8 +581,8 @@ public class MainActivity extends Activity {
             songBlock.setVisibility(View.INVISIBLE);
         }
         handler.post(tick);
-        handler.post(queuePoll);
-        handler.post(progressPoll);
+        // Spotify is linked at the Hub only: the TV keeps no login of its own (and forgets one it had).
+        SpotifyApi.unlink(prefs);
     }
 
     @Override
@@ -706,6 +706,13 @@ public class MainActivity extends Activity {
     }
 
     /** Tells the Hub whether this TV can control its music and whether it plays (for the dashboard's buttons). */
+    /** What the empty screen says: Spotify is linked at the Hub only. */
+    private int idleText() {
+        HubLink.State s = hubState;
+        if (s == null) return R.string.idle_no_hub;
+        return s.spotify ? R.string.idle : R.string.idle_hub;
+    }
+
     private void reportPlayer() {
         MediaController c = controller;
         PlaybackState s = c == null ? null : c.getPlaybackState();
@@ -771,7 +778,7 @@ public class MainActivity extends Activity {
         boolean show = m != null && s != null && s.getState() != PlaybackState.STATE_STOPPED
                 && s.getState() != PlaybackState.STATE_NONE && s.getState() != PlaybackState.STATE_ERROR;
         if (!show) {
-            if (sessions != null) idle.setText(R.string.idle);
+            if (sessions != null) idle.setText(idleText());
             idle.setVisibility(View.VISIBLE);
             songBlock.setVisibility(View.INVISIBLE);
             for (TextView t : lyricViews) t.setText("");
@@ -814,7 +821,7 @@ public class MainActivity extends Activity {
         songSeenAt = SystemClock.elapsedRealtime() - Math.max(0, Math.min(s.getPosition(), 15_000));
         apiProgress = null;
         handler.removeCallbacks(progressPoll);
-        handler.postDelayed(progressPoll, 800);
+
         times = new long[0];
         lines = new String[0];
         synced = false;
@@ -823,8 +830,7 @@ public class MainActivity extends Activity {
         lyricsDuration = duration;
         loadLyrics(key, songArtist, songTitle, album, duration);
         // A new song moved the queue: ask again once Spotify's servers have caught up.
-        handler.removeCallbacks(queuePoll);
-        handler.postDelayed(queuePoll, 1500);
+
     }
 
     private static String text(MediaMetadata m, String key) {
@@ -1153,47 +1159,15 @@ public class MainActivity extends Activity {
             + "{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:$('hub').value.trim()+'\\n'+$('sname').value.trim()});"
             + "$('hubmsg').textContent=await r.text();}catch(e){$('hubmsg').textContent='De tv is niet bereikbaar.';}};"
             + "</script>"
-            + "<h1 style='margin-top:40px'>Volgende nummer tonen</h1>"
-            + "<p>Spotify geeft de wachtrij niet aan de tv door. Koppel je Spotify-account (alleen lezen), dan "
-            + "zet SpotiParty <b>Hierna: nummer</b> onder de artiest. Eenmalig:</p>"
-            + "<ol style='color:#b9bcc6;padding-left:20px'>"
-            + "<li>Ga naar <b>developer.spotify.com/dashboard</b>, log in en tik op <b>Create app</b>.</li>"
-            + "<li>Naam en omschrijving mag je zelf kiezen. Zet bij <b>Redirect URIs</b> precies: "
-            + "<code style='color:#fff'>" + SpotifyApi.REDIRECT + "</code> en vink <b>Web API</b> aan.</li>"
-            + "<li>Kopieer de <b>Client ID</b> van je app en plak hem hieronder.</li></ol>"
-            + "<div id=spstate style='color:#1ed760'></div>"
-            + "<label for=client>Client ID</label>"
-            + "<input id=client autocapitalize=off autocomplete=off placeholder='32 tekens'>"
-            + "<button id=login style='background:#1ed760;color:#000'>Inloggen bij Spotify</button>"
-            + "<a id=go class=pick target=_blank rel=noopener style='display:none;background:#1ed760;color:#000;"
-            + "text-decoration:none'>Open de Spotify-login</a>"
-            + "<p id=after style='display:none'>Na het inloggen probeert je telefoon <b>127.0.0.1</b> te openen en "
-            + "zegt dat het niet lukt. Dat hoort zo. Kopieer dat hele adres uit de adresbalk en plak het hier:</p>"
-            + "<input id=code style='display:none' autocapitalize=off autocomplete=off placeholder='http://127.0.0.1:8768/callback?code=...'>"
-            + "<button id=finish style='display:none'>Koppelen</button>"
-            + "<button id=unlink style='background:#3a3e4a'>Spotify ontkoppelen</button><div id=spmsg></div>"
-            + "<script>"
-            + "async function sp(path,v){const r=await fetch(path+'?k='+k,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:v||''});return [r.ok,await r.text()];}"
-            + "fetch('/spotify?k='+k).then(r=>r.text()).then(t=>{const [s,c]=t.split('\\n');$('client').value=c||'';"
-            + "$('spstate').textContent=s==='linked'?'Spotify is gekoppeld.':'';});"
-            + "$('login').onclick=async()=>{$('spmsg').textContent='Bezig...';"
-            + "try{const [ok,t]=await sp('/spotify/login',$('client').value.trim());"
-            + "if(!ok){$('spmsg').textContent=t;return;}"
-            + "$('go').href=t;$('go').style.display='block';$('after').style.display='block';"
-            + "$('code').style.display='block';$('finish').style.display='block';"
-            + "$('spmsg').textContent='Tik op Open de Spotify-login.';}"
-            + "catch(e){$('spmsg').textContent='De tv is niet bereikbaar.';}};"
-            + "$('finish').onclick=async()=>{$('spmsg').textContent='Koppelen...';"
-            + "try{const [ok,t]=await sp('/spotify/code',$('code').value.trim());$('spmsg').textContent=t;"
-            + "if(ok)$('spstate').textContent='Spotify is gekoppeld.';}catch(e){$('spmsg').textContent='De tv is niet bereikbaar.';}};"
-            + "$('unlink').onclick=async()=>{try{const [ok,t]=await sp('/spotify/unlink');$('spmsg').textContent=t;"
-            + "$('spstate').textContent='';}catch(e){$('spmsg').textContent='De tv is niet bereikbaar.';}};"
-            + "</script>";
+            + "<h1 style='margin-top:40px'>Spotify</h1>"
+            + "<p>Spotify koppel je één keer in het <b>dashboard van de SpotiParty Hub</b> (bij <b>Muziek bedienen</b>). "
+            + "De tv toont dan het nummer van dat account, met songtekst en <b>Hierna</b>.</p>";
 
     /** What the Hub wants on this screen (null: no hub). */
     private void onHub(HubLink.State s, String status) {
         hubState = s;
         hubStatus = status == null ? "" : status;
+        if (sessions != null) idle.setText(idleText());
         if (s != null && s.musicTitle != null) {
             applyHubMusic(s);
         } else if (hubMusicUntil != 0 && !hubMusicActive()) {

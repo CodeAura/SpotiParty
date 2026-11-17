@@ -38,7 +38,8 @@ final class HubLink {
         long offset;            // hub clock minus the TV's clock, ms
         String name = "";
         boolean pro;            // notices, break, Wi-Fi and "identify" (the hub always sends true)
-        String jam = "";        // the Jam link set in the dashboard, for every screen; "" = none
+        String jam = "";
+        boolean spotify = true;  // false: the hub has no Spotify account linked yet        // the Jam link set in the dashboard, for every screen; "" = none
         final java.util.List<String[]> cmds = new java.util.ArrayList<>();   // {id, cmd} to run once
         // The song of the account the music comes from (the hub's Spotify login); musicTitle null = none.
         String musicTitle, musicArtist, musicAlbum, musicArt, musicNext;
@@ -197,6 +198,7 @@ final class HubLink {
             s.name = o.optString("name");
             s.pro = o.optBoolean("pro");
             s.jam = o.optString("jam", "");
+            s.spotify = o.optBoolean("spotify", true);   // an older hub doesn't say: don't nag
             org.json.JSONArray cmds = o.optJSONArray("cmds");
             for (int i = 0; cmds != null && i < cmds.length(); i++) {
                 JSONObject x = cmds.optJSONObject(i);

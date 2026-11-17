@@ -196,7 +196,10 @@ const Spotify = (() => {
   const REDIRECT = location.origin + location.pathname;
   let pollTimer = 0, backoffUntil = 0;
 
-  const linked = () => !!store.get("sp_refresh") && !!store.get("sp_client");
+  // Spotify is linked at the Hub only (one developer app, one account for every screen): a screen keeps no login
+  // of its own any more, and forgets one it had.
+  ["sp_access", "sp_refresh", "sp_expires", "sp_scope", "sp_verifier", "sp_state"].forEach(k => store.del(k));
+  const linked = () => false;
   const canLogin = () => !!(window.crypto && crypto.subtle);
 
   function random(n) {
@@ -521,6 +524,7 @@ const Media = {
   },
 };
 
+const HUB_NEEDED = "Koppel je Spotify aan de Hub";
 function idleMsg(t) { $("idle").textContent = t; setOwn(null); }
 
 // ---------- Jam QR ----------
@@ -552,7 +556,8 @@ function startSource(onMsg) {
     $("idle").textContent = "Zet muziek aan 🎉";
     HA.start(onMsg);
   } else if (!Spotify.linked()) {
-    idleMsg("Koppel je Spotify-account: ⚙ of toets S");
+    idleMsg(HUB_NEEDED);   // the Hub's account fills the screen as soon as it reports one
+    return;
   } else {
     $("idle").textContent = "Zet muziek aan in Spotify 🎉";
     Spotify.start();
@@ -677,5 +682,5 @@ addEventListener("storage", e => {
   showJam();
   startSource();
   if (typeof login === "string") { openSettings(true); msg("sp-msg", login === "ok" ? "Gekoppeld!" : login, login !== "ok"); }
-  else if (source === "spotify" && !Spotify.linked() && params.get("kiosk") !== "1") openSettings(true);
+  // (No Spotify login on the screen any more: it is done once, in the Hub's dashboard.)
 })();

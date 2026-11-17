@@ -232,7 +232,9 @@ class Hub:
                        ident=sid in self.ident,
                        # The song of the account the music comes from (the hub's Spotify login): screens show this
                        # one, not whatever account happens to be signed in on the TV or in the browser.
-                       music=self.music())
+                       music=self.music(),
+                       # Spotify is linked at the hub only; screens without it say "Koppel je Spotify aan de Hub".
+                       spotify=self.spotify.linked())
             for k in ("notice", "brk"):
                 if out[k]:
                     out[k] = {x: y for x, y in out[k].items() if x not in ("targets", "paused", "resumed", "music")}
