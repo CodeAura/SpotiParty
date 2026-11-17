@@ -1089,7 +1089,7 @@ public class MainActivity extends Activity {
                     : "Opgeslagen. De tv verbindt met " + addr + ".");
         }
         if ("GET".equals(method) && "/auto".equals(path)) {
-            return PhoneLink.Response.text(200, (prefs.getBoolean("auto_open", true) ? "on" : "off") + "\n"
+            return PhoneLink.Response.text(200, (prefs.getBoolean("auto_open", false) ? "on" : "off") + "\n"
                     + (android.provider.Settings.canDrawOverlays(this) ? "allowed" : "blocked"));
         }
         if ("POST".equals(method) && "/auto".equals(path)) {

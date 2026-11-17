@@ -20,7 +20,7 @@ import java.util.Map;
  * Notification access is what lets SpotiParty see which song plays (MediaSessionManager needs an enabled listener
  * of the calling app). It reads no notifications.
  *
- * It also opens SpotiParty when Spotify starts playing on the TV ("auto_open", on by default): only on the step
+ * It also opens SpotiParty when Spotify starts playing on the TV ("auto_open", off by default; switch it on from the phone page): only on the step
  * from not playing to playing, so leaving SpotiParty while the music goes on does not bring it back, and a skip
  * between songs does not count. Starting an activity from the background needs "Display over other apps"
  * (SYSTEM_ALERT_WINDOW); without it Android blocks the start and the log says so.
@@ -112,7 +112,7 @@ public class PartyListener extends NotificationListenerService {
     }
 
     private void openPartyMode() {
-        if (!getSharedPreferences("party", MODE_PRIVATE).getBoolean("auto_open", true)) return;
+        if (!getSharedPreferences("party", MODE_PRIVATE).getBoolean("auto_open", false)) return;
         if (MainActivity.visible) return;
         if (!Settings.canDrawOverlays(this)) {
             Log.w(SpotifyApi.TAG, "Spotify started, but SpotiParty may not open itself: "
