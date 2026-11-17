@@ -30,6 +30,7 @@ import urllib.parse
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import sp_spotify  # noqa: E402
+import sp_party  # noqa: E402
 
 PORT = 8770
 DISCOVERY_PORT = 8771
@@ -100,6 +101,9 @@ class Hub:
         # The account's music: the Hub's own Spotify login controls whatever device the account plays on.
         self.spotify = sp_spotify.Spotify(self.cfg, self._save_locked, port)
         self.admin_seen = 0.0   # the dashboard was open then: keep "now playing" fresh
+        # Skip votes and the "Raad het nummer" quiz, played from the guests' phones (/gast).
+        self.party = sp_party.Party(self.cfg)
+        self.guest_hits = {}    # ip -> [count, window start]: a phone can't flood the hub
         self.screens = {}       # id -> {name, kind, ip, seen, song}
         self.notice = None      # {id, text, style, until (ms or 0 = until removed), targets}
         self.brk = None         # {id, title, minutes, until (ms), targets}
@@ -151,6 +155,10 @@ class Hub:
                 self.spotify.refresh(with_queue=queue)
                 if queue:
                     last_queue = t
+                p = self.spotify.player
+                if p and p.get("id"):
+                    with self.lock:
+                        self.party.on_song(p["id"], p.get("title", ""), p.get("artist", ""))
             time.sleep(1)
 
     def music(self):
@@ -158,8 +166,56 @@ class Hub:
         p = self.spotify.player
         if not p or not p.get("title") or time.time() - p["at"] > 15:
             return None
-        return {k: p.get(k) for k in ("title", "artist", "album", "art", "duration", "progress", "progress_at",
-                                      "playing", "next", "device", "id")}
+        out = {k: p.get(k) for k in ("title", "artist", "album", "art", "duration", "progress", "progress_at",
+                                     "playing", "next", "device", "id")}
+        n = max(0, int(self.cfg.get("upnext", 3)))
+        out["upnext"] = (p.get("upnext") or [])[:n]
+        if not n:
+            out["next"] = ""     # "Geen" in the dashboard: older screens show no "Hierna" either
+        return out
+
+    def guest_url(self):
+        return f"http://{lan_addresses()[0]}:{self.port}/gast"
+
+    def guest_ok(self, ip):
+        """At most 40 guest requests a minute per phone."""
+        with self.lock:
+            n, start = self.guest_hits.get(ip, [0, time.time()])
+            if time.time() - start > 60:
+                n, start = 0, time.time()
+            self.guest_hits[ip] = [n + 1, start]
+            return n < 40
+
+    def guest_state(self, voter):
+        with self.lock:
+            out = self.party.guest(voter)
+            m = self.music()
+            r = self.party.round
+            hidden = bool(r and self.party.quiz_on and time.time() < r["until"])
+            out["song"] = None if not m or hidden else {"title": m["title"], "artist": m["artist"]}
+            out["jam"] = self.cfg.get("jam", "")
+            out["hub"] = self.cfg["name"]
+            return out
+
+    def guest_action(self, action, body):
+        b = body if isinstance(body, dict) else {}
+        voter = str(b.get("voter", ""))[:40]
+        if not (8 <= len(voter) <= 40 and all(c.isalnum() or c in "-_" for c in voter)):
+            return 400, {"error": "voter"}
+        if action == "vote":
+            with self.lock:
+                n, need, skip = self.party.vote(voter)
+            if skip:
+                try:
+                    self.spotify.control("next")
+                except sp_spotify.SpotifyError as e:
+                    return 200, {"votes": [n, need], "msg": "Genoeg stemmen, maar overslaan lukte niet: " + str(e)}
+                return 200, {"votes": [n, need], "msg": "Genoeg stemmen: het nummer wordt overgeslagen!"}
+            return 200, {"votes": [n, need], "msg": f"Gestemd. {n} van {need} stemmen."}
+        if action == "guess":
+            with self.lock:
+                return 200, self.party.guess(voter, str(b.get("name", "")), str(b.get("text", ""))[:120])
+        return 404, {"error": "onbekend"}
 
     def _save(self):
         tmp = self.file.with_suffix(".tmp")
@@ -234,7 +290,10 @@ class Hub:
                        # one, not whatever account happens to be signed in on the TV or in the browser.
                        music=self.music(),
                        # Spotify is linked at the hub only; screens without it say "Koppel je Spotify aan de Hub".
-                       spotify=self.spotify.linked())
+                       spotify=self.spotify.linked(),
+                       party=self.party.screen(self.now_ms()),
+                       # With skip votes or the quiz on, the screens' QR code leads to the guest page (Jam there too).
+                       guest=self.guest_url() if self.cfg.get("vote_on") or self.party.quiz_on else "")
             for k in ("notice", "brk"):
                 if out[k]:
                     out[k] = {x: y for x, y in out[k].items() if x not in ("targets", "paused", "resumed", "music")}
@@ -253,7 +312,8 @@ class Hub:
             sp = self.spotify
             spotify = {"linked": sp.linked(), "client": self.cfg.get("sp_client", ""), "redirect": sp.redirect,
                        "player": sp.player, "error": sp.player_err}
-            return {"now": self.now_ms(), "name": self.cfg["name"], "spotify": spotify, "jam": self.cfg.get("jam", ""),
+            return {"now": self.now_ms(), "name": self.cfg["name"], "spotify": spotify,
+                    "party": self.party.admin(), "guest": self.guest_url(), "jam": self.cfg.get("jam", ""),
                     "notice": self.notice, "brk": brk, "wifi": self.cfg["wifi"], "screens": screens,
                     "urls": [f"http://{a}:{self.port}/" for a in lan_addresses()]}
 
@@ -307,6 +367,25 @@ class Hub:
                     self.cfg["names"].pop(sid, None)
                 self._save()
                 return 200, {}
+            if action == "party":
+                if "upnext" in b:
+                    self.cfg["upnext"] = max(0, min(5, int(b["upnext"])))
+                if "vote_on" in b:
+                    self.cfg["vote_on"] = bool(b["vote_on"])
+                if "vote_needed" in b:
+                    self.cfg["vote_needed"] = max(1, min(50, int(b["vote_needed"])))
+                self._save()
+                return 200, self.party.admin()
+            if action == "quiz":
+                self.party.set_quiz(bool(b.get("on")))
+                if b.get("on") and self.spotify.player and self.spotify.player.get("id"):
+                    self.party.song = ""   # start the first round on the song playing now
+                    p = self.spotify.player
+                    self.party.on_song(p["id"], p.get("title", ""), p.get("artist", ""))
+                return 200, self.party.admin()
+            if action == "quiz-reset":
+                self.party.reset_scores()
+                return 200, self.party.admin()
             if action == "jam":
                 jam = str(b.get("jam", "")).strip()
                 if jam and not is_spotify_link(jam):
@@ -467,6 +546,15 @@ class HubHandler(http.server.BaseHTTPRequestHandler):
         if url.path == "/api/screen":
             code, obj = self.hub.screen_poll(q, self.client_address[0])
             return self._send(code, obj, cors=True)
+        if url.path in ("/gast", "/gast/"):
+            try:
+                return self._send(200, raw=(self.hub.static_dir / "guest.html").read_bytes(), ctype="text/html; charset=utf-8")
+            except OSError:
+                return self._send(404, {"error": "niet gevonden"})
+        if url.path == "/api/guest":
+            if not self.hub.guest_ok(self.client_address[0]):
+                return self._send(429, {"error": "Even rustig aan."})
+            return self._send(200, self.hub.guest_state(q.get("voter", "")))
         if url.path == "/spotify/callback":
             try:
                 self.hub.spotify.finish(url.query)
@@ -497,6 +585,17 @@ class HubHandler(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         url = urllib.parse.urlsplit(self.path)
+        if url.path.startswith("/api/guest/"):
+            # Guests on the home network: no PIN, only skip votes and quiz guesses, rate-limited per phone.
+            if not self.hub.guest_ok(self.client_address[0]):
+                return self._send(429, {"error": "Even rustig aan."})
+            try:
+                n = int(self.headers.get("Content-Length", 0))
+                body = json.loads(self.rfile.read(min(n, 4096)) or b"{}")
+            except (ValueError, OSError):
+                return self._send(400, {"error": "json"})
+            code, obj = self.hub.guest_action(url.path[len("/api/guest/"):], body)
+            return self._send(code, obj)
         if not url.path.startswith("/api/admin/"):
             return self._send(404, {"error": "niet gevonden"})
         # Same-origin only: a page elsewhere on the web can't drive the hub through your browser.

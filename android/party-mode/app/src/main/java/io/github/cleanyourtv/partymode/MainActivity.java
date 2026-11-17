@@ -159,6 +159,14 @@ public class MainActivity extends Activity {
     private QrView wifiQr;
     private TextView wifiText;
     private String shownWifi = "";
+    /** Skip votes from the guests' phones: a red pill at the top left. */
+    private TextView votesView;
+    /** "Raad het nummer": covers the song while guests guess, then shows the answer and the top 5. */
+    private LinearLayout quizView;
+    private TextView quizHead, quizBig, quizSub, quizTopView;
+    private String shownQuiz = "";
+    /** The hub's guest page; the QR leads there while skip votes or the quiz are on. */
+    private String hubGuest = "";
 
     /** Every 10 s while SpotiParty is open: what comes next in the host's queue (friends add to it in the Jam). */
     private final Runnable queuePoll = new Runnable() {
@@ -174,7 +182,8 @@ public class MainActivity extends Activity {
     private void fitCover() {
         float dp = getResources().getDisplayMetrics().density;
         int base = title.getLineCount() > 1 ? 190 : 230;
-        if (nextUp.getVisibility() == View.VISIBLE) base -= 20;
+        if (nextUp.getVisibility() == View.VISIBLE) base -= 20 + 18 * Math.max(0, nextUp.getLineCount() - 1);
+        base = Math.max(110, base);
         int side = Math.round(base * dp);
         ViewGroup.LayoutParams lp = cover.getLayoutParams();
         if (lp.width != side) {
@@ -245,6 +254,7 @@ public class MainActivity extends Activity {
             if (!started) return;
             showPosition();
             showBreak();
+            showQuizClock();
             handler.postDelayed(this, TICK_MS);
         }
     };
@@ -345,6 +355,29 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP);
         il.topMargin = Math.round(150 * dp);
         root.addView(idle, il);
+
+        // The quiz: over the song and the lyrics, under the QR card (guests scan it to guess).
+        quizView = new LinearLayout(this);
+        quizView.setOrientation(LinearLayout.VERTICAL);
+        quizView.setGravity(Gravity.CENTER);
+        int qp = Math.round(60 * dp);
+        quizView.setPadding(qp, qp / 2, qp, Math.round(110 * dp));
+        quizHead = label(24, 0xFF1ED760, Typeface.BOLD);
+        quizHead.setLetterSpacing(0.12f);
+        quizBig = label(80, 0xFFFFFFFF, Typeface.BOLD);
+        quizBig.setFontFeatureSettings("tnum");
+        quizBig.setMaxLines(2);
+        quizBig.setEllipsize(TextUtils.TruncateAt.END);
+        quizSub = label(22, 0xCCFFFFFF, Typeface.NORMAL);
+        quizTopView = label(22, 0xFFFFFFFF, Typeface.BOLD);
+        quizTopView.setLineSpacing(6 * dp, 1f);
+        quizTopView.setPadding(0, Math.round(16 * dp), 0, 0);
+        for (TextView t : new TextView[]{quizHead, quizBig, quizSub, quizTopView}) {
+            t.setGravity(Gravity.CENTER);
+            quizView.addView(t);
+        }
+        quizView.setVisibility(View.GONE);
+        root.addView(quizView, match());
 
         // Bottom right: the QR card.
         LinearLayout card = new LinearLayout(this);
@@ -486,6 +519,19 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.CENTER_HORIZONTAL);
         hdl.topMargin = Math.round(20 * dp);
         root.addView(hubDownView, hdl);
+
+        votesView = label(16, 0xFFFFFFFF, Typeface.BOLD);
+        votesView.setShadowLayer(0, 0, 0, 0);
+        GradientDrawable vpill = new GradientDrawable();
+        vpill.setColor(0xE6B3261E);
+        vpill.setCornerRadius(40 * dp);
+        votesView.setBackground(vpill);
+        votesView.setPadding(Math.round(16 * dp), Math.round(7 * dp), Math.round(16 * dp), Math.round(7 * dp));
+        votesView.setVisibility(View.GONE);
+        FrameLayout.LayoutParams vl = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.TOP | Gravity.START);
+        vl.setMargins(Math.round(40 * dp), Math.round(20 * dp), 0, 0);
+        root.addView(votesView, vl);
 
         // "Aanwijzen" in the dashboard: this screen's name, big, for a few seconds.
         identView = label(90, 0xFF0B0B10, Typeface.BOLD);
@@ -678,6 +724,15 @@ public class MainActivity extends Activity {
         String jam = hubbed ? hubJam : prefs.getString("jam", "");
         String setup = link == null ? null : link.address(this);
         View card = (View) qr.getParent();
+        // Skip votes or the quiz on: the QR leads to the hub's guest page (with the Jam link on it).
+        if (!hubGuest.isEmpty() && hubState != null && !showingSetup) {
+            card.setVisibility(View.VISIBLE);
+            qr.setText(hubGuest);
+            qrTitle.setText(R.string.guest_title);
+            qrText.setText(jam.isEmpty() ? R.string.guest_text : R.string.guest_text_jam);
+            resetButton.setVisibility(View.GONE);
+            return;
+        }
         // With a Hub the Jam link is set in the dashboard: no "set the Jam" code on the TV then (Menu still shows it).
         if (jam.isEmpty() && (hubState != null || hubbed) && !showingSetup) {
             card.setVisibility(View.GONE);
@@ -762,12 +817,29 @@ public class MainActivity extends Activity {
         lastAlbum = s.musicAlbum;
         if (hub != null) hub.setSong(s.musicArtist.isEmpty() ? s.musicTitle : s.musicTitle + " – " + s.musicArtist);
         songBlock.animate().alpha(s.musicPlaying ? 1f : 0.55f).setDuration(250).start();
-        if (s.musicNext.isEmpty()) {
-            nextUp.setVisibility(View.GONE);
-        } else {
-            nextUp.setText(getString(R.string.next_up, s.musicNext, ""));
+        if (s.upnext != null && s.upnext.size() > 1) {
+            // The next songs in the account's queue, one per line, as many as the dashboard says.
+            StringBuilder b = new StringBuilder(getString(R.string.next_head));
+            for (String[] x : s.upnext) {
+                String line = x[0] + (x[1].isEmpty() ? "" : " · " + x[1]);
+                b.append('\n').append(line.length() > 42 ? line.substring(0, 41) + "…" : line);
+            }
+            nextUp.setSingleLine(false);
+            nextUp.setMaxLines(6);
+            nextUp.setText(b);
             nextUp.setVisibility(View.VISIBLE);
+        } else {
+            String one = s.upnext == null ? s.musicNext
+                    : s.upnext.isEmpty() ? "" : s.upnext.get(0)[0] + (s.upnext.get(0)[1].isEmpty() ? "" : " · " + s.upnext.get(0)[1]);
+            nextUp.setSingleLine(true);
+            if (one.isEmpty()) {
+                nextUp.setVisibility(View.GONE);
+            } else {
+                nextUp.setText(getString(R.string.next_up, one, ""));
+                nextUp.setVisibility(View.VISIBLE);
+            }
         }
+        fitCover();
         // Where the song is: the hub's measurement, moved onto this TV's clock.
         long at = now - Math.max(0, s.hubNow() - s.musicProgressAt);
         apiProgress = new SpotifyApi.Progress(s.musicProgress, s.musicPlaying, s.musicTitle, at, s.musicDuration);
@@ -1216,10 +1288,13 @@ public class MainActivity extends Activity {
         }
         boolean linkChanged = (s == null) != (hubShown == null);
         hubShown = s;
-        if (!jam.equals(hubJam) || linkChanged) {
+        String guest = s != null && s.guest.matches("http://[0-9.]+:[0-9]+/gast") ? s.guest : "";
+        if (!jam.equals(hubJam) || !guest.equals(hubGuest) || linkChanged) {
             hubJam = jam;
+            hubGuest = guest;
             showQr();
         }
+        showParty(s);
 
         // Play, pause, skip, volume: from the dashboard's buttons or the break.
         if (s != null) {
@@ -1289,6 +1364,60 @@ public class MainActivity extends Activity {
         identView.setVisibility(s != null && s.ident ? View.VISIBLE : View.GONE);
         if (s != null && s.ident) identView.setText(s.name);
         showBreak();
+    }
+
+    /** Skip votes and the quiz, as the Hub reports them. */
+    private void showParty(HubLink.State s) {
+        boolean votes = s != null && s.votesNeeded > 0;
+        votesView.setVisibility(votes ? View.VISIBLE : View.GONE);
+        if (votes) votesView.setText(getString(R.string.votes, s.votes, s.votesNeeded));
+
+        String phase = s == null ? null : s.quizPhase;
+        if (phase == null || !(phase.equals("guess") || phase.equals("reveal"))) {
+            quizView.setVisibility(View.GONE);
+            shownQuiz = "";
+            return;
+        }
+        String key = s.quizId + phase;
+        if (!key.equals(shownQuiz)) {
+            shownQuiz = key;
+            boolean guess = phase.equals("guess");
+            // While guessing the song is fully covered (cover and lyrics would give it away).
+            quizView.setBackgroundColor(guess ? 0xFF0B0B10 : 0xE6000000);
+            quizHead.setText(guess ? R.string.quiz_guess : R.string.quiz_was);
+            quizBig.setTextSize(TypedValue.COMPLEX_UNIT_SP, guess ? 120 : (s.quizTitle.length() > 24 ? 48 : 64));
+            if (!guess) {
+                quizBig.setText(s.quizTitle);
+                quizSub.setText(s.quizArtist);
+                StringBuilder b = new StringBuilder();
+                String[] medal = {"🥇 ", "🥈 ", "🥉 ", "4.  ", "5.  "};
+                for (int i = 0; i < s.quizTop.size() && i < 5; i++) {
+                    if (b.length() > 0) b.append('\n');
+                    b.append(medal[i]).append(s.quizTop.get(i)[0]).append("   ").append(s.quizTop.get(i)[1]);
+                }
+                quizTopView.setText(b);
+                quizTopView.setVisibility(b.length() > 0 ? View.VISIBLE : View.GONE);
+            } else {
+                quizTopView.setVisibility(View.GONE);
+            }
+            if (quizView.getVisibility() != View.VISIBLE) {
+                quizView.setAlpha(0f);
+                quizView.setVisibility(View.VISIBLE);
+                quizView.animate().alpha(1f).setDuration(300).start();
+            }
+        }
+        showQuizClock();
+    }
+
+    /** The guessing countdown, on the hub's clock so every screen agrees. */
+    private void showQuizClock() {
+        HubLink.State s = hubState;
+        if (s == null || !"guess".equals(s.quizPhase) || quizView.getVisibility() != View.VISIBLE) return;
+        long left = Math.max(0, (s.quizUntil - s.hubNow() + 999) / 1000);
+        quizBig.setText(String.valueOf(left));
+        quizSub.setText(s.quizRight > 0
+                ? getString(R.string.quiz_scan) + "\n" + getString(R.string.quiz_right, s.quizRight)
+                : getString(R.string.quiz_scan));
     }
 
     private void showBreak() {

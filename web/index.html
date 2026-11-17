@@ -26,7 +26,30 @@
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   #artist { font-size: clamp(13px, 3cqh, 32px); color: #fffc; margin-top: .4em; }
   #next { font-size: clamp(11px, 2.1cqh, 22px); color: #fff9; margin-top: .6em; }
-  #artist, #next { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #artist, #next, #next div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #next b { display: block; font-size: .8em; letter-spacing: .1em; text-transform: uppercase; color: #fff8; margin-bottom: .15em; }
+  #next div + div { margin-top: .15em; }
+  #next i { font-style: normal; color: #fff6; }
+
+  /* Skip votes from the guests' phones */
+  #votes { position: absolute; top: 2.4cqh; left: 3cqw; z-index: 3; padding: .8cqh 2cqh; border-radius: 99px;
+    background: #b3261ee6; font-weight: 700; font-size: clamp(12px, 2.6cqh, 28px); box-shadow: 0 1cqh 3cqh #0008; }
+  #votes[hidden] { display: none; }
+
+  /* "Raad het nummer": the song stays hidden while guests guess, then the answer and the top 5. */
+  body.quiz #song, body.quiz #lyrics, body.quiz #backdrop, body.reveal #lyrics { visibility: hidden; }
+  #quiz { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 6cqh 6cqw 20cqh; background: #000c; }
+  #quiz[hidden] { display: none; }
+  #quiz .card { max-width: 90cqw; animation: pop .4s cubic-bezier(.2, 1.4, .4, 1); }
+  #quiz .q { font-size: clamp(14px, 3.6cqh, 40px); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  #quiz .big { font-size: clamp(28px, 11cqh, 140px); font-weight: 800; line-height: 1.1; margin: 1.5cqh 0; }
+  #quiz .clock { font-size: clamp(48px, 24cqh, 300px); font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; margin: 1cqh 0; }
+  #quiz .sub { font-size: clamp(13px, 3.4cqh, 36px); color: #fffc; }
+  #quiz ol { list-style: none; padding: 0; margin: 3cqh auto 0; font-size: clamp(13px, 3.6cqh, 40px); min-width: 40cqw; text-align: left; }
+  #quiz li { display: flex; gap: 1em; padding: .25em .8em; border-radius: 99px; }
+  #quiz li:first-child { background: #ffd54a33; }
+  #quiz li span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   #bar { height: max(4px, .8cqh); border-radius: 99px; background: #fff3; margin-top: 2.4cqh; overflow: hidden; }
   #bar > div { height: 100%; width: 0; background: var(--accent); }
 
@@ -172,6 +195,8 @@
 </main>
 
 <div id="idle">Zet muziek aan 🎉</div>
+<div id="quiz" hidden><div class="card"></div></div>
+<div id="votes" hidden></div>
 
 <div id="corner">
   <aside id="wifi" class="qrcard" hidden>

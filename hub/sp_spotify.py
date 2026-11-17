@@ -201,13 +201,19 @@ class Spotify:
                        "art": images[0]["url"] if images else "", "duration": int(item.get("duration_ms") or 0),
                        # where the song was at the middle of the request, in ms since the epoch (the hub's clock)
                        "progress": int(p.get("progress_ms") or 0), "progress_at": int((t0 + t1) / 2 * 1000),
-                       "next": prev.get("next", "") if same and not with_queue else ""}
+                       "next": prev.get("next", "") if same and not with_queue else "",
+                       "upnext": prev.get("upnext", []) if same and not with_queue else []}
         if with_queue or not same:
             try:
                 st, q = self._call("GET", "/me/player/queue")
                 n = (q or {}).get("queue") or []
-                if n:
-                    who = ", ".join(a.get("name", "") for a in n[0].get("artists", []))
-                    self.player["next"] = n[0].get("name", "") + (" · " + who if who else "")
+                # The next five on the account (a Jam's queue included), for the screens' "Komende nummers".
+                up = []
+                for item in n[:5]:
+                    who = ", ".join(a.get("name", "") for a in item.get("artists", [])) or (item.get("show") or {}).get("name", "")
+                    up.append({"title": item.get("name", ""), "artist": who})
+                self.player["upnext"] = up
+                if up:
+                    self.player["next"] = up[0]["title"] + (" · " + up[0]["artist"] if up[0]["artist"] else "")
             except SpotifyError:
                 pass

@@ -94,8 +94,79 @@ const Hub = (() => {
       playing: !!m.playing, art: m.art || "",
     });
     const el = $("next");
-    el.textContent = m.next ? "Hierna: " + m.next : "";
-    el.hidden = !m.next;
+    if (Array.isArray(m.upnext)) {
+      // The next songs in the account's queue, as many as the dashboard says (0, 1, 3 or 5).
+      const list = m.upnext.filter(x => x && x.title);
+      el.replaceChildren();
+      if (list.length > 1) {
+        const h = document.createElement("b");
+        h.textContent = "Hierna";
+        el.append(h);
+      }
+      list.forEach(x => {
+        const row = document.createElement("div");
+        row.textContent = (list.length > 1 ? "" : "Hierna: ") + x.title;
+        if (x.artist) {
+          const a = document.createElement("i");
+          a.textContent = " · " + x.artist;
+          row.append(a);
+        }
+        el.append(row);
+      });
+      el.hidden = !list.length;
+    } else {
+      el.textContent = m.next ? "Hierna: " + m.next : "";
+      el.hidden = !m.next;
+    }
+  }
+
+  /** Skip votes and the quiz, as the Hub reports them. */
+  let party = null, quizKey = "";
+  function applyParty(p) {
+    party = p || null;
+    const v = party && party.votes, vb = $("votes");
+    vb.hidden = !v;
+    if (v) vb.textContent = `👎 ${v[0]}/${v[1]} willen overslaan`;
+    const q = party && party.quiz, box = $("quiz");
+    document.body.classList.toggle("quiz", !!(q && q.phase === "guess"));
+    document.body.classList.toggle("reveal", !!(q && q.phase === "reveal"));
+    box.hidden = !q;
+    if (!q) { quizKey = ""; return; }
+    const key = q.id + q.phase;
+    if (key === quizKey) return;
+    quizKey = key;
+    const card = box.querySelector(".card");
+    card.replaceChildren();
+    const add = (cls, text) => { const e = document.createElement("div"); e.className = cls; e.textContent = text; card.append(e); };
+    if (q.phase === "guess") {
+      add("q", "🎤 Raad het nummer!");
+      add("clock", "");
+      add("sub", "Scan de QR-code en raad op je telefoon");
+      add("sub right", "");
+    } else {
+      add("q", "Het was");
+      add("big", q.title);
+      add("sub", q.artist);
+      if (q.top && q.top.length) {
+        const ol = document.createElement("ol");
+        q.top.forEach(([n, pts], i) => {
+          const li = document.createElement("li"), s = document.createElement("span"), b = document.createElement("b");
+          s.textContent = `${["🥇", "🥈", "🥉"][i] || i + 1 + "."} ${n}`;
+          b.textContent = pts;
+          li.append(s, b);
+          ol.append(li);
+        });
+        card.append(ol);
+      }
+    }
+    tickQuiz();
+  }
+  function tickQuiz() {
+    const q = party && party.quiz;
+    if (!q || q.phase !== "guess") return;
+    const card = $("quiz").querySelector(".card"), clock = card.querySelector(".clock"), r = card.querySelector(".right");
+    if (clock) clock.textContent = String(Math.max(0, Math.ceil((q.until - (Date.now() + offset)) / 1000)));
+    if (r) r.textContent = q.right ? `✅ ${q.right} ${q.right === 1 ? "gast heeft" : "gasten hebben"} het al goed` : "";
   }
 
   function apply(d) {
@@ -107,7 +178,10 @@ const Hub = (() => {
     }
     // The Jam link set in the dashboard counts on every screen.
     const jam = d && d.jam && isSpotifyLink(d.jam) ? d.jam : "";
-    if (jam !== hubJam) { hubJam = jam; showJam(); }
+    // With skip votes or the quiz on, the QR code leads to the hub's guest page (the Jam link is on it too).
+    const guest = d && d.guest && /^http:\/\/[\d.]+:\d+\/gast$/.test(d.guest) ? d.guest : "";
+    if (jam !== hubJam || guest !== hubGuest) { hubJam = jam; hubGuest = guest; showJam(); }
+    applyParty(d && d.party);
     last = d && d.pro ? d : null;
     const n = last && last.notice;
     const box = $("notice");
@@ -148,6 +222,7 @@ const Hub = (() => {
 
   // Every half second: the countdown, from the hub's clock (so all screens agree).
   function tick() {
+    tickQuiz();
     // The notice's time running out, as a bar under the text (none for "until I remove it").
     const n = last && last.notice, ring = $("notice").querySelector(".ring");
     ring.hidden = !(n && n.until && n.secs);

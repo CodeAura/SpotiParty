@@ -45,6 +45,16 @@ final class HubLink {
         String musicTitle, musicArtist, musicAlbum, musicArt, musicNext;
         long musicDuration, musicProgress, musicProgressAt;   // ms; progressAt on the hub's clock
         boolean musicPlaying;
+        /** The next songs ({title, artist}), as many as the dashboard says; null = an older hub (use musicNext). */
+        java.util.List<String[]> upnext;
+        /** The hub's guest page (skip votes, quiz, Jam); "" = neither is on, the QR shows the Jam. */
+        String guest = "";
+        int votes, votesNeeded;            // votesNeeded 0 = no votes to show
+        String quizPhase;                  // null, "guess" or "reveal"
+        String quizId = "", quizTitle = "", quizArtist = "";
+        long quizUntil;                    // hub clock, ms
+        int quizRight;
+        final java.util.List<String[]> quizTop = new java.util.ArrayList<>();   // {name, points}
         String noticeId, noticeText, noticeStyle;
         long noticeUntil;       // hub clock, ms; 0 = until removed
         int noticeSecs;
@@ -215,6 +225,39 @@ final class HubLink {
                 s.musicProgress = mu.optLong("progress");
                 s.musicProgressAt = mu.optLong("progress_at");
                 s.musicPlaying = mu.optBoolean("playing");
+                org.json.JSONArray un = mu.optJSONArray("upnext");
+                if (un != null) {
+                    s.upnext = new java.util.ArrayList<>();
+                    for (int i = 0; i < un.length() && i < 5; i++) {
+                        JSONObject x = un.optJSONObject(i);
+                        if (x != null && !x.optString("title").isEmpty()) {
+                            s.upnext.add(new String[]{x.optString("title"), x.optString("artist")});
+                        }
+                    }
+                }
+            }
+            s.guest = o.optString("guest", "");
+            JSONObject pa = o.optJSONObject("party");
+            if (pa != null) {
+                org.json.JSONArray v = pa.optJSONArray("votes");
+                if (v != null && v.length() == 2) {
+                    s.votes = v.optInt(0);
+                    s.votesNeeded = v.optInt(1);
+                }
+                JSONObject q = pa.optJSONObject("quiz");
+                if (q != null) {
+                    s.quizPhase = q.optString("phase");
+                    s.quizId = q.optString("id");
+                    s.quizUntil = q.optLong("until");
+                    s.quizRight = q.optInt("right");
+                    s.quizTitle = q.optString("title");
+                    s.quizArtist = q.optString("artist");
+                    org.json.JSONArray top = q.optJSONArray("top");
+                    for (int i = 0; top != null && i < top.length(); i++) {
+                        org.json.JSONArray t = top.optJSONArray(i);
+                        if (t != null) s.quizTop.add(new String[]{t.optString(0), t.optString(1)});
+                    }
+                }
             }
             JSONObject n = o.optJSONObject("notice");
             if (n != null) {

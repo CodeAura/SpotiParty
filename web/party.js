@@ -536,11 +536,15 @@ function isSpotifyLink(s) {
   } catch { return false; }
 }
 /** The Jam link the Hub gives (set once in the dashboard for every screen), else this screen's own. */
-let hubJam = "";
+let hubJam = "", hubGuest = "";
 function showJam() {
-  const jam = hubJam || store.get("jam");
+  const jam = hubGuest || hubJam || store.get("jam");
   const box = $("jam");
   box.hidden = !jam || params.get("jam") === "0";
+  box.querySelector("b").textContent = hubGuest ? "🎉 Doe mee!" : "Doe mee met de Jam";
+  box.querySelector("span").textContent = hubGuest
+    ? (hubJam ? "Scan: Jam, 👎 skip en raad het nummer." : "Scan: 👎 skip en raad het nummer.")
+    : "Scan met je camera en zet je nummer in de wachtrij.";
   if (!box.hidden) Qr.paint(box.querySelector("canvas"), jam);
   $("corner").classList.toggle("both", !box.hidden && !$("wifi").hidden);
 }

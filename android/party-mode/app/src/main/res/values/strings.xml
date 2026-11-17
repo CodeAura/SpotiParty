@@ -29,5 +29,14 @@
     <string name="notice_info">Mededeling</string>
     <string name="notice_party">Feest!</string>
     <string name="notice_alert">Belangrijk</string>
+    <string name="next_head">HIERNA</string>
+    <string name="guest_title">🎉 Doe mee!</string>
+    <string name="guest_text">Scan: 👎 skip en raad het nummer.</string>
+    <string name="guest_text_jam">Scan: Jam, 👎 skip en raad het nummer.</string>
+    <string name="votes">👎 %1$d/%2$d willen overslaan</string>
+    <string name="quiz_guess">🎤 RAAD HET NUMMER!</string>
+    <string name="quiz_scan">Scan de QR-code en raad op je telefoon</string>
+    <string name="quiz_right">✅ %1$d goed geraden</string>
+    <string name="quiz_was">HET WAS</string>
     <string name="break_done">We gaan weer verder! 🎉</string>
 </resources>

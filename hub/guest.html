@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SpotiParty</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎉</text></svg>">
+<style>
+  :root { --accent: #1ed760; --bg: #0b0b10; --card: #16171d; --line: #ffffff1f; --muted: #b9bcc6; --err: #ff7b72; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: #fff; font: 16px/1.45 system-ui, "Segoe UI", Roboto, sans-serif;
+    padding: 16px 16px 40px; }
+  main { max-width: 480px; margin: 0 auto; display: grid; gap: 14px; }
+  h1 { font-size: 22px; margin: 4px 0 0; }
+  .hub { color: var(--muted); font-size: 14px; }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; }
+  section[hidden] { display: none; }
+  h2 { font-size: 16px; margin: 0 0 8px; }
+  p { color: var(--muted); margin: 6px 0; font-size: 14px; }
+  .song { font-size: 18px; font-weight: 700; }
+  .song small { display: block; font-weight: 400; color: var(--muted); font-size: 14px; }
+  button, .btn { display: block; width: 100%; padding: 14px; border-radius: 14px; border: 0; font: inherit; font-weight: 700;
+    font-size: 17px; cursor: pointer; text-align: center; text-decoration: none; color: #fff; background: #3a3e4a; }
+  .go { background: var(--accent); color: #000; }
+  .skip { background: #b3261e; }
+  button:disabled { opacity: .5; cursor: default; }
+  input { width: 100%; padding: 13px 14px; border-radius: 12px; border: 1px solid #fff3; background: var(--bg); color: #fff;
+    font: inherit; font-size: 17px; margin: 6px 0 10px; }
+  label { font-size: 13px; color: var(--muted); }
+  .msg { min-height: 1.3em; margin-top: 8px; font-size: 15px; color: var(--accent); }
+  .msg.err { color: var(--err); }
+  .bar { height: 8px; border-radius: 99px; background: #fff2; overflow: hidden; margin: 10px 0 4px; }
+  .bar div { height: 100%; background: #ff7b72; width: 0; transition: width .3s; }
+  .clock { font-size: 34px; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; }
+  ol { margin: 6px 0 0; padding-left: 22px; }
+  ol li { padding: 3px 0; }
+  ol li b { float: right; }
+  .me { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <div>
+    <h1>🎉 SpotiParty</h1>
+    <div class="hub" id="hub"></div>
+  </div>
+
+  <section id="now">
+    <h2>🎵 Nu</h2>
+    <div class="song" id="song">…</div>
+  </section>
+
+  <section id="jam" hidden>
+    <h2>🎶 Doe mee met de Jam</h2>
+    <p>Zet je eigen nummers in de wachtrij.</p>
+    <a class="btn go" id="jam-link" target="_blank" rel="noopener">Open de Jam in Spotify</a>
+  </section>
+
+  <section id="vote" hidden>
+    <h2>👎 Dit nummer overslaan?</h2>
+    <p id="vote-text"></p>
+    <div class="bar"><div id="vote-bar"></div></div>
+    <button class="skip" id="vote-btn">👎 Skip</button>
+    <div class="msg" id="vote-msg"></div>
+  </section>
+
+  <section id="quiz" hidden>
+    <h2>🎤 Raad het nummer</h2>
+    <div id="quiz-round"></div>
+    <label for="name">Je naam</label>
+    <input id="name" maxlength="24" autocomplete="nickname" placeholder="Bijv. Lisa">
+    <label for="answer">De titel (of de artiest, voor de helft van de punten)</label>
+    <input id="answer" maxlength="120" autocomplete="off" autocapitalize="off" placeholder="Wat speelt er?">
+    <button class="go" id="guess-btn">Raden</button>
+    <div class="msg" id="quiz-msg"></div>
+    <h2 style="margin-top:16px">🏆 Stand <small id="myscore" style="color:var(--muted);font-weight:400"></small></h2>
+    <ol id="top"></ol>
+  </section>
+</main>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function store(k, v) { try { if (v === undefined) return localStorage.getItem("gast." + k) || ""; localStorage.setItem("gast." + k, v); } catch { return ""; } }
+let voter = store("voter");
+if (!/^[A-Za-z0-9_-]{8,40}$/.test(voter)) {
+  voter = "g-" + Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(16).padStart(2, "0")).join("");
+  store("voter", voter);
+}
+$("name").value = store("name");
+let state = null, roundId = "";
+
+function msg(id, text, err) { const el = $(id); el.textContent = text || ""; el.classList.toggle("err", !!err); }
+
+async function post(path, body) {
+  const r = await fetch("/api/guest/" + path, { method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ voter, ...body }) });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || "Er ging iets mis.");
+  return d;
+}
+
+function render() {
+  const s = state;
+  $("hub").textContent = s.hub ? "Hub: " + s.hub : "";
+  $("song").innerHTML = s.song ? `${esc(s.song.title)}<small>${esc(s.song.artist)}</small>`
+    : s.quiz_on && s.round && s.round.open ? "🤫 Geheim: raad het nummer!" : "Er speelt nu niets";
+
+  $("jam").hidden = !s.jam;
+  if (s.jam) $("jam-link").href = s.jam;
+
+  $("vote").hidden = !s.vote_on;
+  if (s.vote_on) {
+    const [n, need] = s.votes;
+    $("vote-text").textContent = `${n} van ${need} stemmen om over te slaan.`;
+    $("vote-bar").style.width = `${Math.min(100, n / need * 100)}%`;
+    $("vote-btn").disabled = s.voted;
+    $("vote-btn").textContent = s.voted ? "Je hebt gestemd" : "👎 Skip";
+  }
+
+  $("quiz").hidden = !s.quiz_on;
+  if (s.quiz_on) {
+    const r = s.round;
+    if (r && r.id !== roundId) { roundId = r.id; $("answer").value = ""; msg("quiz-msg", ""); }
+    $("quiz-round").innerHTML = !r ? "<p>Wacht op het volgende nummer.</p>"
+      : r.done ? "<p>✅ Goed geraden! Wacht op het volgende nummer.</p>"
+      : r.open ? `<div class="clock">0:${String(r.left).padStart(2, "0")}</div><p style="text-align:center">Raad het nummer dat nu speelt!</p>`
+      : "<p>De tijd is om. Het antwoord staat op het scherm.</p>";
+    const can = !!(r && r.open && !r.done && r.tries < 3);
+    $("guess-btn").disabled = !can;
+    $("answer").disabled = !can;
+    $("myscore").textContent = s.score ? `· jij: ${s.score} punten` : "";
+    const myName = $("name").value.trim();
+    $("top").innerHTML = s.top.length ? s.top.map(([n, p]) =>
+      `<li class="${n === myName ? "me" : ""}">${esc(n)} <b>${p}</b></li>`).join("") : "<p>Nog geen punten.</p>";
+  }
+}
+
+async function refresh() {
+  try {
+    const r = await fetch(`/api/guest?voter=${encodeURIComponent(voter)}`, { cache: "no-store" });
+    if (!r.ok) return;
+    state = await r.json();
+    render();
+  } catch { /* the hub is away for a moment */ }
+}
+
+$("vote-btn").onclick = async () => {
+  try { const d = await post("vote", {}); msg("vote-msg", d.msg); refresh(); }
+  catch (e) { msg("vote-msg", e.message, true); }
+};
+async function guess() {
+  const name = $("name").value.trim(), text = $("answer").value.trim();
+  if (!name) { msg("quiz-msg", "Vul eerst je naam in.", true); $("name").focus(); return; }
+  if (!text) return;
+  store("name", name);
+  try {
+    const d = await post("guess", { name, text });
+    msg("quiz-msg", d.msg, !d.ok);
+    if (!d.ok) $("answer").select();
+    refresh();
+  } catch (e) { msg("quiz-msg", e.message, true); }
+}
+$("guess-btn").onclick = guess;
+$("answer").addEventListener("keydown", e => { if (e.key === "Enter") guess(); });
+$("name").addEventListener("change", () => store("name", $("name").value.trim()));
+
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>

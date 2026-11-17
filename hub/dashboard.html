@@ -75,6 +75,8 @@
   .nowplaying { text-align: center; color: #fff; min-height: 1.4em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .tag { font-size: 12px; padding: 1px 8px; border-radius: 99px; background: #1ed76022; color: var(--accent); }
   .screen .err { font-size: 12px; color: var(--err); }
+  #guest-qr { width: 140px; height: 140px; background: #fff; border-radius: 10px; padding: 6px; display: block; }
+  #q-top li { padding: 2px 0; } #q-top li b { float: right; }
   #jam-qr { width: 140px; height: 140px; background: #fff; border-radius: 10px; padding: 6px; display: block; }
 </style>
 </head>
@@ -137,6 +139,34 @@
       <canvas id="jam-qr" width="280" height="280" title="De Jam-code op de schermen"></canvas>
     </div>
     <p>In Spotify: Jam starten, <b>Gasten mogen afspelen bedienen</b> uit, dan <b>Uitnodigen → Link kopiëren</b>.</p>
+  </section>
+
+  <section>
+    <h2>🎉 Feest <small id="p-live"></small></h2>
+    <div class="wifi">
+      <div>
+        <label for="p-upnext">Komende nummers op het scherm</label>
+        <select id="p-upnext">
+          <option value="0">Geen</option><option value="1">1 (alleen "Hierna")</option>
+          <option value="3">3</option><option value="5">5</option>
+        </select>
+        <label class="check"><input type="checkbox" id="p-vote"> 👎 Gasten mogen stemmen om over te slaan</label>
+        <div class="row"><label>Stemmen nodig<input id="p-need" type="number" min="1" max="50" value="3" inputmode="numeric"></label></div>
+        <div class="row"><button class="go" id="p-save">Opslaan</button></div>
+        <div class="msg" id="p-msg"></div>
+      </div>
+      <div style="flex:0 0 auto;text-align:center">
+        <canvas id="guest-qr" width="280" height="280" title="De gastenpagina"></canvas>
+        <p style="font-size:12px;margin-top:6px"><a id="guest-link" target="_blank" rel="noopener" style="color:var(--muted)"></a></p>
+      </div>
+    </div>
+    <h2 style="margin-top:14px">🎤 Raad het nummer</h2>
+    <p>Titel, hoes en songtekst blijven 15 seconden verborgen. Gasten raden op hun telefoon; wie het snelst de titel raadt, krijgt de meeste punten.</p>
+    <div class="row"><button class="go" id="q-toggle">Quiz starten</button><button id="q-reset">Scores wissen</button></div>
+    <div class="msg" id="q-msg"></div>
+    <ol id="q-top" style="margin:8px 0 0;padding-left:22px"></ol>
+    <p>Gasten scannen de QR-code op het scherm (of hiernaast) om te stemmen, te raden en mee te doen met de Jam.
+      Ze moeten op hetzelfde netwerk zitten als de Hub.</p>
   </section>
 
   <section>
@@ -315,9 +345,14 @@ function render() {
   targetsBox("n-targets");
   targetsBox("b-targets");
   renderPlayer();
+  renderParty();
 
   if (!formsFilled) {
     formsFilled = true;
+    const pa = s.party || {};
+    $("p-upnext").value = String(pa.upnext ?? 3);
+    $("p-vote").checked = !!pa.vote_on;
+    $("p-need").value = pa.vote_needed || 3;
     $("j-link").value = s.jam || "";
     paintJam(s.jam);
     const w = s.wifi;
@@ -402,6 +437,44 @@ $("j-clear").onclick = async () => {
     msg("j-msg", "Jam-code weggehaald van alle schermen.");
     refresh();
   } catch (e) { msg("j-msg", e.message, true); }
+};
+
+let guestPainted = "";
+function renderParty() {
+  const pa = state.party || {};
+  if (state.guest && state.guest !== guestPainted) {
+    guestPainted = state.guest;
+    Qr.paint($("guest-qr"), state.guest);
+    $("guest-link").href = state.guest;
+    $("guest-link").textContent = state.guest;
+  }
+  $("p-live").textContent = [pa.vote_on ? `👎 ${pa.votes || 0}/${pa.vote_needed}` : "", pa.quiz_on ? "🎤 quiz loopt" : ""]
+    .filter(Boolean).join(" · ");
+  $("q-toggle").textContent = pa.quiz_on ? "Quiz stoppen" : "Quiz starten";
+  $("q-toggle").className = pa.quiz_on ? "bad" : "go";
+  const top = pa.top || [];
+  $("q-top").innerHTML = top.length ? top.map(([n, p]) => `<li>${esc(n)} <b>${p}</b></li>`).join("")
+    : pa.quiz_on ? `<p>Nog geen punten.</p>` : "";
+}
+$("p-save").onclick = async () => {
+  try {
+    await api("party", { upnext: +$("p-upnext").value, vote_on: $("p-vote").checked, vote_needed: +$("p-need").value });
+    msg("p-msg", $("p-vote").checked ? "Opgeslagen. De QR-code op de schermen leidt nu naar de gastenpagina." : "Opgeslagen.");
+    refresh();
+  } catch (e) { msg("p-msg", e.message, true); }
+};
+$("q-toggle").onclick = async () => {
+  const on = !(state.party && state.party.quiz_on);
+  try {
+    await api("quiz", { on });
+    msg("q-msg", on ? "De quiz loopt. Bij elk nieuw nummer start een ronde." : "Quiz gestopt.");
+    refresh();
+  } catch (e) { msg("q-msg", e.message, true); }
+};
+$("q-reset").onclick = async () => {
+  if (!confirm("Alle scores wissen?")) return;
+  try { await api("quiz-reset", {}); msg("q-msg", "Scores gewist."); refresh(); }
+  catch (e) { msg("q-msg", e.message, true); }
 };
 
 function renderBreak() {
