@@ -315,12 +315,15 @@
 </dialog>
 
 <script>
-  // The Shopify product pages (or cart links like https://<winkel>.myshopify.com/cart/<variant-id>:1).
-  // Empty: the "binnenkort" dialog instead.
-  const SHOP = { pro: "", vrienden: "" };
+  // Koop-knoppen → Shopify. Een knop gaat via de winkelwagen-link (/cart/<variant-id>:1) direct naar de
+  // Shopify-checkout, waar ook kortingscodes werken. STORE leeg: de "binnenkort"-melding in plaats daarvan.
+  // Zet STORE op het adres van de winkel (bijv. "https://jouwwinkel.myshopify.com") zodra hij live is.
+  const STORE = "";
+  const VARIANTS = { pro: "59158421897560", vrienden: "59158421995864" };   // SpotiParty Pro / Pro × 3
   const dlg = document.getElementById("checkout");
   document.querySelectorAll("[data-buy]").forEach(b => b.addEventListener("click", () => {
-    if (SHOP[b.dataset.buy]) { location.href = SHOP[b.dataset.buy]; return; }
+    const variant = VARIANTS[b.dataset.buy];
+    if (STORE && variant) { location.href = `${STORE.replace(/\/$/, "")}/cart/${variant}:1`; return; }
     document.getElementById("co-plan").textContent = b.dataset.name;
     document.getElementById("co-price").textContent = b.dataset.price;
     dlg.showModal();
