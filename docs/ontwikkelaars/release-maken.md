@@ -14,7 +14,7 @@ Een release op GitHub is voor drie dingen tegelijk de bron:
 | De **auto-updater** (Mac, vanaf 2.7.1) | `SpotiParty-macos-apple-silicon.dmg` en `SpotiParty-macos-intel.dmg`, met precies die naam |
 | **HACS** (Home Assistant)   | `spotiparty-card.js` als bijlage           |
 
-De nieuwste release is nu [**v2.7.1**](https://github.com/CodeAura/SpotiParty/releases/tag/v2.7.1), met `SpotiParty-Setup-2.7.1.exe`, `SpotiParty-macos-apple-silicon.dmg` en `spotiparty-card.js`.
+De nieuwste release is nu [**v2.8.0**](https://github.com/CodeAura/SpotiParty/releases/tag/v2.8.0), met `SpotiParty-Setup-2.8.0.exe`, `SpotiParty-macos-apple-silicon.dmg` en `spotiparty-card.js`.
 
 ## Stap voor stap
 
@@ -108,4 +108,4 @@ flowchart LR
     R --> H[HACS]
 ```
 
-De Android-apps zitten niet in de release: die bouwt iedereen zelf, zodat SpotiParty en Lyrics dezelfde sleutel hebben. De workflow **Android TV apps** bouwt ze wel als controle; de APK's staan dan onder **Artifacts**. Zie [Stap 2: De apps bouwen](../android-tv/stap-2-bouwen.md).
+De Android TV-app zit niet in de release: die bouwt iedereen zelf. Het scherm op de tv komt van de Hub, dus een nieuwe release van de Hub is meteen een update van elke tv. De workflow **Android TV apps** bouwt ze wel als controle; de APK's staan dan onder **Artifacts**. Zie [Stap 2: De apps bouwen](../android-tv/stap-2-bouwen.md).

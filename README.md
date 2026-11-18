@@ -19,10 +19,10 @@ Voor je **Android TV**, je **PC**, een **Raspberry Pi** en je **Home Assistant**
 ---
 
 > [!TIP]
-> **Nieuw in [2.7.1](../../releases/tag/v2.7.1): ook de Mac-app werkt zichzelf bij.** Op Windows gaat dat al sinds 2.7.0.
-> Op de Mac installeer je [`SpotiParty-macos-apple-silicon.dmg`](../../releases/download/v2.7.1/SpotiParty-macos-apple-silicon.dmg)
-> één keer met de hand; op Windows alleen als je van 2.6.0 of ouder komt
-> ([`SpotiParty-Setup-2.7.1.exe`](../../releases/download/v2.7.1/SpotiParty-Setup-2.7.1.exe)). Daarna gaan updates vanzelf.
+> **Nieuw in [2.8.0](../../releases/tag/v2.8.0): een strakker scherm, de Hub op een Linux-server en een nieuwe tv-app.**
+> Meldingen, de pauze en Hierna zijn nu van glas over de wazige hoes. De tv-app toont hetzelfde scherm, rechtstreeks
+> van je Hub. De Windows- en Mac-app werken zichzelf bij; kom je van 2.6.0 of ouder, installeer dan
+> [`SpotiParty-Setup-2.8.0.exe`](../../releases/download/v2.8.0/SpotiParty-Setup-2.8.0.exe) één keer met de hand.
 > Zie [Wat is er nieuw](#-wat-is-er-nieuw).
 
 **Home Assistant?** [![Open je Home Assistant en voeg SpotiParty toe aan HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=CodeAura&repository=SpotiParty&category=plugin)
@@ -68,7 +68,8 @@ al je schermen tegelijk.
 
 | Versie | Wat er veranderde |
 |---|---|
-| **[2.7.1](../../releases/tag/v2.7.1)** (nieuwste) | **Ook de Mac-app werkt zichzelf bij**, net als op Windows: downloaden op de achtergrond, installeren bij de volgende start of met **Nu bijwerken**. De Mac-app (Apple silicon) staat vanaf nu bij elke release. |
+| **[2.8.0](../../releases/tag/v2.8.0)** (nieuwste) | **Nieuwe look:** meldingen, de pauze, de quiz en *Hierna* zijn glas over de wazige hoes; iconen in plaats van emoji; een animatie bij elk nieuw nummer. **Hub op een Linux-server** met systemd of Docker, en het scherm op `http://<hub>:8770/scherm/`. **De tv-app toont hetzelfde scherm als de webapp**, rechtstreeks van de Hub. |
+| [2.7.1](../../releases/tag/v2.7.1) | **Ook de Mac-app werkt zichzelf bij**, net als op Windows: downloaden op de achtergrond, installeren bij de volgende start of met **Nu bijwerken**. De Mac-app (Apple silicon) staat vanaf nu bij elke release. |
 | [2.7.0](../../releases/tag/v2.7.0) | **Automatische updates op Windows.** SpotiParty kijkt bij het starten en daarna elke 6 uur of er een nieuwe versie is, downloadt die op de achtergrond en installeert hem bij de volgende start, of meteen met **Nu bijwerken**. Je instellingen blijven bewaard. Het versienummer staat in de titel van het SpotiParty-venster. |
 | [2.6.0](../../releases/tag/v2.6.0) | **Feestspellen:** komende nummers op het scherm, 👎 stemmen om over te slaan, 🎤 *Raad het nummer* en de gastenpagina op `http://<hub>:8770/gast`. |
 | [2.5.1](../../releases/tag/v2.5.1) | Kan een scherm de Hub niet bereiken, dan staat er bovenin een rode melding **⚠️ Hub niet verbonden**, met de reden erbij. |
@@ -196,11 +197,11 @@ of de quiz aan, dan leidt de QR-code op de schermen daarheen.
 
 ### Windows-app (aanbevolen)
 
-Download bij de nieuwste [**Release (2.7.1)**](../../releases/latest):
+Download bij de nieuwste [**Release (2.8.0)**](../../releases/latest):
 
 | Bestand | Installeren |
 |---|---|
-| [`SpotiParty-Setup-2.7.1.exe`](../../releases/download/v2.7.1/SpotiParty-Setup-2.7.1.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
+| [`SpotiParty-Setup-2.8.0.exe`](../../releases/download/v2.8.0/SpotiParty-Setup-2.8.0.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
 
 SpotiParty opent het feestscherm in een eigen venster, zonder tabbladen, en start de Hub. Er verschijnt ook een klein
 venster met het adres en de **PIN** van het dashboard, en de knoppen **Scherm openen**, **Dashboard** en **Stoppen**.
@@ -492,7 +493,7 @@ Stopt de Jam, dan werkt de oude link niet meer. Start dan een nieuwe Jam en plak
 | Spotify: *"geen toegang"* of *"forbidden"* | Zet het account onder **User Management** van je Spotify-app, en controleer of de eigenaar van de app (nog) Premium heeft. |
 | Tv en telefoon vinden de Hub niet | Windows: sta SpotiParty toe op **Privénetwerken** (Windows Defender Firewall). Op de tv: vul het adres van de Hub in via **Menu**. |
 | Gasten komen niet op de gastenpagina | Ze moeten op hetzelfde netwerk zitten als de Hub; een afgeschermd gasten-wifi blokkeert dat. |
-| De Windows-app werkt zich niet bij | Automatisch bijwerken kan pas vanaf 2.7.0. Kom je van 2.6.0 of ouder, installeer [`SpotiParty-Setup-2.7.1.exe`](../../releases/download/v2.7.1/SpotiParty-Setup-2.7.1.exe) dan één keer met de hand. |
+| De Windows-app werkt zich niet bij | Automatisch bijwerken kan pas vanaf 2.7.0. Kom je van 2.6.0 of ouder, installeer [`SpotiParty-Setup-2.8.0.exe`](../../releases/download/v2.8.0/SpotiParty-Setup-2.8.0.exe) dan één keer met de hand. |
 | De Mac-app werkt zich niet bij | Dat kan pas vanaf 2.7.1, en alleen als SpotiParty in **Apps** staat (niet vanaf de `.dmg` of uit Downloads). Sleep [`SpotiParty-macos-apple-silicon.dmg`](../../releases/latest/download/SpotiParty-macos-apple-silicon.dmg) één keer met de hand naar **Apps**. |
 | **Tv:** *"SpotiParty mag nog niet zien wat er speelt"* | Zet **Meldingstoegang** aan (stap 4 van de tv-installatie). |
 | **Tv:** blijft op *De SpotiParty Hub zoeken* | Vul het adres van de Hub in op de tv. Controleer of de Hub draait en of tv en Hub in hetzelfde netwerk zitten. |
