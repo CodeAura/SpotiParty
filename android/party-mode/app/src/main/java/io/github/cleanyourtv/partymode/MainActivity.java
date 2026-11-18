@@ -35,6 +35,8 @@ public class MainActivity extends Activity {
     private static final String START = "file:///android_asset/start.html";
     /** How often the TV checks that its Hub still answers while the screen is shown. */
     private static final long CHECK_MS = 15_000;
+    /** The screen is on the TV now: PartyListener then has nothing to open. */
+    static volatile boolean visible;
 
     private SharedPreferences prefs;
     private WebView web;
@@ -124,6 +126,7 @@ public class MainActivity extends Activity {
     protected void onStart() {
         super.onStart();
         started = true;
+        visible = true;
         bridge.start();
         web.onResume();
         main.post(check);
@@ -132,6 +135,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onStop() {
         started = false;
+        visible = false;
         main.removeCallbacks(check);
         bridge.stop();
         web.onPause();
