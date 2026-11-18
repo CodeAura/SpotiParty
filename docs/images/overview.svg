@@ -1,41 +1,70 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 330" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif">
-  <rect width="900" height="330" rx="18" fill="#0f1016"/>
-  <text x="450" y="42" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">Eén scherm, drie plekken</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 430" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <rect width="900" height="430" rx="18" fill="#0f1016"/>
+  <text x="450" y="42" fill="#fff" font-size="22" font-weight="700" text-anchor="middle">Eén Hub, alle schermen</text>
   <defs>
     <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1ed760"/></marker>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#b9bcc6"/></marker>
   </defs>
-  <!-- sources -->
-  <g font-size="15" fill="#fff">
-    <rect x="30" y="75" width="230" height="64" rx="12" fill="#1c1d26" stroke="#3a3c4a"/>
-    <text x="50" y="102" font-weight="700">📺  Android TV</text>
-    <text x="50" y="124" fill="#b9bcc6" font-size="13">Spotify speelt op de tv</text>
-    <rect x="30" y="155" width="230" height="64" rx="12" fill="#1c1d26" stroke="#3a3c4a"/>
-    <text x="50" y="182" font-weight="700">💻  PC (browser)</text>
-    <text x="50" y="204" fill="#b9bcc6" font-size="13">Je Spotify-account, overal</text>
-    <rect x="30" y="235" width="230" height="64" rx="12" fill="#1c1d26" stroke="#3a3c4a"/>
-    <text x="50" y="262" font-weight="700">🏠  Home Assistant</text>
-    <text x="50" y="284" fill="#b9bcc6" font-size="13">Elke media player</text>
+
+  <!-- Spotify account -->
+  <rect x="24" y="150" width="190" height="78" rx="12" fill="#1c1d26" stroke="#3a3c4a"/>
+  <text x="42" y="180" fill="#fff" font-size="15" font-weight="700">🎵  Spotify-account</text>
+  <text x="42" y="202" fill="#b9bcc6" font-size="12.5">Speelt op elk apparaat:</text>
+  <text x="42" y="219" fill="#b9bcc6" font-size="12.5">tv, speaker, telefoon</text>
+
+  <!-- the Hub -->
+  <rect x="290" y="96" width="262" height="186" rx="16" fill="#16341f" stroke="#1ed760" stroke-width="2"/>
+  <text x="421" y="128" fill="#fff" font-size="17" font-weight="700" text-anchor="middle">🎛️  SpotiParty Hub</text>
+  <text x="421" y="149" fill="#b9bcc6" font-size="12.5" text-anchor="middle">pc of Raspberry Pi · poort 8770</text>
+  <g font-size="13" fill="#fff">
+    <text x="312" y="178">• Spotify, één keer gekoppeld</text>
+    <text x="312" y="199">• Jam-link en komende nummers</text>
+    <text x="312" y="220">• Meldingen en korte pauze</text>
+    <text x="312" y="241">• Gasten-wifi</text>
+    <text x="312" y="262">• Skip-stemmen en Raad het nummer</text>
   </g>
+
+  <!-- dashboard and guests -->
+  <rect x="290" y="322" width="126" height="78" rx="12" fill="#1c1d26" stroke="#3a3c4a"/>
+  <text x="353" y="350" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">📱 Dashboard</text>
+  <text x="353" y="370" fill="#b9bcc6" font-size="12" text-anchor="middle">jij, met de PIN</text>
+  <text x="353" y="387" fill="#b9bcc6" font-size="12" text-anchor="middle">:8770</text>
+  <rect x="426" y="322" width="126" height="78" rx="12" fill="#1c1d26" stroke="#3a3c4a"/>
+  <text x="489" y="350" fill="#fff" font-size="14" font-weight="700" text-anchor="middle">🙋 Gasten</text>
+  <text x="489" y="370" fill="#b9bcc6" font-size="12" text-anchor="middle">scannen de QR-code</text>
+  <text x="489" y="387" fill="#b9bcc6" font-size="12" text-anchor="middle">:8770/gast</text>
+
+  <!-- screens -->
+  <g font-size="14.5" fill="#fff" font-weight="700">
+    <rect x="640" y="76" width="236" height="58" rx="12" fill="#2b1442" stroke="#5b3a7a"/>
+    <text x="658" y="101">📺  Android TV</text>
+    <rect x="640" y="146" width="236" height="58" rx="12" fill="#2b1442" stroke="#5b3a7a"/>
+    <text x="658" y="171">💻  PC (Windows of Mac)</text>
+    <rect x="640" y="216" width="236" height="58" rx="12" fill="#2b1442" stroke="#5b3a7a"/>
+    <text x="658" y="241">🍓  Raspberry Pi</text>
+    <rect x="640" y="286" width="236" height="58" rx="12" fill="#2b1442" stroke="#5b3a7a"/>
+    <text x="658" y="311">🏠  Home Assistant-kaart</text>
+  </g>
+  <g font-size="12" fill="#c9b7e0">
+    <text x="658" y="121">vindt de Hub zelf</text>
+    <text x="658" y="191">is zelf vaak de Hub</text>
+    <text x="658" y="261">scherm en/of Hub</text>
+    <text x="658" y="331">met hub: in de kaart</text>
+  </g>
+  <text x="758" y="372" fill="#b9bcc6" font-size="12.5" text-anchor="middle">Hoes, songtekst, Jam-QR</text>
+  <text x="758" y="390" fill="#b9bcc6" font-size="12.5" text-anchor="middle">en alles uit de Hub</text>
+
+  <!-- arrows -->
   <g stroke="#1ed760" stroke-width="3" fill="none" marker-end="url(#a)">
-    <path d="M262 107 C330 107 330 165 392 175"/>
-    <path d="M262 187 L392 187"/>
-    <path d="M262 267 C330 267 330 210 392 200"/>
+    <path d="M216 189 L286 189"/>
+    <path d="M554 160 C600 160 600 105 636 105"/>
+    <path d="M554 175 L636 175"/>
+    <path d="M554 205 C596 205 596 245 636 245"/>
+    <path d="M554 225 C590 225 590 315 636 315"/>
   </g>
-  <!-- screen -->
-  <rect x="400" y="75" width="470" height="224" rx="14" fill="#2b1442" stroke="#5b3a7a"/>
-  <rect x="425" y="100" width="110" height="110" rx="10" fill="#7b3cff"/>
-  <circle cx="480" cy="165" r="32" fill="#ffb347"/>
-  <rect x="425" y="222" width="100" height="12" rx="4" fill="#fff"/>
-  <rect x="425" y="242" width="70" height="9" rx="4" fill="#ffffffaa"/>
-  <rect x="425" y="262" width="110" height="5" rx="3" fill="#ffffff44"/><rect x="425" y="262" width="34" height="5" rx="3" fill="#1ed760"/>
-  <rect x="560" y="120" width="170" height="9" rx="4" fill="#ffffff55"/>
-  <rect x="560" y="142" width="240" height="18" rx="5" fill="#fff"/>
-  <rect x="560" y="172" width="200" height="11" rx="4" fill="#ffffffaa"/>
-  <rect x="560" y="194" width="160" height="9" rx="4" fill="#ffffff55"/>
-  <rect x="770" y="215" width="76" height="68" rx="8" fill="#000000aa"/>
-  <rect x="780" y="223" width="52" height="52" rx="4" fill="#fff"/>
-  <g fill="#000"><rect x="784" y="227" width="14" height="14"/><rect x="814" y="227" width="14" height="14"/><rect x="784" y="257" width="14" height="14"/><rect x="804" y="247" width="8" height="8"/><rect x="816" y="259" width="10" height="8"/></g>
-  <g font-size="12" fill="#1ed760" font-weight="700">
-    <text x="425" y="288">Hoes + titel</text><text x="560" y="222">Songtekst</text><text x="808" y="207" text-anchor="middle">Jam-QR</text>
+  <g stroke="#b9bcc6" stroke-width="2" fill="none" marker-end="url(#b)" stroke-dasharray="5 4">
+    <path d="M353 320 L353 286"/>
+    <path d="M489 320 L489 286"/>
   </g>
+  <text x="251" y="174" fill="#1ed760" font-size="11.5" font-weight="700" text-anchor="middle">wat er speelt</text>
 </svg>
