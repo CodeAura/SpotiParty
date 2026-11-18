@@ -5,6 +5,15 @@ icon: apple
 
 # macOS
 
+{% hint style="warning" %}
+**Release 2.7.0 bevat geen Mac-app.** Op de Mac heb je twee mogelijkheden:
+
+* **Starten met Python**, zonder iets te bouwen: `python3 desktop/spotiparty_app.py`. Zie [Starten met Python](python.md).
+* **De app zelf bouwen** met `./desktop/build-macos.sh`. Zie [Desktop-app zelf bouwen](../ontwikkelaars/desktop-app-bouwen.md).
+
+Automatische updates werken alleen op Windows. De rest van deze pagina gaat over een `.dmg` die je zelf bouwde of van een oudere release hebt.
+{% endhint %}
+
 Er zijn twee versies voor de Mac. Kies de versie die bij je processor past.
 
 ## Welke Mac heb ik?
@@ -16,7 +25,7 @@ Klik op het **Apple-menu → Over deze Mac**.
 | **Chip:** Apple M1, M2, M3, M4 of nieuwer | `SpotiParty-macos-apple-silicon.dmg` |
 | **Processor:** Intel                      | `SpotiParty-macos-intel.dmg`         |
 
-Je vindt beide bestanden bij de nieuwste [**Release**](https://github.com/CodeAura/SpotiParty/releases/latest).
+Je bouwt de versie voor de processor van de Mac waarop je bouwt.
 
 ## Installeren
 
@@ -69,5 +78,5 @@ In `~/Library/Application Support/SpotiParty`.
 
 ## Updaten en verwijderen
 
-* **Updaten:** download de nieuwe `.dmg` en sleep SpotiParty opnieuw naar **Apps**. Kies **Vervang**. Je instellingen blijven bewaard.
+* **Updaten:** bouw of download de nieuwe `.dmg` en sleep SpotiParty opnieuw naar **Apps**. Kies **Vervang**. Je instellingen blijven bewaard.
 * **Verwijderen:** sleep **SpotiParty** uit **Apps** naar de prullenmand. Wil je ook je instellingen en Spotify-login kwijt, verwijder dan de map `~/Library/Application Support/SpotiParty` (in Finder: **Ga → Ga naar map…**).

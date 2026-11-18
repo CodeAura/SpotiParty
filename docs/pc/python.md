@@ -5,7 +5,13 @@ icon: python
 
 # Starten met Python (ook Linux)
 
-Heb je [Python 3](https://www.python.org/downloads/)? Dan heb je de app niet nodig. Het script `web/serve.py` gebruikt alleen wat standaard in Python zit; je hoeft niets met `pip` te installeren. Dit is ook de manier voor **Linux**.
+Heb je [Python 3](https://www.python.org/downloads/)? Dan heb je de app niet nodig. De scripts gebruiken alleen wat standaard in Python zit; je hoeft niets met `pip` te installeren. Dit is ook de manier voor **macOS** en **Linux**.
+
+| Wat je start                       | Wat je krijgt                                                    |
+| ---------------------------------- | ---------------------------------------------------------------- |
+| `desktop/spotiparty_app.py`        | **Aanbevolen.** Scherm + Hub + het kleine venster, net als de Windows-app |
+| `web/serve.py`                     | Alleen het scherm (de Hub draait dan ergens anders)              |
+| `hub/spotiparty_hub.py`            | Alleen de Hub, zonder scherm                                     |
 
 ## De bestanden ophalen
 
@@ -57,13 +63,11 @@ Druk op **Ctrl+C** om SpotiParty te stoppen. Ga verder met [Instellen op de PC](
 | `--no-browser` | Start de server zonder de browser te openen |
 | `--port 9000`  | Gebruik een andere poort dan 8769           |
 
-{% hint style="warning" %}
-Gebruik je `--port`, dan verandert ook je Redirect URI, bijvoorbeeld in `http://127.0.0.1:9000/index.html`. Voeg dat adres toe aan je [Spotify-app](../aan-de-slag/spotify-app.md), anders lukt inloggen niet.
-{% endhint %}
+Met alleen `serve.py` vul je in het instellingenscherm (**S**) onder **SpotiParty Hub** het adres van je Hub in.
 
-## De desktop-app vanuit de broncode
+## De desktop-app vanuit de broncode (met Hub)
 
-Wil je het eigen venster met **Scherm openen** en **Stoppen**, zonder iets te bouwen? Start dan:
+Wil je het eigen venster met de Hub, **Scherm openen**, **Dashboard** en **Stoppen**, zonder iets te bouwen? Start dan:
 
 ```bash
 python3 desktop/spotiparty_app.py
@@ -72,5 +76,7 @@ python3 desktop/spotiparty_app.py
 Daarvoor heb je **Tkinter** nodig. Op Windows en macOS zit dat bij Python van python.org. Op Linux installeer je het apart, bijvoorbeeld met `sudo apt install python3-tk` op Debian en Ubuntu. Op Linux zoekt de app naar Chrome, Chromium, Edge of Brave voor het eigen venster; je instellingen komen in `~/.local/share/SpotiParty`.
 
 {% hint style="info" %}
-**Instellingen worden per browser bewaard.** Met `serve.py` staan je Client ID, login en Jam-link in de opslag van je gewone browser. De desktop-app gebruikt een eigen browserprofiel. Wissel je tussen die twee, dan stel je SpotiParty dus twee keer in.
+**Alleen de Hub?** Start `python3 hub/spotiparty_hub.py`. Het adres en de PIN van het dashboard staan dan in de terminal. Met `--port` kies je een andere poort dan 8770; de Redirect URI voor Spotify verandert dan mee (het dashboard toont de juiste).
+
+De schermen bewaren hun eigen instellingen (Hub-adres, naam) per browser. Spotify en de Jam-link staan in de Hub, dus die stel je maar één keer in.
 {% endhint %}

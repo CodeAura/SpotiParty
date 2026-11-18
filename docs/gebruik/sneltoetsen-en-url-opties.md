@@ -19,8 +19,8 @@ Beweeg je de muis, dan verschijnt het tandwiel **⚙** voor de instellingen. Na 
 
 | Knop                               | Wat het doet                               |
 | ---------------------------------- | ------------------------------------------ |
-| **Menu**                           | De instelcode **Jam instellen** terughalen |
-| **↻ Nieuwe Jam**, twee keer **OK** | De oude Jam-code weghalen                  |
+| **Menu**                           | De code voor de telefoonpagina terughalen (Hub-adres, naam, Vanzelf openen) |
+| **↻ Nieuwe Jam**, twee keer **OK** | Een Jam-link weghalen die je met de telefoon zette                          |
 
 ## Toevoegingen aan het adres
 

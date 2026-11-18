@@ -5,14 +5,20 @@ icon: sliders
 
 # SpotiParty Hub
 
-Het feestscherm (hoes, songtekst, Jam-QR, **Hierna**) werkt op zichzelf. Met de **SpotiParty Hub** bestuur je daarnaast al je schermen vanaf één plek:
+De **SpotiParty Hub** is het hart van SpotiParty. Hij draait op je pc of Raspberry Pi; alle schermen in huis melden zich daar, en vanaf één dashboard (ook op je telefoon) bestuur je ze allemaal.
 
-| Functie | Wat het doet |
-| --- | --- |
-| **Admin-dashboard** | Alle SpotiParty-schermen in huis op één pagina, ook op je telefoon: welke online zijn en wat er speelt. |
-| **Meldingen** | Typ een bericht (“De pizza's zijn er! 🍕”) en het verschijnt groot op de schermen die je kiest. |
-| **Korte pauze** | Een grote aftelklok van het aantal minuten dat je kiest. Als de tijd om is, staat er dat het feest verdergaat. |
-| **Gasten-wifi** | Een QR-code naast de Jam-code: gasten scannen en zijn verbonden met je gastennetwerk. |
-| **Home Assistant volledig scherm** | De SpotiParty-kaart over heel Home Assistant, zonder zijbalk en kop. Zie [Volledig scherm in Home Assistant](../home-assistant/volledig-scherm.md). |
+| Functie                          | Wat het doet                                                                                                                  |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| **Spotify koppelen**             | Eén Spotify-account voor alle schermen. De schermen hebben geen eigen login.                                                  |
+| **Muziek bedienen**              | Vorige, afspelen/pauze, volgende en het volume, op welk apparaat je account ook speelt.                                       |
+| **Jam-link**                     | Eén keer plakken, dezelfde QR-code op alle schermen.                                                                          |
+| **Schermen**                     | Welke schermen online zijn en wat ze tonen; geef ze een naam of laat er een oplichten.                                         |
+| **Feestspellen**                 | Komende nummers, 👎 stemmen om over te slaan en 🎤 _Raad het nummer_. Zie [Feestspellen](feestspellen.md).                     |
+| **Meldingen**                    | Typ een bericht ("De pizza's zijn er! 🍕") en het verschijnt groot op de schermen die je kiest.                                |
+| **Korte pauze**                  | Een grote aftelklok; als je wilt pauzeert de Hub ook de muziek en zet hem na afloop weer aan.                                  |
+| **Gasten-wifi**                  | Een QR-code naast de Jam-code: gasten scannen en zijn verbonden met je gastennetwerk.                                         |
+| **Gastenpagina**                 | `http://<hub>:8770/gast`: Jam, Skip en de quiz op de telefoon van je gasten.                                                   |
 
-De desktop-app en de Raspberry Pi starten de Hub vanzelf. Hoe je hem gebruikt, staat in [Hub en admin-dashboard](hub-dashboard.md).
+De Windows-app en de Raspberry Pi starten de Hub vanzelf. Kan een scherm de Hub niet bereiken, dan staat er bovenin een rode melding **⚠️ Hub niet verbonden**, met de reden erbij.
+
+Hoe je hem gebruikt, staat in [Hub en admin-dashboard](hub-dashboard.md).

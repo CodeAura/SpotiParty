@@ -11,11 +11,11 @@ To build one yourself, you need Python 3.12:
 pip install pyinstaller pillow
 ```
 
-Windows: one PowerShell script builds `desktop\dist\SpotiParty.exe`, smoke-tests it and makes the installer
+Windows: one PowerShell script builds `desktop\dist\SpotiParty.exe`, smoke-tests it, writes the version into `sp_version.py` (the auto-updater compares with it) and makes the installer
 (needs 64-bit Python 3.10+ and Inno Setup 6, e.g. `winget install Python.Python.3.12 JRSoftware.InnoSetup`):
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File desktop\build-windows.ps1 -Version 2.4.0
+powershell -ExecutionPolicy Bypass -File desktop\build-windows.ps1 -Version 2.7.0
 ```
 
 macOS: one script builds `desktop/dist/SpotiParty.app` and `SpotiParty-macos-<arch>.dmg` (it makes its own

@@ -2,12 +2,15 @@
 
 # 🎉 SpotiParty
 
-**Het nummer dat speelt, groot in beeld: met meelopende songtekst en een QR-code waarmee je vrienden
-meedoen met je Spotify Jam.**
+**Het nummer dat speelt, groot in beeld: met meelopende songtekst, de komende nummers en een QR-code waarmee je
+vrienden meedoen met je Spotify Jam, stemmen om over te slaan en meespelen met de muziekquiz.**
 
 ## [Website SpotiParty](https://spotiparty.netlify.app/#)
 
-Voor je **Android TV**, je **PC** en je **Home Assistant**-dashboard.
+Voor je **Android TV**, je **PC**, een **Raspberry Pi** en je **Home Assistant**-dashboard, allemaal bestuurd vanuit
+één **Hub**.
+
+[![Nieuwste release](https://img.shields.io/github/v/release/CodeAura/SpotiParty?label=nieuwste%20versie)](../../releases/latest)
 
 <img src="docs/images/web-wide.png" alt="SpotiParty: de hoes van het nummer, de songtekst en de Jam-QR-code" width="860">
 
@@ -15,20 +18,31 @@ Voor je **Android TV**, je **PC** en je **Home Assistant**-dashboard.
 
 ---
 
+> [!TIP]
+> **Nieuw in [2.7.0](../../releases/tag/v2.7.0): de Windows-app werkt zichzelf bij.** Kom je van 2.6.0 of ouder?
+> Installeer [`SpotiParty-Setup-2.7.0.exe`](../../releases/download/v2.7.0/SpotiParty-Setup-2.7.0.exe) dan één keer
+> met de hand; daarna gaan updates vanzelf. Zie [Wat is er nieuw](#-wat-is-er-nieuw).
+
 **Home Assistant?** [![Open je Home Assistant en voeg SpotiParty toe aan HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=CodeAura&repository=SpotiParty&category=plugin)
 
 ## Inhoud
 
 - [Wat het doet](#-wat-het-doet)
-- [Welke versie kies ik?](#-welke-versie-kies-ik)
-- [Voorbereiding: je eigen Spotify-app](#-voorbereiding-je-eigen-spotify-app)
-- [Installeren op de tv](#-installeren-op-de-tv)
+- [Wat is er nieuw](#-wat-is-er-nieuw)
+- [Hoe het in elkaar zit](#-hoe-het-in-elkaar-zit)
+- [Snel aan de slag](#-snel-aan-de-slag)
+- [De SpotiParty Hub](#%EF%B8%8F-de-spotiparty-hub)
+- [Spotify koppelen aan de Hub](#-spotify-koppelen-aan-de-hub)
+- [Feestspellen](#-feestspellen)
 - [Webapp op de PC](#-webapp-op-de-pc)
+- [Raspberry Pi](#-raspberry-pi)
+- [Installeren op de tv](#-installeren-op-de-tv)
 - [Home Assistant](#-home-assistant)
 - [Een Spotify Jam starten](#-een-spotify-jam-starten)
 - [Opties en sneltoetsen](#%EF%B8%8F-opties-en-sneltoetsen)
 - [Problemen oplossen](#-problemen-oplossen)
 - [Privacy](#-privacy)
+- [Voor ontwikkelaars](#-voor-ontwikkelaars)
 
 ---
 
@@ -38,65 +52,213 @@ Voor je **Android TV**, je **PC** en je **Home Assistant**-dashboard.
 
 | | |
 |---|---|
-| **1. Wat er speelt** | De hoes, titel, artiest en voortgang. De hoes ligt wazig over de hele achtergrond en de balk krijgt de kleur van de hoes. Staat de muziek op pauze, dan wordt het nummer gedimd. Is je Spotify gekoppeld, dan zie je ook **Hierna: …** uit de wachtrij. |
+| **1. Wat er speelt** | De hoes, titel, artiest en voortgang. De hoes ligt wazig over de hele achtergrond en de balk krijgt de kleur van de hoes. Staat de muziek op pauze, dan wordt het nummer gedimd. Daaronder de **komende 1, 3 of 5 nummers** uit de wachtrij van je Spotify-account. |
 | **2. Songtekst** | De regel die gezongen wordt staat groot in het midden en loopt in de maat mee. De teksten komen van [lrclib.net](https://lrclib.net): gratis en zonder account. |
-| **3. Jam-QR** | Vrienden scannen de code met hun camera en zetten hun eigen nummers in de wachtrij. Afspelen, overslaan of het volume veranderen kunnen ze niet. |
+| **3. QR-code** | Vrienden scannen de code met hun camera en zetten hun eigen nummers in de Jam-wachtrij. Staan de feestspellen aan, dan leidt de code naar de **gastenpagina**: Jam, 👎 Skip-stemmen en 🎤 Raad het nummer in één. |
 
-SpotiParty **leest** alleen van Spotify: wat er speelt en wat erna komt. Hij bedient nooit iets.
-
----
-
-## 🎛️ SpotiParty Hub
-
-De **SpotiParty Hub** is een admin-dashboard op `http://<pc-of-pi>:8770` voor al je schermen, met **meldingen**, een
-**pauze-aftelklok**, een **QR-code voor je gasten-wifi** en de **Home Assistant-kaart op volledig scherm**. De
-desktop-app en de Raspberry Pi starten de Hub vanzelf; de Android TV vindt hem zelf op het netwerk. Zie
-[docs/hub](docs/hub/README.md).
-
-Nieuw: SpotiParty op een **Raspberry Pi** als vast feestscherm: `sudo ./pi/install.sh`
-([docs/raspberry-pi](docs/raspberry-pi/README.md)).
+Daarnaast zet je vanuit het **Hub-dashboard** meldingen, een pauze-aftelklok en een QR-code voor je gasten-wifi op
+al je schermen tegelijk.
 
 ---
 
-## 🧭 Welke versie kies ik?
+## 🆕 Wat is er nieuw
+
+| Versie | Wat er veranderde |
+|---|---|
+| **[2.7.0](../../releases/tag/v2.7.0)** (nieuwste) | **Automatische updates op Windows.** SpotiParty kijkt bij het starten en daarna elke 6 uur of er een nieuwe versie is, downloadt die op de achtergrond en installeert hem bij de volgende start, of meteen met **Nu bijwerken**. Je instellingen blijven bewaard. Het versienummer staat in de titel van het SpotiParty-venster. |
+| [2.6.0](../../releases/tag/v2.6.0) | **Feestspellen:** komende nummers op het scherm, 👎 stemmen om over te slaan, 🎤 *Raad het nummer* en de gastenpagina op `http://<hub>:8770/gast`. |
+| [2.5.1](../../releases/tag/v2.5.1) | Kan een scherm de Hub niet bereiken, dan staat er bovenin een rode melding **⚠️ Hub niet verbonden**, met de reden erbij. |
+| [2.5.0](../../releases/tag/v2.5.0) | Spotify koppel je **alleen nog in de Hub**. Alle schermen tonen het nummer van dat account; de schermen hebben geen eigen Spotify-login meer. |
+| [2.4.2](../../releases/tag/v2.4.2) | SpotiParty staat in **HACS** als dashboardkaart voor Home Assistant. |
+
+Alle versies en downloads vind je bij [Releases](../../releases).
+
+---
+
+## 🧭 Hoe het in elkaar zit
 
 <img src="docs/images/overview.svg" alt="Drie bronnen (Android TV, PC, Home Assistant) leveren hetzelfde scherm" width="860">
 
-| | 📺 Android TV | 💻 PC | 🏠 Home Assistant |
-|---|---|---|---|
-| **Toont** | Wat er op de tv speelt | Wat je Spotify-account speelt, op elk apparaat | Elke `media_player`: Spotify, Sonos, Cast, Music Assistant… |
-| **Nodig** | ADB en een PC om te bouwen | De app (`.exe` of `.dmg`), of Python 3 | Home Assistant |
-| **Spotify-app nodig?** | Alleen voor **Hierna: …** | Ja | Alleen voor **Hierna: …**, en alleen via HTTPS |
-| **Jam-link instellen** | Met je telefoon (QR-code op de tv) | ⚙ in de app | ⚙ in de kaart |
-| **Tijd** | ± 20 min | ± 5 min | ± 5 min |
+De **Hub** is het hart: een klein programma op je PC of Raspberry Pi met een admin-dashboard op poort **8770**. Daar
+koppel je één keer je Spotify-account en je Jam-link, en alle schermen in huis volgen dat.
+
+| | 💻 PC (Windows) | 🍓 Raspberry Pi | 📺 Android TV | 🏠 Home Assistant |
+|---|---|---|---|---|
+| **Rol** | Scherm **en** Hub | Scherm en/of Hub | Scherm | Scherm (kaart) |
+| **Toont** | Je Spotify-account, via de Hub | Je Spotify-account, via de Hub | Wat er op de tv speelt, of het account van de Hub | Elke `media_player`, of het account van de Hub |
+| **Nodig** | `SpotiParty-Setup-2.7.0.exe` | Raspberry Pi OS (64-bit) met desktop | ADB en een PC om te bouwen | Home Assistant, liefst met HACS |
+| **Updates** | Vanzelf (vanaf 2.7.0) | `sudo ./pi/install.sh` opnieuw | Opnieuw bouwen en installeren | Via HACS |
+| **Tijd** | ± 5 min | ± 10 min | ± 20 min | ± 5 min |
 
 ---
 
-## 🔑 Voorbereiding: je eigen Spotify-app
+## 🚀 Snel aan de slag
 
-Je hebt een eigen Spotify-app nodig voor de **PC-versie** en, als je dat wilt, voor de regel **Hierna: …** op de tv.
-Het maken duurt twee minuten en is gratis. Spotify vraagt dit om te weten welke app je login gebruikt.
+1. **Installeer de Hub.** Het makkelijkst met de Windows-app (zie [Webapp op de PC](#-webapp-op-de-pc)) of op een
+   [Raspberry Pi](#-raspberry-pi). Het venster toont het adres van het dashboard en de **PIN**.
+2. **Open het dashboard** op `http://<adres-van-die-pc>:8770`, ook op je telefoon, en vul de PIN in.
+3. **Koppel Spotify** bij **🎵 Muziek bedienen** (zie [Spotify koppelen aan de Hub](#-spotify-koppelen-aan-de-hub)).
+4. **Plak je Jam-link** bij **🎶 Spotify Jam** en kies **Op alle schermen**.
+5. **Zet er schermen bij:** een [tv](#-installeren-op-de-tv), een [Home Assistant-kaart](#-home-assistant) of een tweede
+   pc. Ze melden zich vanzelf in het dashboard onder **📺 Schermen**.
+
+---
+
+## 🎛️ De SpotiParty Hub
+
+De desktop-app en de Raspberry Pi starten de Hub vanzelf. Open daarna `http://<adres-van-die-computer>:8770` en vul de
+PIN in. Er draait één Hub per netwerk: start je de app op een tweede pc, dan wordt die een scherm van de eerste Hub.
+
+| Onderdeel in het dashboard | Wat het doet |
+|---|---|
+| **📺 Schermen** | Alle SpotiParty-schermen in huis, met wat er speelt. Groen is online. **Aanwijzen** zet de naam groot op dat scherm; **Naam** geeft het een eigen naam. |
+| **🎵 Muziek bedienen** | Spotify koppelen, en daarna vorige, afspelen/pauze, volgende en het volume, op welk apparaat je account ook speelt. |
+| **🎶 Spotify Jam** | Eén Jam-link voor alle schermen, met een voorbeeld van de QR-code. |
+| **🎉 Feest** | Hoeveel komende nummers de schermen tonen, de Skip-stemmen en *Raad het nummer*. Zie [Feestspellen](#-feestspellen). |
+| **💬 Melding** | Een bericht ("De pizza's zijn er! 🍕") groot op de schermen die je kiest, in de stijl Gewoon, Feest of Belangrijk. |
+| **⏸️ Korte pauze** | Een aftelklok van 5 tot 30 minuten, of zelf gekozen. Als je wilt, pauzeert de Hub ook de muziek en zet hem na afloop weer aan. |
+| **📶 Gasten-wifi** | Een QR-code naast de Jam-code, zodat gasten met één scan op je gastennetwerk zitten. |
+| **⚙️ Hub** | De naam van de Hub en een eigen PIN. |
+
+> [!WARNING]
+> **Windows** vraagt de eerste keer of SpotiParty op het netwerk mag. Kies **Privénetwerken**, anders kunnen de tv en
+> je telefoon de Hub niet bereiken. Zet poort 8770 **niet** open in je router: de Hub hoort alleen in je eigen netwerk.
+
+Alles wat iets verandert, vraagt de PIN. Na vijf foute pogingen wacht de Hub een minuut. Meer in
+[docs/hub](docs/hub/hub-dashboard.md).
+
+---
+
+## 🔑 Spotify koppelen aan de Hub
+
+Sinds versie 2.5.0 koppel je Spotify **op één plek: de Hub**. Daarvoor heb je een eigen, gratis Spotify-app nodig.
+Spotify vraagt dit om te weten welke app je login gebruikt.
 
 <img src="docs/images/spotify-app.svg" alt="Schematisch: het formulier Create app met Redirect URI en Web API gemarkeerd" width="860">
 
 1. Ga naar **[developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)**, log in met je eigen
    Spotify-account en kies **Create app**.
 2. Vul een naam en een omschrijving in, wat je maar wilt.
-3. Zet bij **Redirect URIs** precies het adres voor jouw versie. Wil je beide versies gebruiken, dan voeg je ze allebei toe.
+3. Zet bij **Redirect URIs** precies dit adres:
 
-   | Versie | Redirect URI |
-   |---|---|
-   | PC | `http://127.0.0.1:8769/index.html` |
-   | Android TV | `http://127.0.0.1:8768/callback` |
-   | Home Assistant via HTTPS | het adres dat de ⚙ van SpotiParty toont, bijv. `https://xxxx.ui.nabu.casa/local/spotiparty/index.html` |
+   ```
+   http://127.0.0.1:8770/spotify/callback
+   ```
 
+   Het dashboard toont het ook bij **🎵 Muziek bedienen**. Gebruik `127.0.0.1`, niet `localhost`: dat weigert Spotify.
 4. Vink **Web API** aan en kies **Save**.
-5. Open de app in het dashboard en kopieer de **Client ID**: 32 tekens met cijfers en de letters a tot en met f.
+5. Kopieer de **Client ID** (32 tekens met cijfers en de letters a tot en met f), plak hem in het dashboard en klik
+   **Inloggen bij Spotify**.
+6. Log je in op je **telefoon**? Dan probeert die daarna `127.0.0.1` te openen en lukt dat niet. Dat hoort zo:
+   kopieer het hele adres uit de adresbalk, plak het in het dashboard en klik **Koppelen**.
+
+> [!IMPORTANT]
+> Sinds februari 2026 gelden strengere regels voor apps in *Development Mode*: de eigenaar van de app heeft
+> **Spotify Premium** nodig, je mag **één** Client ID hebben en er mogen maximaal **vijf** accounts inloggen (onder
+> **User Management**). Bron: [Spotify for Developers, migratiegids februari 2026](https://developer.spotify.com/documentation/web-api/tutorials/february-2026-migration-guide).
+> Gasten die alleen via de Jam nummers toevoegen, hoeven niets: zij gebruiken hun eigen Spotify.
+
+---
+
+## 🎉 Feestspellen
+
+Alle drie stel je in bij **🎉 Feest** in het Hub-dashboard. Ze werken op de Windows-app, de Android TV-app, de
+Raspberry Pi en de Home Assistant-kaart.
+
+| | |
+|---|---|
+| **Komende nummers** | De schermen tonen de volgende **1, 3 of 5** nummers uit de wachtrij van je Spotify-account, of geen. |
+| **👎 Stemmen om over te slaan** | Gasten scannen de QR-code en tikken op **Skip**. Bij genoeg stemmen (instelbaar, standaard 3) slaat de Hub het nummer over. Het scherm toont hoeveel stemmen er zijn. |
+| **🎤 Raad het nummer** | Bij elk nieuw nummer blijven titel, hoes en songtekst **15 seconden** verborgen. Gasten raden op hun telefoon: snel de titel goed levert tot **100 punten** op, de artiest goed de helft, met maximaal **3 pogingen** per nummer. Daarna verschijnen het antwoord en de **top 5**. Scores wis je in het dashboard. |
+
+Gasten doen mee via de **gastenpagina** op `http://<hub-ip>:8770/gast`: Jam-link, Skip en de quiz in één. Staan stemmen
+of de quiz aan, dan leidt de QR-code op de schermen daarheen.
 
 > [!NOTE]
-> Een nieuwe Spotify-app staat in *Development mode*. Daarin werkt hij alleen voor accounts die onder
-> **User Management** staan. Jouw eigen account staat daar al op. Wil iemand anders inloggen, dan zet je die
-> persoon daar ook bij.
+> Gasten moeten op **hetzelfde netwerk** zitten als de Hub. Een afgeschermd gasten-wifi kan de gastenpagina niet
+> bereiken.
+
+---
+
+## 💻 Webapp op de PC
+
+### Windows-app (aanbevolen)
+
+Download bij de nieuwste [**Release (2.7.0)**](../../releases/latest):
+
+| Bestand | Installeren |
+|---|---|
+| [`SpotiParty-Setup-2.7.0.exe`](../../releases/download/v2.7.0/SpotiParty-Setup-2.7.0.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
+
+SpotiParty opent het feestscherm in een eigen venster, zonder tabbladen, en start de Hub. Er verschijnt ook een klein
+venster met het adres en de **PIN** van het dashboard, en de knoppen **Scherm openen**, **Dashboard** en **Stoppen**.
+Sluit je dat kleine venster, dan stopt SpotiParty.
+
+> [!WARNING]
+> De app is niet bij Microsoft geregistreerd. Daarom toont Windows bij de **eerste** start *"Windows heeft uw pc
+> beschermd"*. Klik **Meer informatie** en dan **Toch uitvoeren**.
+
+**Updaten gaat vanzelf** (vanaf 2.7.0). Staat er een nieuwe versie klaar, dan zie je dat in het SpotiParty-venster.
+De update wordt geïnstalleerd bij de volgende start, of meteen met **Nu bijwerken**; de schermen stoppen dan even.
+Van 2.6.0 of ouder naar 2.7.0 moet je één keer met de hand de nieuwe setup draaien.
+
+### Mac en Linux
+
+Release 2.7.0 bevat geen Mac-app. Op de Mac en op Linux start je SpotiParty met Python (hieronder), of je bouwt de
+Mac-app zelf met `./desktop/build-macos.sh` (zie [desktop/README.md](desktop/README.md)).
+
+### Starten met Python
+
+Heb je [Python 3](https://www.python.org/downloads/)? Start dan de app met Hub:
+
+```bash
+python desktop/spotiparty_app.py
+```
+
+Of alleen het scherm (op Windows kan dat ook met een dubbelklik op `web/start.cmd`):
+
+```bash
+python web/serve.py
+```
+
+Het scherm draait op `http://127.0.0.1:8769/index.html`. Dat luistert alleen op je eigen pc; niemand anders in het
+netwerk kan erbij. Draait de Hub op een andere computer, vul dan het adres in bij ⚙ → **SpotiParty Hub**.
+
+### Instellen
+
+<img src="docs/images/web-settings-steps.png" alt="Het instellingenscherm van SpotiParty" width="620">
+
+Open de instellingen met **S**, of met de ⚙ die verschijnt zodra je de muis beweegt. Kies bij **Wat speelt er?**
+*Spotify via de Hub* of een *Home Assistant media player*. Spotify en de Jam-link stel je in het Hub-dashboard in;
+op het scherm zelf geef je hooguit het adres van de Hub en een naam voor dit scherm.
+
+Druk op **F** voor volledig scherm. De muisaanwijzer verdwijnt vanzelf na 2,5 seconde. Sluit je de pc op een tweede
+scherm of beamer aan, dan heb je zo een feestscherm.
+
+---
+
+## 🍓 Raspberry Pi
+
+Een Raspberry Pi 4 of 5 aan een tv of beamer is een prima vast feestscherm, en kan meteen de Hub zijn. Je hebt
+**Raspberry Pi OS (64-bit) met desktop** nodig, Bookworm of nieuwer, met automatisch inloggen aan.
+
+```bash
+git clone https://github.com/CodeAura/SpotiParty.git
+cd SpotiParty
+sudo ./pi/install.sh
+sudo reboot
+```
+
+| Wat je wilt | Commando |
+|---|---|
+| Scherm + Hub (standaard) | `sudo ./pi/install.sh` |
+| Alleen een scherm, Hub elders | `sudo ./pi/install.sh --hub 192.168.1.20` |
+| Alleen de Hub (Pi zonder scherm) | `sudo ./pi/install.sh --no-screen` |
+| Een eigen naam in het dashboard | `sudo ./pi/install.sh --name "Keuken"` |
+| Verwijderen | `sudo ./pi/install.sh --uninstall` |
+
+Bijwerken: `git pull` en `sudo ./pi/install.sh` opnieuw; je instellingen blijven bewaard. Meer in
+[docs/raspberry-pi](docs/raspberry-pi/README.md).
 
 ---
 
@@ -134,7 +296,8 @@ Op Windows schrijf je `gradlew.bat assembleRelease` in plaats van `./gradlew ass
 
 > [!IMPORTANT]
 > Bouw beide apps op **dezelfde PC**. Ze moeten met dezelfde sleutel ondertekend zijn, anders krijgt SpotiParty
-> geen songteksten van de Lyrics-app.
+> geen songteksten van de Lyrics-app. Liever niet zelf bouwen? De workflow **Android TV apps** onder
+> [Actions](../../actions) maakt beide APK's, met dezelfde sleutel.
 
 ### Stap 3: Installeren
 
@@ -163,7 +326,7 @@ geen enkele melding.
 | Instelling | | Waarvoor |
 |---|---|---|
 | **Meldingstoegang** → SpotiParty | ✅ verplicht | Zien welk nummer er speelt |
-| **Weergeven vóór andere apps** → SpotiParty | ⭕ optioneel | SpotiParty opent vanzelf zodra Spotify begint te spelen |
+| **Weergeven vóór andere apps** → SpotiParty | ⭕ optioneel | SpotiParty mag vanzelf openen zodra Spotify begint te spelen |
 
 **Of via ADB:** sommige tv's verstoppen deze schermen. Het eerste commando geeft Meldingstoegang:
 
@@ -171,7 +334,7 @@ geen enkele melding.
 adb shell cmd notification allow_listener io.github.cleanyourtv.partymode/io.github.cleanyourtv.partymode.PartyListener
 ```
 
-Het tweede commando is optioneel en laat SpotiParty vanzelf openen:
+Het tweede commando is optioneel:
 
 ```bash
 adb shell appops set io.github.cleanyourtv.partymode SYSTEM_ALERT_WINDOW allow
@@ -181,76 +344,17 @@ adb shell appops set io.github.cleanyourtv.partymode SYSTEM_ALERT_WINDOW allow
 > Ben je klaar, zet **USB-/Netwerkfoutopsporing** dan weer uit in de Ontwikkelaarsopties. Zolang dat aan staat,
 > kan elk apparaat in je netwerk vragen om de tv te bedienen.
 
-### Stap 5: Openen en de Jam koppelen
+### Stap 5: Openen en verbinden met de Hub
 
-1. Open **SpotiParty** op de tv en zet muziek aan in Spotify.
-2. Rechtsonder staat de code **Jam instellen**. Scan die met je telefoon. Je telefoon moet op hetzelfde wifi-netwerk zitten.
-3. Op de pagina die opent plak je je Jam-link (zie [Een Spotify Jam starten](#-een-spotify-jam-starten)) en tik je
-   op **Op de tv zetten**.
-4. Op dezelfde telefoonpagina kun je ook:
-   - **Spotify koppelen** voor de regel **Hierna: …**. Gebruik de Client ID uit de
-     [voorbereiding](#-voorbereiding-je-eigen-spotify-app). Na het inloggen probeert je telefoon `127.0.0.1` te
-     openen en lukt dat niet. Dat hoort zo: kopieer het hele adres uit de adresbalk en plak het op de pagina.
-   - **Vanzelf openen** aan of uit zetten.
+1. Open **SpotiParty** op de tv en zet muziek aan.
+2. De tv **zoekt de Hub zelf** op het netwerk en verschijnt in het dashboard onder **📺 Schermen**. Vanaf dan komen
+   de Jam-link, de komende nummers, meldingen, de pauze en de feestspellen uit de Hub.
+3. Vindt de tv de Hub niet (sommige routers blokkeren dat), druk dan op **Menu**, scan de code met je telefoon en vul
+   op de pagina die opent het adres van de Hub in. Daar geef je de tv ook een naam, en zet je **Vanzelf openen**
+   aan of uit (standaard uit).
 
-Met **Menu** op de afstandsbediening haal je de instelcode later terug. **↻ Nieuwe Jam** (twee keer OK) haalt
-een oude Jam-code weg.
-
----
-
-## 💻 Webapp op de PC
-
-### Starten met de app (aanbevolen)
-
-Download de app bij de nieuwste [**Release**](../../releases/latest):
-
-| Systeem | Bestand | Installeren |
-|---|---|---|
-| **Windows 10/11** | `SpotiParty-Setup-1.0.0.exe` | Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
-| **Windows, zonder installatie** | `SpotiParty.exe` | Dubbelklik het bestand. Handig op een USB-stick. |
-| **Mac met Apple silicon** (M1 en nieuwer) | `SpotiParty-macos-apple-silicon.dmg` | Open de `.dmg` en sleep **SpotiParty** naar **Apps**. |
-| **Mac met Intel** | `SpotiParty-macos-intel.dmg` | Idem. |
-
-SpotiParty opent in een eigen venster, zonder tabbladen. Er verschijnt ook een klein venster met **Scherm openen**
-en **Stoppen**. Sluit je dat kleine venster, dan stopt SpotiParty.
-
-> [!WARNING]
-> De apps zijn niet bij Microsoft of Apple geregistreerd. Daarom waarschuwt je computer bij de **eerste** start:
-> - **Windows:** *"Windows heeft uw pc beschermd"*. Klik **Meer informatie** en dan **Toch uitvoeren**.
-> - **Mac:** *"SpotiParty kan niet worden geopend"*. Klik **Gereed** en ga naar **Systeeminstellingen → Privacy en
->   beveiliging**. Klik onderaan bij SpotiParty op **Open toch**.
-
-Daarna start de app gewoon met een dubbelklik.
-
-### Of starten met Python
-
-Heb je [Python 3](https://www.python.org/downloads/)? Op Windows dubbelklik je `web/start.cmd`. Of start hem in een
-terminal:
-
-```bash
-python web/serve.py
-```
-
-Bij beide manieren draait SpotiParty op `http://127.0.0.1:8769/index.html`. Dat luistert alleen op je eigen PC;
-niemand anders in het netwerk kan erbij.
-
-### Instellen
-
-De eerste keer opent het instellingenscherm vanzelf. Later open je het met **S**, of met de ⚙ die verschijnt
-zodra je de muis beweegt.
-
-<img src="docs/images/web-settings-steps.png" alt="Instellingenscherm met genummerde stappen 1 tot en met 5" width="620">
-
-| # | Wat je doet |
-|---|---|
-| **1** | Dit adres zet je als **Redirect URI** in je Spotify-app (zie [voorbereiding](#-voorbereiding-je-eigen-spotify-app)). |
-| **2** | Plak de **Client ID** van je Spotify-app. |
-| **3** | Klik **Inloggen bij Spotify**. Er opent een venster: log in en kies **Akkoord**. Het venster sluit vanzelf. |
-| **4** | Plak de **Jam-link** (zie [Een Spotify Jam starten](#-een-spotify-jam-starten)). |
-| **5** | Klik **Op het scherm zetten**. De QR-code staat nu rechtsonder. |
-
-Druk op **F** voor volledig scherm. De muisaanwijzer verdwijnt vanzelf na 2,5 seconde. Sluit je de app op een
-tweede scherm of beamer aan, dan heb je zo een feestscherm.
+Zonder Hub kun je op diezelfde telefoonpagina nog steeds een Jam-link plakken; **↻ Nieuwe Jam** (twee keer OK) haalt
+die weer weg. Je telefoon moet op hetzelfde wifi-netwerk zitten als de tv.
 
 ---
 
@@ -258,7 +362,7 @@ tweede scherm of beamer aan, dan heb je zo een feestscherm.
 
 SpotiParty is een kaart voor je Home Assistant-dashboard: als gewone kaart of over het hele scherm, voor een
 wandtablet of een tv met je dashboard. De kaart volgt elke `media_player` (Spotify, Sonos, Cast, Music Assistant…)
-en toont met de Hub het nummer van je Spotify-account, met songtekst, Jam-code, meldingen en de pauze.
+en toont met de Hub het nummer van je Spotify-account, met songtekst, Jam-code, meldingen, de pauze en de feestspellen.
 
 ### Stap 1: Installeren via HACS (aanbevolen)
 
@@ -267,7 +371,7 @@ Met [HACS](https://hacs.xyz) installeer je SpotiParty in één klik, en krijg je
 [![Open je Home Assistant en voeg SpotiParty toe aan HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=CodeAura&repository=SpotiParty&category=plugin)
 
 1. Klik op de knop, controleer het adres van je Home Assistant en klik **Open link**.
-2. Klik in HACS op **Downloaden** en herlaad de browser met **Ctrl+F5**.
+2. Klik in HACS op **Downloaden** (of later **Bijwerken**) en herlaad de browser met **Ctrl+F5**.
 
 Werkt de knop niet? Ga dan naar **HACS → ⋮ → Aangepaste repositories**, plak `https://github.com/CodeAura/SpotiParty`,
 kies type **Dashboard**, klik **Toevoegen** en daarna **Downloaden**.
@@ -275,8 +379,8 @@ kies type **Dashboard**, klik **Toevoegen** en daarna **Downloaden**.
 <details>
 <summary><b>Zonder HACS installeren</b></summary>
 
-1. Download **`spotiparty-card.js`** bij de [nieuwste release](../../releases/latest). Het is één bestand; het hele
-   scherm zit erin.
+1. Download [**`spotiparty-card.js`**](../../releases/download/v2.7.0/spotiparty-card.js) bij de
+   [nieuwste release](../../releases/latest). Het is één bestand; het hele scherm zit erin.
 2. Zet het in **`/config/www/spotiparty/`**, met de add-on **File editor**, **Studio Code Server** of **Samba share**.
    Bestond de map `www` nog niet? Herstart Home Assistant dan één keer.
 3. Voeg het toe bij **Instellingen → Dashboards → ⋮ → Bronnen**: `/local/spotiparty/spotiparty-card.js`, type
@@ -296,15 +400,15 @@ hub: http://192.168.1.20:8770
 fullscreen: true
 ```
 
-Vervang `192.168.1.20` door het adres van de pc waar de Hub draait. Dat staat in het SpotiParty-venster op die pc,
-en bovenaan het Hub-dashboard.
+Vervang `192.168.1.20` door het adres van de pc of Pi waar de Hub draait. Dat staat in het SpotiParty-venster op die
+pc, en bovenaan het Hub-dashboard.
 
 ### Stap 3: Instellingen van de kaart
 
 | Instelling | Wat het doet |
 |---|---|
-| `hub: http://…:8770` | Het adres van je SpotiParty Hub. **Nodig** voor de Jam-code, meldingen, de pauze en het nummer van je Spotify-account: een webpagina in Home Assistant kan de Hub niet zelf vinden. |
-| `fullscreen: true` | Over het hele Home Assistant-venster, zonder zijbalk en kopregel. Met **✕** linksboven ga je terug naar het dashboard; kom je terug, dan staat hij weer op volledig scherm. |
+| `hub: http://…:8770` | Het adres van je SpotiParty Hub. **Nodig** voor de Jam-code, meldingen, de pauze, de feestspellen en het nummer van je Spotify-account: een webpagina in Home Assistant kan de Hub niet zelf vinden. |
+| `fullscreen: true` | Over het hele Home Assistant-venster, zonder zijbalk en kopregel. Met **✕** linksboven ga je terug naar het dashboard. |
 | `height: 600px` | De hoogte als gewone kaart (standaard `480px`). |
 | `entity: media_player.woonkamer` | Een vaste speler. Zonder deze regel volgt SpotiParty de speler die op dat moment speelt. |
 | `name: Woonkamer-tablet` | De naam van dit scherm in het Hub-dashboard. |
@@ -326,20 +430,10 @@ kaart met de Hub verbonden is.
 </td>
 </tr></table>
 
-### Lukt het niet?
-
-| Wat je ziet | Oplossing |
-|---|---|
-| HACS: *"The installed content has no spotiparty-card.js"* | De release mist het kaartbestand. Download opnieuw zodra de nieuwste release `spotiparty-card.js` als bijlage heeft. |
-| De kaart toont geen Jam-code, meldingen of pauze | Vul `hub:` in (zie stap 3). Druk in de kaart op **S**: onder Hub staat of hij verbonden is. |
-| *"Deze pagina draait via https://, de Hub via http://"* | Open je dashboard thuis via `http://` (bijv. `http://homeassistant.local:8123`); een https-pagina mag de Hub niet bereiken. |
-| Na een update verandert er niets | Herlaad met **Ctrl+F5**, en kijk bij **Bronnen** dat er maar één `spotiparty-card.js` staat (niet ook een oude `/local/`-versie). |
-
 > [!NOTE]
-> Voor wie SpotiParty bouwt: na een wijziging in `web/` maakt `python tools/build_ha.py` de kaart opnieuw in
-> `dist/spotiparty-card.js`. Zet dat bestand bij elke release als bijlage, naast de Windows-setup: HACS installeert
-> de bijlagen van een release.
-
+> Open je Home Assistant via **https://** (bijvoorbeeld Nabu Casa), dan mag de kaart de Hub op `http://` niet
+> bereiken: dat blokkeert de browser. Open je dashboard op dat scherm via het lokale adres, bijvoorbeeld
+> `http://homeassistant.local:8123`.
 
 ---
 
@@ -347,11 +441,12 @@ kaart met de Hub verbonden is.
 
 Met een Jam zetten je vrienden nummers in jouw wachtrij, vanaf hun eigen telefoon.
 
-1. Open Spotify op je telefoon en zet muziek aan op je tv, PC of speaker.
+1. Open Spotify op je telefoon en zet muziek aan op je tv, pc of speaker.
 2. Tik op het **apparaat-icoon** of de **drie puntjes** en kies **Start een Jam**.
 3. Zet in de **Jam-instellingen** de optie **Gasten mogen afspelen bedienen** uit. Dan kunnen vrienden alleen
-   nummers toevoegen: niet overslaan, pauzeren of het volume veranderen.
-4. Tik op **Uitnodigen → Link kopiëren** en plak de link in SpotiParty.
+   nummers toevoegen: niet overslaan, pauzeren of het volume veranderen. (Overslaan kan dan nog wel met de
+   [Skip-stemmen](#-feestspellen), als je die aanzet.)
+4. Tik op **Uitnodigen → Link kopiëren** en plak de link in het Hub-dashboard bij **🎶 Spotify Jam**.
 
 Stopt de Jam, dan werkt de oude link niet meer. Start dan een nieuwe Jam en plak de nieuwe link.
 
@@ -365,10 +460,16 @@ Stopt de Jam, dan werkt de oude link niet meer. Start dan een nieuwe Jam en plak
 | **F** | Volledig scherm |
 | **Esc** | Instellingen sluiten |
 
+| Knop (Android TV) | Wat het doet |
+|---|---|
+| **Menu** | De code voor de telefoonpagina terughalen |
+| **↻ Nieuwe Jam**, twee keer **OK** | Een Jam-link die je met de telefoon zette weghalen |
+
 | Toevoeging aan de URL | Wat het doet |
 |---|---|
-| `?source=ha` / `?source=spotify` | De bron kiezen zonder de instellingen te openen |
+| `?source=spotify` / `?source=ha` | De bron kiezen zonder de instellingen te openen |
 | `&entity=media_player.x` | De Home Assistant-speler die SpotiParty volgt |
+| `&hub=192.168.1.20:8770` | Het adres van de Hub |
 | `&kiosk=1` | Geen knoppen in beeld (**S** werkt nog wel) |
 | `&jam=0` | De Jam-QR-code niet tonen |
 
@@ -378,29 +479,57 @@ Stopt de Jam, dan werkt de oude link niet meer. Start dan een nieuwe Jam en plak
 
 | Probleem | Oplossing |
 |---|---|
+| **⚠️ Hub niet verbonden** bovenin | Het scherm bereikt de Hub niet. Draait de app of de Pi met de Hub? Klopt het adres (⚙ → **SpotiParty Hub**, of `hub:` in de kaart)? Zit het scherm op hetzelfde netwerk? De melding verdwijnt vanzelf zodra de Hub terug is. |
+| *"Koppel je Spotify aan de Hub"* | Er is nog geen Spotify-account gekoppeld. Doe dat in het dashboard bij **🎵 Muziek bedienen**. |
+| Spotify: *"INVALID_CLIENT: Invalid redirect URI"* | De Redirect URI in je Spotify-app wijkt een teken af. Gebruik precies `http://127.0.0.1:8770/spotify/callback`, nooit `localhost`. |
+| Spotify: *"geen toegang"* of *"forbidden"* | Zet het account onder **User Management** van je Spotify-app, en controleer of de eigenaar van de app (nog) Premium heeft. |
+| Tv en telefoon vinden de Hub niet | Windows: sta SpotiParty toe op **Privénetwerken** (Windows Defender Firewall). Op de tv: vul het adres van de Hub in via **Menu**. |
+| Gasten komen niet op de gastenpagina | Ze moeten op hetzelfde netwerk zitten als de Hub; een afgeschermd gasten-wifi blokkeert dat. |
+| De Windows-app werkt zich niet bij | Automatisch bijwerken kan pas vanaf 2.7.0. Kom je van 2.6.0 of ouder, installeer [`SpotiParty-Setup-2.7.0.exe`](../../releases/download/v2.7.0/SpotiParty-Setup-2.7.0.exe) dan één keer met de hand. |
 | **Tv:** *"SpotiParty mag nog niet zien wat er speelt"* | Zet **Meldingstoegang** aan (stap 4 van de tv-installatie). |
 | **Tv:** geen songtekst, *"Installeer de Lyrics-add-on"* | Installeer de Lyrics-app, gebouwd op dezelfde PC als SpotiParty. |
 | *"Geen songtekst voor dit nummer"* | lrclib.net heeft dit nummer niet. Bij heel nieuwe of onbekende nummers komt dat voor. |
-| Spotify: *"INVALID_CLIENT: Invalid redirect URI"* | De Redirect URI in je Spotify-app wijkt een teken af. Kopieer hem precies uit de ⚙. |
-| Spotify: *"geen toegang"* of *"forbidden"* | Zet het account onder **User Management** van je Spotify-app. |
-| **Hierna: …** blijft leeg | De wachtrij is leeg, of een ander account speelt dan het account dat je gekoppeld hebt. |
-| **HA:** de kaart blijft *"Zet muziek aan"* | Geen speler met een titel speelt. Kies een vaste speler met `&entity=`. |
-| **HA:** *"token nodig"* | De pagina draait niet via `/local/` van je eigen Home Assistant. Vul een access token in via de ⚙. |
-| **PC:** de knop *Inloggen* is grijs | Open de app via `http://127.0.0.1:8769` (de app of `serve.py`), niet als bestand of via een ander `http://`-adres. |
-| **PC:** de app opent niets | Draait SpotiParty al, of gebruikt een ander programma poort 8769? Sluit het andere programma of de oude SpotiParty. |
-| **Tv:** de QR-code voor je telefoon werkt niet | Je telefoon moet op hetzelfde wifi-netwerk zitten als de tv. |
+| **HA:** HACS meldt *"no spotiparty-card.js"* | De release mist het kaartbestand. Release 2.7.0 heeft het wel: werk bij naar de nieuwste versie. |
+| **HA:** na een update verandert er niets | Herlaad met **Ctrl+F5**, en kijk bij **Bronnen** dat er maar één `spotiparty-card.js` staat. |
+| **PC:** de app opent niets | Draait SpotiParty al, of gebruikt een ander programma poort 8769 of 8770? Sluit het andere programma of de oude SpotiParty. |
+
+Meer oplossingen in [docs/hulp](docs/hulp/problemen-oplossen.md).
 
 ---
 
 ## 🔒 Privacy
 
-- **Geen eigen server.** Er is geen account, geen statistieken en geen tracking.
-- **Je gegevens blijven op je apparaat.** Je Spotify-login, de Jam-link en je instellingen staan alleen op het
-  apparaat zelf: de tv, of de browser van je PC.
-- **Spotify:** SpotiParty vraagt alleen de leesrechten *user-read-playback-state* en *user-read-currently-playing*.
-- **lrclib.net:** krijgt alleen de artiest, de titel, het album en de lengte van het nummer, om de songtekst op te
+- **Geen eigen server in de cloud.** Er is geen account, geen statistieken en geen tracking. De Hub draait op je eigen
+  pc of Pi, alleen in je eigen netwerk.
+- **Je gegevens blijven thuis.** Je Spotify-login staat alleen in de Hub (Windows: `%LOCALAPPDATA%\SpotiParty`, Pi:
+  `/var/lib/spotiparty`). De schermen hebben geen eigen Spotify-login.
+- **Spotify:** de Hub vraagt de rechten *user-read-playback-state* en *user-read-currently-playing* (wat er speelt en
+  wat erna komt) en *user-modify-playback-state*, zodat jij vanuit het dashboard kunt bedienen, de pauze de muziek kan
+  stilzetten en de Skip-stemmen een nummer kunnen overslaan. Inloggen gaat met PKCE, zonder geheime sleutel.
+- **De quiz** onthoudt namen en scores alleen in het geheugen van de Hub, tot je ze wist of de Hub stopt.
+- **lrclib.net** krijgt alleen de artiest, de titel, het album en de lengte van het nummer, om de songtekst op te
   zoeken.
-- **De telefoonpagina van de tv:** draait alleen in je eigen netwerk, en alleen zolang SpotiParty open is.
+- **Updates:** de Windows-app vraagt bij GitHub op wat de nieuwste release is, en downloadt die daar.
+- **Koppeling intrekken:** ga naar [spotify.com/account/apps](https://www.spotify.com/account/apps/) en kies bij je
+  SpotiParty-app **Toegang verwijderen**, of klik in het dashboard op **Spotify ontkoppelen**.
+
+---
+
+## 🧑‍💻 Voor ontwikkelaars
+
+| Map | Wat erin zit |
+|---|---|
+| `web/` | Het feestscherm (HTML/JS), plus `serve.py` |
+| `hub/` | De Hub: `spotiparty_hub.py`, het dashboard, de gastenpagina, Spotify en de feestspellen |
+| `desktop/` | De desktop-app, de auto-updater, de Windows-installer en de Mac-buildscript |
+| `android/` | De Android TV-apps `party-mode` en `lyrics` |
+| `pi/` | Het installatiescript voor de Raspberry Pi |
+| `tools/build_ha.py` | Maakt `dist/spotiparty-card.js` voor Home Assistant |
+| `docs/` | De volledige handleiding (GitBook) |
+
+Een release maak je door een tag als `v2.7.0` te pushen: de workflow **Desktop apps** bouwt dan de Windows-setup en
+zet die bij de release. Zet ook `dist/spotiparty-card.js` erbij (na `python tools/build_ha.py`): HACS installeert de
+bijlagen van een release. Zie [docs/ontwikkelaars](docs/ontwikkelaars/release-maken.md).
 
 ---
 
