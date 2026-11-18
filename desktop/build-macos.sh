@@ -51,6 +51,17 @@ echo "→ SpotiParty.app ($ARCH)"
   "$ROOT/desktop/spotiparty_app.py" > "$WORK/pyinstaller.log" 2>&1 \
   || { tail -30 "$WORK/pyinstaller.log"; exit 1; }
 
+# The version from desktop/sp_version.py in the bundle, so Finder's "Get Info" shows it (PyInstaller says 0.0.0).
+VERSION="$(sed -n 's/^VERSION = "\(.*\)"/\1/p' "$ROOT/desktop/sp_version.py")"
+if [ -n "$VERSION" ]; then
+  PLIST="$OUT/SpotiParty.app/Contents/Info.plist"
+  for KEY in CFBundleShortVersionString CFBundleVersion; do
+    /usr/libexec/PlistBuddy -c "Set :$KEY $VERSION" "$PLIST" 2>/dev/null \
+      || /usr/libexec/PlistBuddy -c "Add :$KEY string $VERSION" "$PLIST"
+  done
+  echo "→ Versie $VERSION"
+fi
+
 # Ad-hoc signature over the whole bundle: macOS then remembers "allow incoming connections" (the Hub on :8770)
 # instead of asking at every start. Not an Apple Developer ID: the first start still needs "Open anyway".
 codesign --force --deep --sign - "$OUT/SpotiParty.app"
