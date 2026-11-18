@@ -12,7 +12,7 @@ icon: party-horn
 Alles bestuur je vanuit één plek: de [**SpotiParty Hub**](hub/hub-dashboard.md).
 
 {% hint style="success" %}
-**Nieuwste versie: 2.7.0.** De Windows-app werkt zichzelf nu bij. Kom je van 2.6.0 of ouder? Installeer [`SpotiParty-Setup-2.7.0.exe`](https://github.com/CodeAura/SpotiParty/releases/download/v2.7.0/SpotiParty-Setup-2.7.0.exe) dan één keer met de hand. Alle versies staan bij [Releases](https://github.com/CodeAura/SpotiParty/releases).
+**Nieuwste versie: 2.7.1.** Nu werkt ook de Mac-app zichzelf bij, net als de Windows-app. Installeer [`SpotiParty-macos-apple-silicon.dmg`](https://github.com/CodeAura/SpotiParty/releases/download/v2.7.1/SpotiParty-macos-apple-silicon.dmg) op de Mac één keer met de hand. Kom je op Windows van 2.6.0 of ouder, installeer dan [`SpotiParty-Setup-2.7.1.exe`](https://github.com/CodeAura/SpotiParty/releases/download/v2.7.1/SpotiParty-Setup-2.7.1.exe) één keer met de hand. Alle versies staan bij [Releases](https://github.com/CodeAura/SpotiParty/releases).
 {% endhint %}
 
 ![SpotiParty: de hoes van het nummer, de songtekst en de Jam-QR-code](.gitbook/assets/web-wide.jpg)

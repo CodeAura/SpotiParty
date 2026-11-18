@@ -19,9 +19,11 @@ Voor je **Android TV**, je **PC**, een **Raspberry Pi** en je **Home Assistant**
 ---
 
 > [!TIP]
-> **Nieuw in [2.7.0](../../releases/tag/v2.7.0): de Windows-app werkt zichzelf bij.** Kom je van 2.6.0 of ouder?
-> Installeer [`SpotiParty-Setup-2.7.0.exe`](../../releases/download/v2.7.0/SpotiParty-Setup-2.7.0.exe) dan één keer
-> met de hand; daarna gaan updates vanzelf. Zie [Wat is er nieuw](#-wat-is-er-nieuw).
+> **Nieuw in [2.7.1](../../releases/tag/v2.7.1): ook de Mac-app werkt zichzelf bij.** Op Windows gaat dat al sinds 2.7.0.
+> Op de Mac installeer je [`SpotiParty-macos-apple-silicon.dmg`](../../releases/download/v2.7.1/SpotiParty-macos-apple-silicon.dmg)
+> één keer met de hand; op Windows alleen als je van 2.6.0 of ouder komt
+> ([`SpotiParty-Setup-2.7.1.exe`](../../releases/download/v2.7.1/SpotiParty-Setup-2.7.1.exe)). Daarna gaan updates vanzelf.
+> Zie [Wat is er nieuw](#-wat-is-er-nieuw).
 
 **Home Assistant?** [![Open je Home Assistant en voeg SpotiParty toe aan HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=CodeAura&repository=SpotiParty&category=plugin)
 
@@ -65,7 +67,8 @@ al je schermen tegelijk.
 
 | Versie | Wat er veranderde |
 |---|---|
-| **[2.7.0](../../releases/tag/v2.7.0)** (nieuwste) | **Automatische updates op Windows.** SpotiParty kijkt bij het starten en daarna elke 6 uur of er een nieuwe versie is, downloadt die op de achtergrond en installeert hem bij de volgende start, of meteen met **Nu bijwerken**. Je instellingen blijven bewaard. Het versienummer staat in de titel van het SpotiParty-venster. |
+| **[2.7.1](../../releases/tag/v2.7.1)** (nieuwste) | **Ook de Mac-app werkt zichzelf bij**, net als op Windows: downloaden op de achtergrond, installeren bij de volgende start of met **Nu bijwerken**. De Mac-app (Apple silicon) staat vanaf nu bij elke release. |
+| [2.7.0](../../releases/tag/v2.7.0) | **Automatische updates op Windows.** SpotiParty kijkt bij het starten en daarna elke 6 uur of er een nieuwe versie is, downloadt die op de achtergrond en installeert hem bij de volgende start, of meteen met **Nu bijwerken**. Je instellingen blijven bewaard. Het versienummer staat in de titel van het SpotiParty-venster. |
 | [2.6.0](../../releases/tag/v2.6.0) | **Feestspellen:** komende nummers op het scherm, 👎 stemmen om over te slaan, 🎤 *Raad het nummer* en de gastenpagina op `http://<hub>:8770/gast`. |
 | [2.5.1](../../releases/tag/v2.5.1) | Kan een scherm de Hub niet bereiken, dan staat er bovenin een rode melding **⚠️ Hub niet verbonden**, met de reden erbij. |
 | [2.5.0](../../releases/tag/v2.5.0) | Spotify koppel je **alleen nog in de Hub**. Alle schermen tonen het nummer van dat account; de schermen hebben geen eigen Spotify-login meer. |
@@ -205,7 +208,7 @@ Van 2.6.0 of ouder naar 2.7.0 moet je één keer met de hand de nieuwe setup dra
 ### Mac en Linux
 
 Voor een **Mac met Apple silicon** staat `SpotiParty-macos-apple-silicon.dmg` bij de nieuwste release: open hem en sleep
-**SpotiParty** naar **Apps**. Vanaf de versie na 2.7.0 werkt ook de Mac-app zichzelf bij. Op een Intel-Mac en op Linux
+**SpotiParty** naar **Apps**. Vanaf 2.7.1 werkt ook de Mac-app zichzelf bij. Op een Intel-Mac en op Linux
 start je SpotiParty met Python (hieronder), of je bouwt de Mac-app zelf met `./desktop/build-macos.sh`
 (zie [desktop/README.md](desktop/README.md)).
 

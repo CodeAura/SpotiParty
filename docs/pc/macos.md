@@ -75,7 +75,7 @@ In `~/Library/Application Support/SpotiParty`.
 
 ## Updaten en verwijderen
 
-* **Updaten gaat vanzelf** (vanaf de versie na 2.7.0): SpotiParty kijkt bij het starten en daarna elke 6 uur of er een nieuwe versie op GitHub staat, en downloadt die op de achtergrond. In het venster van SpotiParty staat dan **Versie … staat klaar**. De update wordt geïnstalleerd bij de volgende start, of meteen met **Nu bijwerken** (de muziek op de schermen stopt dan even). SpotiParty controleert eerst de handtekening en het versienummer; klopt er iets niet, dan blijft je huidige versie staan. Je instellingen blijven bewaard.
+* **Updaten gaat vanzelf** (vanaf 2.7.1): SpotiParty kijkt bij het starten en daarna elke 6 uur of er een nieuwe versie op GitHub staat, en downloadt die op de achtergrond. In het venster van SpotiParty staat dan **Versie … staat klaar**. De update wordt geïnstalleerd bij de volgende start, of meteen met **Nu bijwerken** (de muziek op de schermen stopt dan even). SpotiParty controleert eerst de handtekening en het versienummer; klopt er iets niet, dan blijft je huidige versie staan. Je instellingen blijven bewaard.
   * Dat werkt alleen als SpotiParty in **Apps** staat (of een andere map waarin je mag schrijven). Start je hem rechtstreeks vanaf de `.dmg` of uit **Downloads**, dan wordt hij niet bijgewerkt.
   * Gebruik je **2.7.0 of ouder**, sleep de nieuwe versie dan één keer met de hand naar **Apps** (kies **Vervang**). Daarna gaan updates vanzelf.
   * Na een update kan macOS opnieuw vragen of SpotiParty inkomende verbindingen mag accepteren: kies **Sta toe**.
