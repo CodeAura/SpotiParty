@@ -9,7 +9,7 @@ Op de PC is SpotiParty twee dingen tegelijk: een **feestscherm** en de [**SpotiP
 
 ## Kies hoe je start
 
-<table data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>🪟 Windows-app</strong></td><td>Installer, met automatische updates. Geen beheerdersrechten nodig.</td><td><a href="windows.md">windows.md</a></td></tr><tr><td><strong>🍎 Mac</strong></td><td>Met Python, of de app zelf bouwen.</td><td><a href="macos.md">macos.md</a></td></tr><tr><td><strong>🐍 Met Python</strong></td><td>Werkt overal waar Python 3 draait, ook op Linux. Geen installatie.</td><td><a href="python.md">python.md</a></td></tr></tbody></table>
+<table data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th></tr></thead><tbody><tr><td><strong>🪟 Windows-app</strong></td><td>Installer, met automatische updates. Geen beheerdersrechten nodig.</td><td><a href="windows.md">windows.md</a></td></tr><tr><td><strong>🍎 Mac</strong></td><td>App voor Apple silicon, met automatische updates.</td><td><a href="macos.md">macos.md</a></td></tr><tr><td><strong>🐍 Met Python</strong></td><td>Werkt overal waar Python 3 draait, ook op Linux. Geen installatie.</td><td><a href="python.md">python.md</a></td></tr></tbody></table>
 
 ## Wat heb je nodig?
 

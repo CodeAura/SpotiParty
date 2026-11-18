@@ -5,13 +5,10 @@ icon: apple
 
 # macOS
 
-{% hint style="warning" %}
-**Release 2.7.0 bevat geen Mac-app.** Op de Mac heb je twee mogelijkheden:
+De Mac-app staat bij de [nieuwste release](https://github.com/CodeAura/SpotiParty/releases/latest) als `.dmg`. Hij werkt zichzelf bij, net als de Windows-app (zie [Updaten en verwijderen](#updaten-en-verwijderen)).
 
-* **Starten met Python**, zonder iets te bouwen: `python3 desktop/spotiparty_app.py`. Zie [Starten met Python](python.md).
-* **De app zelf bouwen** met `./desktop/build-macos.sh`. Zie [Desktop-app zelf bouwen](../ontwikkelaars/desktop-app-bouwen.md).
-
-Automatische updates werken alleen op Windows. De rest van deze pagina gaat over een `.dmg` die je zelf bouwde of van een oudere release hebt.
+{% hint style="info" %}
+Er is nu alleen een versie voor **Apple silicon**. Heb je een Mac met Intel, start SpotiParty dan [met Python](python.md) of [bouw de app zelf](../ontwikkelaars/desktop-app-bouwen.md) op die Mac.
 {% endhint %}
 
 Er zijn twee versies voor de Mac. Kies de versie die bij je processor past.
@@ -78,5 +75,8 @@ In `~/Library/Application Support/SpotiParty`.
 
 ## Updaten en verwijderen
 
-* **Updaten:** bouw of download de nieuwe `.dmg` en sleep SpotiParty opnieuw naar **Apps**. Kies **Vervang**. Je instellingen blijven bewaard.
+* **Updaten gaat vanzelf** (vanaf de versie na 2.7.0): SpotiParty kijkt bij het starten en daarna elke 6 uur of er een nieuwe versie op GitHub staat, en downloadt die op de achtergrond. In het venster van SpotiParty staat dan **Versie … staat klaar**. De update wordt geïnstalleerd bij de volgende start, of meteen met **Nu bijwerken** (de muziek op de schermen stopt dan even). SpotiParty controleert eerst de handtekening en het versienummer; klopt er iets niet, dan blijft je huidige versie staan. Je instellingen blijven bewaard.
+  * Dat werkt alleen als SpotiParty in **Apps** staat (of een andere map waarin je mag schrijven). Start je hem rechtstreeks vanaf de `.dmg` of uit **Downloads**, dan wordt hij niet bijgewerkt.
+  * Gebruik je **2.7.0 of ouder**, sleep de nieuwe versie dan één keer met de hand naar **Apps** (kies **Vervang**). Daarna gaan updates vanzelf.
+  * Na een update kan macOS opnieuw vragen of SpotiParty inkomende verbindingen mag accepteren: kies **Sta toe**.
 * **Verwijderen:** sleep **SpotiParty** uit **Apps** naar de prullenmand. Wil je ook je instellingen en Spotify-login kwijt, verwijder dan de map `~/Library/Application Support/SpotiParty` (in Finder: **Ga → Ga naar map…**).

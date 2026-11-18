@@ -27,7 +27,7 @@ SpotiParty/
 ├── pi/               Raspberry Pi: install.sh en kiosk.sh
 ├── desktop/
 │   ├── spotiparty_app.py   De desktop-app (scherm + Hub + venster)
-│   ├── sp_update.py        Auto-updater: nieuwste GitHub-release (Windows)
+│   ├── sp_update.py        Auto-updater: nieuwste GitHub-release (Windows en Mac)
 │   ├── sp_version.py       Versie van deze build
 │   ├── build-windows.ps1   Bouwt de .exe en de installer
 │   ├── build-macos.sh      Bouwt de .app en de .dmg

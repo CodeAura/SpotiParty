@@ -204,8 +204,10 @@ Van 2.6.0 of ouder naar 2.7.0 moet je één keer met de hand de nieuwe setup dra
 
 ### Mac en Linux
 
-Release 2.7.0 bevat geen Mac-app. Op de Mac en op Linux start je SpotiParty met Python (hieronder), of je bouwt de
-Mac-app zelf met `./desktop/build-macos.sh` (zie [desktop/README.md](desktop/README.md)).
+Voor een **Mac met Apple silicon** staat `SpotiParty-macos-apple-silicon.dmg` bij de nieuwste release: open hem en sleep
+**SpotiParty** naar **Apps**. Vanaf de versie na 2.7.0 werkt ook de Mac-app zichzelf bij. Op een Intel-Mac en op Linux
+start je SpotiParty met Python (hieronder), of je bouwt de Mac-app zelf met `./desktop/build-macos.sh`
+(zie [desktop/README.md](desktop/README.md)).
 
 ### Starten met Python
 

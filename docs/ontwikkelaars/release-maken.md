@@ -11,6 +11,7 @@ Een release op GitHub is voor drie dingen tegelijk de bron:
 | --------------------------- | ------------------------------------------ |
 | Mensen die downloaden       | `SpotiParty-Setup-<versie>.exe`            |
 | De **auto-updater** (Windows, vanaf 2.7.0) | `SpotiParty-Setup-<versie>.exe`, met precies die naam |
+| De **auto-updater** (Mac, vanaf de versie na 2.7.0) | `SpotiParty-macos-apple-silicon.dmg` en `SpotiParty-macos-intel.dmg`, met precies die naam |
 | **HACS** (Home Assistant)   | `spotiparty-card.js` als bijlage           |
 
 De nieuwste release is nu [**v2.7.0**](https://github.com/CodeAura/SpotiParty/releases/tag/v2.7.0), met `SpotiParty-Setup-2.7.0.exe` en `spotiparty-card.js`.
@@ -37,6 +38,18 @@ Het script schrijft het versienummer in `desktop/sp_version.py`, bouwt `SpotiPar
 {% endstep %}
 
 {% step %}
+### Bouw de Mac-app
+
+Op een Mac met Apple silicon, **nadat** `desktop/sp_version.py` het nieuwe nummer heeft:
+
+```bash
+./desktop/build-macos.sh
+```
+
+Resultaat: `desktop/dist/SpotiParty-macos-apple-silicon.dmg`. Het script zet het versienummer in de app; de Mac-updater installeert de `.dmg` alleen als dat nummer **precies** gelijk is aan de tag. Op een Intel-Mac maak je zo `SpotiParty-macos-intel.dmg`.
+{% endstep %}
+
+{% step %}
 ### Bouw de Home Assistant-kaart
 
 Na een wijziging in `web/`:
@@ -51,13 +64,14 @@ Dat maakt `dist/spotiparty-card.js`, met het hele scherm erin. Commit die ook.
 {% step %}
 ### Maak de release
 
-Maak op GitHub een release met tag `v2.7.1` en zet **beide** bestanden erbij als bijlage: `SpotiParty-Setup-2.7.1.exe` en `spotiparty-card.js`. Schrijf de releasenotes in het Nederlands, zoals de eerdere releases.
+Maak op GitHub een release met tag `v2.7.1` en zet de bestanden erbij als bijlage: `SpotiParty-Setup-2.7.1.exe`, `SpotiParty-macos-apple-silicon.dmg` en `spotiparty-card.js`. Schrijf de releasenotes in het Nederlands, zoals de eerdere releases.
 {% endstep %}
 {% endstepper %}
 
 {% hint style="warning" %}
 * Mist `spotiparty-card.js`, dan meldt HACS _"The installed content has no spotiparty-card.js"_.
 * Heet de setup anders dan `SpotiParty-Setup-<versie>.exe`, of is de versie niet hoger, dan ziet de auto-updater hem niet.
+* Heet de `.dmg` anders, of klopt het versienummer in de Mac-app niet met de tag, dan laat de Mac-updater hem staan.
 {% endhint %}
 
 ## Bouwen met GitHub Actions
@@ -90,7 +104,7 @@ flowchart LR
     W --> R[GitHub Release]
     M --> R
     C[spotiparty-card.js] --> R
-    R --> U[Auto-updater<br/>Windows-apps]
+    R --> U[Auto-updater<br/>Windows- en Mac-apps]
     R --> H[HACS]
 ```
 
