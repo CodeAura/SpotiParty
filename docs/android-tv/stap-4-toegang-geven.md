@@ -10,7 +10,7 @@ SpotiParty moet kunnen zien welk nummer er op de tv speelt. Android regelt dat v
 | Instelling                                  |             | Waarvoor                                                |
 | ------------------------------------------- | ----------- | ------------------------------------------------------- |
 | **Meldingstoegang** → SpotiParty            | ✅ verplicht | Zien welk nummer er speelt                              |
-| **Weergeven vóór andere apps** → SpotiParty | ⭕ optioneel | SpotiParty opent vanzelf zodra Spotify begint te spelen |
+| **Weergeven vóór andere apps** → SpotiParty | ⭕ optioneel | SpotiParty mag vanzelf openen zodra Spotify begint te spelen (zet je aan op de telefoonpagina, standaard uit) |
 
 Je kunt dit op twee manieren instellen.
 
@@ -50,4 +50,4 @@ Beide commando's geven geen uitvoer als ze lukken.
 Ben je klaar met installeren? Zet **USB-foutopsporing** of **Netwerkfoutopsporing** weer uit in **Instellingen → Systeem → Ontwikkelaarsopties**. Zolang het aan staat, kan elk apparaat in je netwerk vragen om de tv te bedienen. Wil je later updaten, dan zet je het gewoon even weer aan.
 {% endhint %}
 
-Volgende: [Stap 5: Openen en Jam koppelen](stap-5-jam-koppelen.md).
+Volgende: [Stap 5: Openen en verbinden met de Hub](stap-5-jam-koppelen.md).

@@ -43,17 +43,15 @@ Tik op **Uitnodigen → Link kopiëren**. Je krijgt een link die begint met `htt
 {% step %}
 ### Plak de link in SpotiParty
 
-Waar je de link plakt, hangt af van je versie:
+Plak de link in het [Hub-dashboard](../hub/hub-dashboard.md) bij **🎶 Spotify Jam** en klik **Op alle schermen**. Alle schermen (tv's, pc, Raspberry Pi en Home Assistant) tonen dan dezelfde QR-code.
 
-* **Android TV:** scan de code **Jam instellen** op de tv met je telefoon en plak de link daar. Zie [Stap 5: Openen en Jam koppelen](../android-tv/stap-5-jam-koppelen.md).
-* **PC:** in het instellingenscherm (toets **S** of ⚙). Zie Instellen op de PC.
-* **Home Assistant:** klik in de kaart en druk op **S**, of klik op ⚙.
+Zonder Hub kan het ook per scherm: op de pc of in Home Assistant via **S** of ⚙, op de tv via **Menu** en de telefoonpagina (zie [Stap 5](../android-tv/stap-5-jam-koppelen.md)).
 {% endstep %}
 {% endstepper %}
 
 ## Als de Jam stopt
 
-Stopt de Jam, dan werkt de oude link niet meer. De QR-code op het scherm leidt dan naar een verlopen uitnodiging. Start een nieuwe Jam en plak de nieuwe link. Op de tv haal je de oude code eerst weg met **↻ Nieuwe Jam** (twee keer OK).
+Stopt de Jam, dan werkt de oude link niet meer. De QR-code op het scherm leidt dan naar een verlopen uitnodiging. Start een nieuwe Jam en plak de nieuwe link in het dashboard; met **Weghalen** haal je de oude code van alle schermen.
 
 ## Wat kunnen gasten wel en niet?
 
@@ -61,3 +59,5 @@ Stopt de Jam, dan werkt de oude link niet meer. De QR-code op het scherm leidt d
 | ------------------------------------------- | --------------------------------------------------- |
 | Nummers zoeken en toevoegen aan de wachtrij | Pauzeren of overslaan                               |
 | De wachtrij bekijken                        | Het volume veranderen                               |
+
+Wil je gasten tóch laten overslaan, maar alleen als genoeg mensen het willen? Zet dan de [👎 Skip-stemmen](../hub/feestspellen.md) aan.

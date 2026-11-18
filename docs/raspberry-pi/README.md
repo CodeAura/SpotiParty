@@ -33,7 +33,13 @@ Na de herstart opent SpotiParty vanzelf. Het script toont het adres en de PIN va
 
 ## Instellen
 
-Sluit één keer een toetsenbord en muis aan en druk op **S**. Koppel daar je Spotify-account (de Redirect URI is hetzelfde als op de PC: `http://127.0.0.1:8769/index.html`) of kies **Home Assistant**, en plak je Jam-link. De Pi onthoudt alles, ook na een herstart.
+Is de Pi de Hub, open dan het dashboard op `http://<adres-van-de-pi>:8770` (het adres en de PIN toont het script) en koppel daar je Spotify-account en je Jam-link, zie [Hub en admin-dashboard](../hub/hub-dashboard.md).
+
+{% hint style="info" %}
+Spotify inloggen gaat via `http://127.0.0.1:8770/spotify/callback`. Log je in vanaf je telefoon of een andere computer, dan opent dat adres daarna niet: kopieer het hele adres uit de adresbalk en plak het in het dashboard. Zie [Je eigen Spotify-app maken](../aan-de-slag/spotify-app.md).
+{% endhint %}
+
+Op het scherm zelf hoef je meestal niets in te stellen. Wil je een Home Assistant-speler volgen, sluit dan één keer een toetsenbord aan en druk op **S**. De Pi onthoudt alles, ook na een herstart.
 
 ## Wat het script neerzet
 
@@ -44,4 +50,4 @@ Sluit één keer een toetsenbord en muis aan en druk op **S**. Koppel daar je Sp
 | Hub (dashboard op `:8770`) | dienst `spotiparty-hub`, instellingen in `/var/lib/spotiparty` |
 | Chromium op volledig scherm | `~/.config/autostart/spotiparty.desktop` |
 
-Bijwerken: haal de nieuwe SpotiParty-map op en draai `sudo ./pi/install.sh` opnieuw. Je instellingen blijven bewaard.
+Bijwerken: haal de nieuwe versie op (`git pull` in de SpotiParty-map) en draai `sudo ./pi/install.sh` opnieuw. Je instellingen blijven bewaard.

@@ -9,12 +9,11 @@ SpotiParty draait op **Windows 10 en 11** (64-bit). Je kiest tussen een installe
 
 ## Downloaden
 
-Open de nieuwste [**Release**](https://github.com/CodeAura/SpotiParty/releases/latest) en download het bestand dat bij je past:
+Open de nieuwste [**Release**](https://github.com/CodeAura/SpotiParty/releases/latest) en download **`SpotiParty-Setup-<versie>.exe`**. Bij versie 2.7.0 is dat [`SpotiParty-Setup-2.7.0.exe`](https://github.com/CodeAura/SpotiParty/releases/download/v2.7.0/SpotiParty-Setup-2.7.0.exe).
 
-| Bestand                         | Wanneer kies je dit?                                                                  |
-| ------------------------------- | ------------------------------------------------------------------------------------- |
-| `SpotiParty-Setup-<versie>.exe` | **Aanbevolen.** Installeert SpotiParty netjes met een snelkoppeling in het Startmenu. |
-| `SpotiParty.exe`                | Zonder installatie. Handig op een USB-stick of als je niets wilt installeren.         |
+{% hint style="info" %}
+Alleen een met de installer geïnstalleerde SpotiParty werkt zichzelf bij. Een losse `SpotiParty.exe` (bij oudere releases, of zelf gebouwd) moet je met de hand vervangen.
+{% endhint %}
 
 ## Installeren met de installer
 
@@ -46,14 +45,14 @@ Laat aan het eind **SpotiParty starten** aangevinkt, of start hem later uit het 
 {% endstep %}
 {% endstepper %}
 
-## Zonder installatie
-
-Dubbelklik op `SpotiParty.exe`. Ook hier zie je de eerste keer de SmartScreen-melding: **Meer informatie → Toch uitvoeren**.
-
 ## Wat je ziet als SpotiParty draait
 
 * Een **eigen venster** zonder tabbladen of adresbalk met het feestscherm. Daarvoor gebruikt SpotiParty Edge, Chrome of Brave, met een eigen profiel dat los staat van je normale browser.
-* Een **klein venster** met de knoppen **Scherm openen** en **Stoppen**. Sluit je dat kleine venster, dan stopt SpotiParty.
+* Een **klein venster** met het versienummer in de titel, het adres en de **PIN** van het Hub-dashboard, en de knoppen **Scherm openen**, **Dashboard** en **Stoppen**. Sluit je dat kleine venster, dan stopt SpotiParty.
+
+{% hint style="warning" %}
+De eerste keer vraagt Windows of SpotiParty op het netwerk mag. Kies **Privénetwerken**, anders kunnen je tv, je telefoon en je gasten de Hub niet bereiken.
+{% endhint %}
 
 {% hint style="info" %}
 Start je SpotiParty een tweede keer terwijl hij al draait, dan opent hij alleen een extra scherm. Er draait nooit meer dan één SpotiParty tegelijk.
@@ -61,7 +60,7 @@ Start je SpotiParty een tweede keer terwijl hij al draait, dan opent hij alleen 
 
 ## Waar staan mijn gegevens?
 
-Je instellingen en je Spotify-login staan in `%LOCALAPPDATA%\SpotiParty`. Nergens anders.
+Je instellingen, de instellingen van de Hub en je Spotify-koppeling staan in `%LOCALAPPDATA%\SpotiParty`. Nergens anders. Een gedownloade update staat tijdelijk in `%LOCALAPPDATA%\SpotiParty\update`.
 
 ## Updaten en verwijderen
 

@@ -5,7 +5,7 @@ icon: box
 
 # Desktop-app zelf bouwen
 
-De kant-en-klare apps worden door GitHub Actions gebouwd (zie [Een release maken](release-maken.md)). Je kunt ze ook zelf bouwen.
+De Windows-setup bij een release bouw je met het script hieronder (zie [Een release maken](release-maken.md)). GitHub Actions kan ook bouwen, en de Mac-app bouw je zelf.
 
 ## De app bouwen
 
@@ -30,13 +30,13 @@ Eén commando in PowerShell, op een Windows-pc met **Python 3.10 of nieuwer (64-
 
 ```powershell
 winget install Python.Python.3.12 JRSoftware.InnoSetup
-powershell -ExecutionPolicy Bypass -File desktop\build-windows.ps1 -Version 2.4.0
+powershell -ExecutionPolicy Bypass -File desktop\build-windows.ps1 -Version 2.7.0
 ```
 
-Het script maakt een eigen bouwomgeving in `desktop\build\`, bouwt `SpotiParty.exe`, start hem één keer om te controleren of de pagina en de Hub antwoorden, en maakt de installer. Resultaat:
+Het script schrijft de versie in `desktop/sp_version.py` (de auto-updater vergelijkt ermee; zonder `-Version` stopt het script), maakt een eigen bouwomgeving in `desktop\build\`, bouwt `SpotiParty.exe`, start hem één keer om te controleren of de pagina en de Hub antwoorden, en maakt de installer. Resultaat:
 
 * `desktop\dist\SpotiParty.exe`
-* `desktop\dist\SpotiParty-Setup-2.4.0.exe`
+* `desktop\dist\SpotiParty-Setup-2.7.0.exe`
 
 Een Windows-VM op een Mac (bijvoorbeeld Parallels met Windows 11 op ARM) werkt ook. Gebruik daar een **x64**-Python (`py install 3.13-64`), zodat de `.exe` op gewone pc's draait.
 {% endtab %}
@@ -49,13 +49,17 @@ Een Windows-VM op een Mac (bijvoorbeeld Parallels met Windows 11 op ARM) werkt o
 * installeert alleen voor de huidige gebruiker, zonder beheerdersrechten;
 * zet SpotiParty in het Startmenu, en desgewenst op het bureaublad;
 * maakt een vermelding onder **Instellingen → Apps** om te verwijderen;
-* vraagt bij verwijderen of de instellingen en Spotify-login ook weg moeten (standaard: nee).
+* vraagt bij verwijderen of de instellingen en Spotify-koppeling ook weg moeten (standaard: nee).
+
+De auto-updater (`desktop/sp_update.py`) draait deze installer later stil opnieuw, met de nieuwe versie. Hij werkt alleen voor een SpotiParty die met de installer is geïnstalleerd (naast `unins000.exe`); een losse `.exe` of een start vanuit de broncode wordt nooit bijgewerkt.
+
+`build-windows.ps1` doet dit al. Met de hand:
 
 ```bat
-"%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe" /DAppVersion=1.0.0 desktop\installer.iss
+"%LOCALAPPDATA%\Programs\Inno Setup 6\ISCC.exe" /DAppVersion=2.7.0 desktop\installer.iss
 ```
 
-Resultaat: `desktop/dist/SpotiParty-Setup-1.0.0.exe`. Laat je `/DAppVersion` weg, dan wordt het versie 1.0.0.
+Resultaat: `desktop/dist/SpotiParty-Setup-2.7.0.exe`. Zorg dat `/DAppVersion` en `desktop/sp_version.py` hetzelfde versienummer hebben.
 
 ## Een .dmg maken (macOS)
 

@@ -1,58 +1,66 @@
 ---
-description: De Jam-link en eventueel je Spotify-account koppelen met je telefoon.
+description: SpotiParty openen, verbinden met de Hub en de Jam-link instellen.
 icon: qrcode
 ---
 
-# Stap 5: Openen en Jam koppelen
+# Stap 5: Openen en verbinden met de Hub
 
-De tv heeft geen handig toetsenbord, dus je stelt SpotiParty in met **je telefoon**. De tv toont een QR-code die naar een instelpagina op de tv zelf leidt.
+Met een [SpotiParty Hub](../hub/hub-dashboard.md) in huis hoef je op de tv bijna niets in te stellen: de tv zoekt de Hub zelf en krijgt daarvandaan de Jam-link, de komende nummers, meldingen, de pauze en de feestspellen.
 
 {% stepper %}
 {% step %}
 ### Open SpotiParty
 
-Start **SpotiParty** vanuit het app-overzicht van de tv en zet muziek aan in Spotify. Je ziet de hoes, de titel en (als Lyrics geïnstalleerd is) de songtekst.
+Start **SpotiParty** vanuit het app-overzicht van de tv en zet muziek aan. Je ziet de hoes, de titel en (als Lyrics geïnstalleerd is) de songtekst.
 {% endstep %}
 
 {% step %}
-### Scan de code Jam instellen
+### Controleer of de tv in het dashboard staat
 
-Rechtsonder staat de code **Jam instellen**. Scan die met de camera van je telefoon.
+Open het Hub-dashboard. Onder **📺 Schermen** verschijnt de tv vanzelf. Met **Naam** geef je hem een eigen naam, met **Aanwijzen** zie je op de tv welke het is.
+
+Staat de tv er niet bij? Sommige routers blokkeren het zoeken naar de Hub. Ga dan door met de volgende stap.
+{% endstep %}
+
+{% step %}
+### Alleen als het nodig is: de telefoonpagina
+
+Druk op **Menu** op de afstandsbediening. Rechtsonder verschijnt een code; scan die met de camera van je telefoon. Op de pagina die opent:
+
+* vul je onder **SpotiParty Hub** het adres van de Hub in, bijvoorbeeld `http://192.168.1.20:8770`, en geef je de tv een naam;
+* zet je **Vanzelf openen als Spotify start** aan of uit (standaard uit). Dit werkt alleen als je in [stap 4](stap-4-toegang-geven.md) _Weergeven vóór andere apps_ hebt toegestaan.
 
 {% hint style="warning" %}
-Je telefoon moet op **hetzelfde wifi-netwerk** zitten als de tv. De instelpagina draait op de tv zelf (poort 8768) en is alleen bereikbaar in je eigen netwerk, zolang SpotiParty open is.
+Je telefoon moet op **hetzelfde wifi-netwerk** zitten als de tv. De telefoonpagina draait op de tv zelf (poort 8768) en is alleen bereikbaar in je eigen netwerk, zolang SpotiParty open is.
 {% endhint %}
 {% endstep %}
 
 {% step %}
-### Plak je Jam-link
+### Zet de Jam-link in het dashboard
 
-Start een Jam in Spotify en kopieer de link (zie [Een Spotify Jam starten](../aan-de-slag/spotify-jam.md)). Plak de link op de pagina en tik op **Op de tv zetten**. Op de tv verschijnt nu de QR-code **Doe mee met de Jam**.
-{% endstep %}
-
-{% step %}
-### Optioneel: Spotify koppelen voor Hierna
-
-Op dezelfde telefoonpagina kun je je Spotify-account koppelen. Dan toont de tv onder het nummer ook **Hierna: …** uit je wachtrij.
-
-1. Zorg dat `http://127.0.0.1:8768/callback` als Redirect URI in je [Spotify-app](../aan-de-slag/spotify-app.md) staat.
-2. Vul je **Client ID** in en tik op **Spotify koppelen**.
-3. Log in bij Spotify en kies **Akkoord**.
-4. Je telefoon probeert daarna `127.0.0.1` te openen en dat **mislukt**. Dat hoort zo! Kopieer het **hele adres** uit de adresbalk en plak het op de instelpagina.
-{% endstep %}
-
-{% step %}
-### Optioneel: Vanzelf openen
-
-Op de telefoonpagina zet je **Vanzelf openen** aan of uit. Staat het aan (en heb je in [stap 4](stap-4-toegang-geven.md) _Weergeven vóór andere apps_ toegestaan), dan springt SpotiParty vanzelf open zodra Spotify begint te spelen.
+Start een Jam in Spotify (zie [Een Spotify Jam starten](../aan-de-slag/spotify-jam.md)), plak de link in het dashboard bij **🎶 Spotify Jam** en klik **Op alle schermen**. Op de tv verschijnt de QR-code **Doe mee met de Jam**.
 {% endstep %}
 {% endstepper %}
 
+## Wat de tv laat zien
+
+* Speelt je **Spotify-account** (gekoppeld in de Hub), dan toont de tv dat nummer, met de komende nummers.
+* Anders toont de tv wat er **op de tv zelf** speelt, in Spotify of een andere app met een mediaspeler.
+* Speelt er niets en is er nog geen account gekoppeld, dan staat er _Koppel je Spotify aan de Hub_.
+
+{% hint style="info" %}
+De tv heeft sinds versie 2.5.0 **geen eigen Spotify-login** meer. Een oude koppeling op de tv wordt vergeten; Spotify koppel je in het [Hub-dashboard](../aan-de-slag/spotify-app.md).
+{% endhint %}
+
+## Zonder Hub
+
+Heb je (nog) geen Hub, dan zet je de Jam-link via de telefoonpagina: druk op **Menu**, scan de code, plak de link en tik op **Op de tv zetten**. Heeft de tv eenmaal een Hub gezien, dan komt de Jam-link alleen nog uit het dashboard.
+
 ## Bediening met de afstandsbediening
 
-| Knop                            | Wat het doet                                                                   |
-| ------------------------------- | ------------------------------------------------------------------------------ |
-| **Menu**                        | De instelcode (**Jam instellen**) terughalen, bijvoorbeeld voor een nieuwe Jam |
-| **↻ Nieuwe Jam** (twee keer OK) | De oude Jam-code weghalen, zodat je een nieuwe kunt koppelen                   |
+| Knop                            | Wat het doet                                                                     |
+| ------------------------------- | -------------------------------------------------------------------------------- |
+| **Menu**                        | De code voor de telefoonpagina terughalen                                        |
+| **↻ Nieuwe Jam** (twee keer OK) | Een Jam-link weghalen die je met de telefoon zette (die uit het dashboard haal je daar weg met **Weghalen**) |
 
 🎉 Klaar! Je tv is nu een feestscherm.

@@ -18,7 +18,7 @@ cd ../lyrics && ./gradlew assembleRelease
 cd ../..
 ```
 
-3. Installeer over de oude versie heen. Je instellingen (Jam-link, Spotify-koppeling) blijven bewaard:
+3. Installeer over de oude versie heen. Je instellingen (naam, Hub-adres, Jam-link) blijven bewaard:
 
 ```bash
 adb connect 192.168.1.50
@@ -29,7 +29,7 @@ adb install -r android/lyrics/app/build/outputs/apk/release/app-release.apk
 4. Zet foutopsporing weer uit.
 
 {% hint style="warning" %}
-**Andere PC?** Bouw je op een andere PC dan de eerste keer, dan heeft de nieuwe versie een andere sleutel. Android weigert dan de update met `INSTALL_FAILED_UPDATE_INCOMPATIBLE`. Verwijder in dat geval eerst **beide** apps (zie hieronder) en installeer ze opnieuw. Je moet daarna ook de toegang uit [stap 4](stap-4-toegang-geven.md) en de Jam-link opnieuw instellen.
+**Andere PC?** Bouw je op een andere PC dan de eerste keer, dan heeft de nieuwe versie een andere sleutel. Android weigert dan de update met `INSTALL_FAILED_UPDATE_INCOMPATIBLE`. Verwijder in dat geval eerst **beide** apps (zie hieronder) en installeer ze opnieuw. Je moet daarna ook de toegang uit [stap 4](stap-4-toegang-geven.md) opnieuw instellen. De tv vindt de Hub daarna vanzelf weer.
 {% endhint %}
 
 ## Verwijderen

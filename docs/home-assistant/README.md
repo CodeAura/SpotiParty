@@ -11,7 +11,7 @@ In Home Assistant wordt SpotiParty een kaart in je dashboard: als gewone kaart, 
 
 * Een werkende **Home Assistant**, die je thuis opent via `http://` (bijvoorbeeld `http://homeassistant.local:8123`).
 * **[HACS](https://hacs.xyz)**: dan installeer je SpotiParty in één klik en krijg je updates vanzelf. Zonder HACS kan het ook, met één bestand.
-* De **SpotiParty Hub** op een pc in je netwerk (de [Windows- of Mac-app](../pc/)). Spotify koppel je één keer in het dashboard van de Hub; de kaart zelf heeft geen Spotify-login nodig.
+* De **SpotiParty Hub** op een pc in je netwerk (de [Windows-app](../pc/windows.md) of een [Raspberry Pi](../raspberry-pi/README.md)). Spotify koppel je één keer in het dashboard van de Hub; de kaart zelf heeft geen Spotify-login nodig.
 
 Een token of een eigen Spotify-app is voor de kaart **niet** nodig: hij leest de spelers uit je eigen dashboard.
 
