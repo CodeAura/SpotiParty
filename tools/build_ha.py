@@ -18,7 +18,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 WEB = ROOT / "web"
 DIST = ROOT / "dist"
 ZIP = ROOT / "desktop" / "dist" / "spotiparty-homeassistant.zip"
-SCRIPTS = ["qr.js", "party.js", "hub.js"]
+SCRIPTS = ["icons.js", "qr.js", "party.js", "hub.js"]
 MARK = "/*SPOTIPARTY_SRCDOC*/null"
 
 

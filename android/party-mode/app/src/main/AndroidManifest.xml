@@ -4,21 +4,14 @@
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
-    <!-- The page the host's phone opens to set the Jam link, served on the home network only while SpotiParty is open. -->
+    <!-- The screen comes from the SpotiParty Hub: the TV finds it with a UDP broadcast and loads
+         http://hub:8770/scherm/ over plain http on the home network (hence usesCleartextTraffic below; the lyrics
+         from lrclib.net stay on https). -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- The TV's address, for that page's QR code. -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <!-- SpotiParty Hub (Pro): the TV finds the hub with a UDP broadcast and asks it over plain http on the home
-         network (hence usesCleartextTraffic below; Spotify and lrclib stay on https). -->
-    <!-- Reads the Lyrics add-on (signature permission, granted when both are signed with the same key). -->
-    <uses-permission android:name="io.github.cleanyourtv.permission.HOME_WIDGETS" />
     <!-- Opening itself when Spotify starts: Android only lets a background app start a screen with this
          ("Display over other apps"). SpotiParty draws nothing over other apps. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-
-    <queries>
-        <provider android:authorities="io.github.cleanyourtv.lyrics.widget" />
-    </queries>
 
     <application
         android:allowBackup="false"
@@ -31,7 +24,8 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:launchMode="singleTask">
+            android:launchMode="singleTask"
+            android:configChanges="orientation|screenSize|screenLayout|keyboard|keyboardHidden|navigation|uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />

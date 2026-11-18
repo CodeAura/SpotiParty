@@ -13,12 +13,12 @@ De **SpotiParty Hub** is het hart van SpotiParty. Hij draait op je pc of Raspber
 | **Muziek bedienen**              | Vorige, afspelen/pauze, volgende en het volume, op welk apparaat je account ook speelt.                                       |
 | **Jam-link**                     | Eén keer plakken, dezelfde QR-code op alle schermen.                                                                          |
 | **Schermen**                     | Welke schermen online zijn en wat ze tonen; geef ze een naam of laat er een oplichten.                                         |
-| **Feestspellen**                 | Komende nummers, 👎 stemmen om over te slaan en 🎤 _Raad het nummer_. Zie [Feestspellen](feestspellen.md).                     |
-| **Meldingen**                    | Typ een bericht ("De pizza's zijn er! 🍕") en het verschijnt groot op de schermen die je kiest.                                |
+| **Feestspellen**                 | Komende nummers, stemmen om over te slaan en _Raad het nummer_. Zie [Feestspellen](feestspellen.md).                     |
+| **Meldingen**                    | Typ een bericht ("De pizza's zijn er!") en het verschijnt groot op de schermen die je kiest.                                |
 | **Korte pauze**                  | Een grote aftelklok; als je wilt pauzeert de Hub ook de muziek en zet hem na afloop weer aan.                                  |
 | **Gasten-wifi**                  | Een QR-code naast de Jam-code: gasten scannen en zijn verbonden met je gastennetwerk.                                         |
 | **Gastenpagina**                 | `http://<hub>:8770/gast`: Jam, Skip en de quiz op de telefoon van je gasten.                                                   |
 
-De Windows-app en de Raspberry Pi starten de Hub vanzelf. Kan een scherm de Hub niet bereiken, dan staat er bovenin een rode melding **⚠️ Hub niet verbonden**, met de reden erbij.
+De Windows- en Mac-app en de Raspberry Pi starten de Hub vanzelf. Liever op een server die altijd aan staat? Zie [Hub op een Linux-server](linux-server.md). Kan een scherm de Hub niet bereiken, dan staat er bovenin een rode melding **Hub niet verbonden**, met de reden erbij.
 
 Hoe je hem gebruikt, staat in [Hub en admin-dashboard](hub-dashboard.md).

@@ -1,0 +1,22 @@
+# The SpotiParty Hub with Docker Compose:
+#   cd server && docker compose up -d --build
+# Updating: git pull && docker compose up -d --build   (the settings stay in the volume)
+services:
+  hub:
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+    image: spotiparty-hub
+    container_name: spotiparty-hub
+    restart: unless-stopped
+    # Host networking: the hub sees your home network, so Android TV finds it (UDP broadcast on 8771) and the
+    # dashboard shows the right address. Linux only; on Docker Desktop (Mac/Windows) use the "ports" below instead.
+    network_mode: host
+    # ports:
+    #   - "8770:8770"
+    #   - "8771:8771/udp"
+    volumes:
+      - spotiparty-data:/data
+
+volumes:
+  spotiparty-data:

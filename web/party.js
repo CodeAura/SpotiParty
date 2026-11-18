@@ -44,22 +44,86 @@ function setNow(track) {
   $("song").classList.toggle("paused", !now.playing);
   if (now.art !== shownArt) showArt(now.art);
   if (now.key === shownKey) return;
+  const first = !shownKey;
   shownKey = now.key;
+  if (!first) swapAnim();
   $("title").textContent = now.title;
   $("artist").textContent = now.artist;
   loadLyrics(now);
   setTimeout(() => Spotify.pollQueue(), 1500);   // a new song moved the queue
 }
 
+/** A new song: the cover swings in and the title rises (the CSS animation restarts each time). */
+function swapAnim() {
+  const s = $("song");
+  s.classList.remove("swap");
+  void s.offsetWidth;
+  s.classList.add("swap");
+}
+
+/** The cover, and the same cover blurred over the whole screen. The new backdrop fades in over the old one; the glass
+ *  layers (a notice, the break) use it too, through --art. */
+let backLayer = 0;
 function showArt(url) {
   shownArt = url || "";
-  $("cover").style.backgroundImage = url ? `url("${url}")` : "";
-  const bd = $("backdrop");
+  const css = url ? `url("${url.replace(/"/g, "%22")}")` : "";
+  $("cover").style.backgroundImage = css;
+  document.documentElement.style.setProperty("--art", css || "none");
+  const layers = [$("backdrop"), $("backdrop2")];
+  const old = layers[backLayer];
+  if (!url) { layers.forEach(l => l.classList.remove("on")); return; }
+  backLayer = 1 - backLayer;
+  const bd = layers[backLayer];
   bd.classList.remove("on");
-  if (!url) return;
-  bd.style.backgroundImage = `url("${url}")`;
-  requestAnimationFrame(() => bd.classList.add("on"));
+  bd.style.backgroundImage = css;
+  old.after(bd);   // on top of the old one, still under the rest of the screen
+  // Fade the new one in once the image is there, then let the old one go.
+  const img = new Image();
+  img.onload = img.onerror = () => requestAnimationFrame(() => {
+    bd.classList.add("on");
+    setTimeout(() => { if (layers[backLayer] === bd) old.classList.remove("on"); }, 1300);
+  });
+  img.src = url;
   accentFrom(url);
+}
+
+/** Hierna, under the progress bar: one song is a pill, more songs a list. [{title, artist}]; a string is a note. */
+function renderNext(list, note) {
+  const el = $("next");
+  el.replaceChildren();
+  list = (list || []).filter(x => x && x.title);
+  const line = (x, parent) => {
+    const t = document.createElement("span");
+    t.className = "txt";
+    t.textContent = x.title;
+    if (x.artist) {
+      const a = document.createElement("i");
+      a.textContent = " · " + x.artist;
+      t.append(a);
+    }
+    parent.append(t);
+  };
+  if (list.length === 1 || note) {
+    const pill = document.createElement("div");
+    pill.className = "pill glass";
+    pill.innerHTML = Icon.svg("skip-forward") + '<span class="lbl">Hierna</span>';
+    if (note) { const t = document.createElement("span"); t.className = "txt"; t.textContent = note; pill.append(t); }
+    else line(list[0], pill);
+    el.append(pill);
+  } else if (list.length > 1) {
+    const box = document.createElement("div");
+    box.className = "list glass";
+    box.innerHTML = `<div class="head">${Icon.svg("list-music")}<span class="lbl">Hierna</span></div>`;
+    list.forEach((x, i) => {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `<b>${i + 1}</b>`;
+      line(x, row);
+      box.append(row);
+    });
+    el.append(box);
+  }
+  el.hidden = !list.length && !note;
 }
 
 /** The cover's average colour, lifted to stay visible on the dark background (only when the image allows CORS). */
@@ -289,7 +353,7 @@ const Spotify = (() => {
   async function control(cmd) {
     if (!linked()) return "Spotify is niet gekoppeld op dit scherm.";
     if (!store.get("sp_scope").includes("user-modify-playback-state"))
-      return "log op dit scherm opnieuw in bij Spotify (⚙ of S), dan mag SpotiParty de muziek bedienen.";
+      return "log op dit scherm opnieuw in bij Spotify (S of het tandwiel), dan mag SpotiParty de muziek bedienen.";
     const send = async (method, path) => {
       let r = await fetch("https://api.spotify.com/v1" + path, { method, headers: { Authorization: "Bearer " + await access() } });
       if (r.status === 401) r = await fetch("https://api.spotify.com/v1" + path, { method, headers: { Authorization: "Bearer " + await access(true) } });
@@ -307,7 +371,7 @@ const Spotify = (() => {
     if (r.ok || r.status === 204) { setTimeout(pollNow, 600); return ""; }
     const body = await r.json().catch(() => ({}));
     const reason = (body.error && (body.error.reason || body.error.message)) || "";
-    if (r.status === 401 || /scope/i.test(reason)) return "log op dit scherm opnieuw in bij Spotify (⚙), dan mag SpotiParty de muziek bedienen.";
+    if (r.status === 401 || /scope/i.test(reason)) return "log op dit scherm opnieuw in bij Spotify (S of het tandwiel), dan mag SpotiParty de muziek bedienen.";
     if (/PREMIUM/i.test(reason)) return "Spotify staat bediening alleen toe met Premium.";
     if (r.status === 404 || /NO_ACTIVE_DEVICE/i.test(reason)) return "er speelt nu geen Spotify op dit account.";
     if (/RESTRICT|already/i.test(reason)) return "";   // already paused / playing: nothing to do
@@ -345,12 +409,9 @@ const Spotify = (() => {
       if (q === undefined) return;
       const n = q && q.currently_playing && q.queue && q.queue[0];
       if (!n) { el.hidden = true; return; }
-      const who = (n.artists || []).map(a => a.name).join(", ");
-      el.textContent = "Hierna: " + n.name + (who ? " · " + who : "");
-      el.hidden = false;
+      renderNext([{ title: n.name, artist: (n.artists || []).map(a => a.name).join(", ") }]);
     } catch (e) {
-      el.textContent = e.message === "forbidden" ? "Hierna: Spotify geeft deze app geen toegang tot de wachtrij" : "";
-      el.hidden = e.message !== "forbidden";
+      renderNext([], e.message === "forbidden" ? "Spotify geeft deze app geen toegang tot de wachtrij" : "");
     }
   }
 
@@ -446,10 +507,10 @@ const HA = (() => {
 
   async function connect(onMsg) {
     let url = (store.get("ha_url") || (/^\/(local|hacsfiles)\//.test(location.pathname) ? location.origin : "")).replace(/\/+$/, "");
-    if (!url) { onMsg && onMsg("Vul het adres van Home Assistant in.", true); idleMsg("Kies in ⚙ je Home Assistant"); return; }
+    if (!url) { onMsg && onMsg("Vul het adres van Home Assistant in.", true); idleMsg("Kies je Home Assistant in de instellingen (S)"); return; }
     base = url;
     const tok = await authToken(url);
-    if (!tok) { onMsg && onMsg("Er is een access token nodig.", true); idleMsg("Home Assistant: token nodig (⚙)"); return; }
+    if (!tok) { onMsg && onMsg("Er is een access token nodig.", true); idleMsg("Home Assistant: token nodig (instellingen, S)"); return; }
     try { ws = new WebSocket(url.replace(/^http/, "ws") + "/api/websocket"); }
     catch { onMsg && onMsg("Dat adres klopt niet.", true); return; }
     const sock = ws;
@@ -512,14 +573,41 @@ const HA = (() => {
 })();
 
 /** Can this screen pause, play and skip the music it shows? (For the Hub's buttons and the break.) */
+// ---------- Android TV ----------
+/** In the SpotiParty TV app (a WebView), window.SpotiPartyTV is the app: what plays on the TV itself (its media
+ *  session, with notification access) and the remote's play/pause/skip. Only used when the Hub has no song. */
+const TV = (() => {
+  const b = window.SpotiPartyTV;
+  let timer = 0, artKey = "", art = "";
+  const call = (f, ...a) => { try { return b[f](...a); } catch { return null; } };
+  function read() {
+    let j = null;
+    try { j = JSON.parse(call("nowPlaying") || "null"); } catch {}
+    if (!j || !j.title) { setOwn(null); return; }
+    const key = j.artist + "\n" + j.title;
+    if (key !== artKey) { artKey = key; art = call("art") || ""; }
+    setOwn({ key, title: j.title, artist: j.artist || "", album: j.album || "", durationMs: j.durationMs || 0,
+      positionMs: j.positionMs || 0, sampledAt: Date.now(), playing: !!j.playing, art });
+  }
+  return {
+    on: () => !!b,
+    start() { clearInterval(timer); read(); timer = setInterval(read, 1000); },
+    stop() { clearInterval(timer); },
+    can: () => !!b && call("canControl") === true,
+    control: cmd => Promise.resolve(call("control", cmd) || ""),
+    access: () => !!b && call("hasAccess") === true,
+  };
+})();
+
 const Media = {
   can() {
+    if (source === "tv") return TV.can();
     if (source === "ha") return HA.connected() && !!HA.current();
     return source === "spotify" && Spotify.linked();
   },
   async run(cmd) {
     try {
-      return await (source === "ha" ? HA.control(cmd) : Spotify.control(cmd));
+      return await (source === "tv" ? TV.control(cmd) : source === "ha" ? HA.control(cmd) : Spotify.control(cmd));
     } catch (e) { return "mislukt: " + (e && e.message || e); }
   },
 };
@@ -535,35 +623,55 @@ function isSpotifyLink(s) {
       h === "open.spotify.com" || h.endsWith(".spotify.com") || h === "spotify.app.link");
   } catch { return false; }
 }
-/** The Jam link the Hub gives (set once in the dashboard for every screen), else this screen's own. */
-let hubJam = "", hubGuest = "";
+/** The Jam link the Hub gives (set once in the dashboard for every screen), else this screen's own.
+ *  hubHas: what the Hub's guest page offers ({jam, skip, quiz}), so the card says what scanning does. */
+let hubJam = "", hubGuest = "", hubHas = null;
+function jamText() {
+  if (!hubGuest) return ["users", "Doe mee met de Jam", "Scan met je camera en zet je nummer in de wachtrij."];
+  const has = hubHas || { jam: !!hubJam, skip: true, quiz: false };   // an older Hub doesn't say
+  const what = [];
+  if (has.skip) what.push("nummers over te slaan");
+  if (has.quiz) what.push("het nummer te raden");
+  if (has.jam) what.push("de Jam te joinen");
+  if (!what.length) return ["users", "Doe mee", "Scan met je camera."];
+  const text = "Scan om " + (what.length === 1 ? what[0]
+    : what.length === 2 ? what.join(" en om ") : what.slice(0, -1).join(", ") + " en om " + what[what.length - 1]) + ".";
+  const title = what.length > 1 ? "Doe mee!" : has.skip ? "Stem mee" : has.quiz ? "Raad mee" : "Doe mee met de Jam";
+  return [what.length > 1 ? "party-popper" : has.skip ? "thumbs-down" : has.quiz ? "mic-vocal" : "users", title, text];
+}
 function showJam() {
   const jam = hubGuest || hubJam || store.get("jam");
   const box = $("jam");
   box.hidden = !jam || params.get("jam") === "0";
-  box.querySelector("b").textContent = hubGuest ? "🎉 Doe mee!" : "Doe mee met de Jam";
-  box.querySelector("span").textContent = hubGuest
-    ? (hubJam ? "Scan: Jam, 👎 skip en raad het nummer." : "Scan: 👎 skip en raad het nummer.")
-    : "Scan met je camera en zet je nummer in de wachtrij.";
+  const [icon, title, text] = jamText();
+  const b = box.querySelector("b");
+  b.innerHTML = Icon.svg(icon);
+  b.append(title);
+  box.querySelector("span").textContent = text;
   if (!box.hidden) Qr.paint(box.querySelector("canvas"), jam);
   $("corner").classList.toggle("both", !box.hidden && !$("wifi").hidden);
 }
 
 // ---------- source ----------
-let source = params.get("source") || store.get("source", HA.embedded() ? "ha" : "spotify");
+let source = params.get("source") || store.get("source", TV.on() ? "tv" : HA.embedded() ? "ha" : "spotify");
+if (source === "tv" && !TV.on()) source = "spotify";
 
 function startSource(onMsg) {
   Spotify.stop();
   HA.stop();
+  TV.stop();
   setNow(null);
-  if (source === "ha") {
-    $("idle").textContent = "Zet muziek aan 🎉";
+  if (source === "tv") {
+    $("idle").textContent = "Zet muziek aan in Spotify";
+    TV.start();
+  } else if (source === "ha") {
+    $("idle").textContent = "Zet muziek aan";
     HA.start(onMsg);
   } else if (!Spotify.linked()) {
     idleMsg(HUB_NEEDED);   // the Hub's account fills the screen as soon as it reports one
     return;
   } else {
-    $("idle").textContent = "Zet muziek aan in Spotify 🎉";
+    $("idle").textContent = "Zet muziek aan in Spotify";
     Spotify.start();
   }
   Spotify.pollQueue();
@@ -585,6 +693,11 @@ function openSettings(open) {
   if (!open) return;
   s.dataset.source = source;
   $("source").value = source;
+  $("src-tv").hidden = !TV.on();
+  if (TV.on()) {
+    $("tv-auto").checked = window.SpotiPartyTV.autoOpen() === true;
+    $("tv-access").hidden = TV.access();
+  }
   const emb = !!HA.embedded();
   $("ha-embedded").hidden = !emb;
   $("ha-manual").hidden = emb;
@@ -604,6 +717,10 @@ function openSettings(open) {
   if (typeof Hub !== "undefined") Hub.fillSettings();
 }
 
+if (TV.on()) {
+  $("tv-auto").onchange = e => window.SpotiPartyTV.setAutoOpen(e.target.checked);
+  $("tv-grant").onclick = () => window.SpotiPartyTV.openAccess();
+}
 $("source").onchange = e => {
   source = e.target.value;
   store.set("source", source);
@@ -681,6 +798,7 @@ addEventListener("storage", e => {
 // ---------- start ----------
 (async () => {
   if (params.get("kiosk") === "1") document.body.classList.add("kiosk");
+  Icon.fill(document.body);
   const login = await Spotify.finishLogin();
   if (login === true) return;   // the login window closes itself
   showJam();

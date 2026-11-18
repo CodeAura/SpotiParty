@@ -115,17 +115,17 @@ public class PartyListener extends NotificationListenerService {
         if (!getSharedPreferences("party", MODE_PRIVATE).getBoolean("auto_open", false)) return;
         if (MainActivity.visible) return;
         if (!Settings.canDrawOverlays(this)) {
-            Log.w(SpotifyApi.TAG, "Spotify started, but SpotiParty may not open itself: "
+            Log.w(MainActivity.TAG, "Spotify started, but SpotiParty may not open itself: "
                     + "allow 'Display over other apps' for SpotiParty");
             return;
         }
-        Log.i(SpotifyApi.TAG, "Spotify started playing: opening SpotiParty");
+        Log.i(MainActivity.TAG, "Spotify started playing: opening SpotiParty");
         Intent open = new Intent(this, MainActivity.class)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         try {
             startActivity(open);
         } catch (Exception e) {
-            Log.w(SpotifyApi.TAG, "could not open SpotiParty: " + e);
+            Log.w(MainActivity.TAG, "could not open SpotiParty: " + e);
         }
     }
 }

@@ -19,7 +19,7 @@ Beweeg je de muis, dan verschijnt het tandwiel **⚙** voor de instellingen. Na 
 
 | Knop                               | Wat het doet                               |
 | ---------------------------------- | ------------------------------------------ |
-| **Menu**                           | De code voor de telefoonpagina terughalen (Hub-adres, naam, Vanzelf openen) |
+| **Menu**                           | De instellingen van het scherm (naam, Hub-adres, Vanzelf openen) |
 | **↻ Nieuwe Jam**, twee keer **OK** | Een Jam-link weghalen die je met de telefoon zette                          |
 
 ## Toevoegingen aan het adres

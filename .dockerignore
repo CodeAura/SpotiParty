@@ -1,0 +1,5 @@
+# Docker only needs hub/ and web/ (see server/Dockerfile).
+*
+!hub/
+!web/
+**/__pycache__

@@ -36,7 +36,7 @@ Release 2.7.0 bevat alleen de Windows-app. Op een Mac start je SpotiParty met Py
 
 ## Waarom staat SpotiParty niet in de Play Store?
 
-De Android-apps bouw je zelf, zodat SpotiParty en de Lyrics-app met dezelfde sleutel ondertekend zijn. Zie [Stap 2: De apps bouwen](../android-tv/stap-2-bouwen.md).
+De Android TV-app bouw je zelf; hij staat niet in de Play Store. Het scherm zelf komt van de Hub. Zie [Stap 2: De app bouwen](../android-tv/stap-2-bouwen.md).
 
 ## Komt er iets van mij op internet?
 

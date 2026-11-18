@@ -293,7 +293,10 @@ class Hub:
                        spotify=self.spotify.linked(),
                        party=self.party.screen(self.now_ms()),
                        # With skip votes or the quiz on, the screens' QR code leads to the guest page (Jam there too).
-                       guest=self.guest_url() if self.cfg.get("vote_on") or self.party.quiz_on else "")
+                       guest=self.guest_url() if self.cfg.get("vote_on") or self.party.quiz_on else "",
+                       # What the guest page offers, so the screen can say what scanning does.
+                       guest_has={"jam": bool(self.cfg.get("jam")), "skip": bool(self.cfg.get("vote_on")),
+                                  "quiz": bool(self.party.quiz_on)})
             for k in ("notice", "brk"):
                 if out[k]:
                     out[k] = {x: y for x, y in out[k].items() if x not in ("targets", "paused", "resumed", "music")}
@@ -507,7 +510,11 @@ class Hub:
 class HubHandler(http.server.BaseHTTPRequestHandler):
     server_version = "SpotiPartyHub/1"
     STATIC = {"/": ("dashboard.html", "text/html; charset=utf-8"),
-              "/qr.js": ("qr.js", "text/javascript; charset=utf-8")}
+              "/qr.js": ("qr.js", "text/javascript; charset=utf-8"),
+              "/icons.js": ("icons.js", "text/javascript; charset=utf-8")}
+    SCREEN_FILES = {"index.html": "text/html; charset=utf-8", "party.js": "text/javascript; charset=utf-8",
+                    "hub.js": "text/javascript; charset=utf-8", "qr.js": "text/javascript; charset=utf-8",
+                    "icons.js": "text/javascript; charset=utf-8"}
 
     def __init__(self, hub, *a, **kw):
         self.hub = hub
@@ -546,6 +553,22 @@ class HubHandler(http.server.BaseHTTPRequestHandler):
         if url.path == "/api/screen":
             code, obj = self.hub.screen_poll(q, self.client_address[0])
             return self._send(code, obj, cors=True)
+        if url.path == "/scherm":
+            self.send_response(301)
+            self.send_header("Location", "/scherm/" + (("?" + url.query) if url.query else ""))
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        if url.path.startswith("/scherm/"):
+            # The screen itself, from this hub: any browser or TV on the network opens http://<hub>:8770/scherm/,
+            # and the Android TV app shows it, so every screen is always as new as the hub.
+            name = url.path[len("/scherm/"):] or "index.html"
+            if name in self.SCREEN_FILES:
+                try:
+                    return self._send(200, raw=(self.hub.web_dir / name).read_bytes(), ctype=self.SCREEN_FILES[name])
+                except OSError:
+                    pass
+            return self._send(404, {"error": "niet gevonden"})
         if url.path in ("/gast", "/gast/"):
             try:
                 return self._send(200, raw=(self.hub.static_dir / "guest.html").read_bytes(), ctype="text/html; charset=utf-8")
@@ -576,7 +599,7 @@ class HubHandler(http.server.BaseHTTPRequestHandler):
             return self._send(200, self.hub.admin_state())
         if url.path in self.STATIC:
             name, ctype = self.STATIC[url.path]
-            path = (self.hub.web_dir if name == "qr.js" else self.hub.static_dir) / name
+            path = (self.hub.web_dir if name in ("qr.js", "icons.js") else self.hub.static_dir) / name
             try:
                 return self._send(200, raw=path.read_bytes(), ctype=ctype)
             except OSError:

@@ -4,17 +4,36 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SpotiParty</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎉</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231ed760' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 18V5l12-2v13'/><circle cx='6' cy='18' r='3'/><circle cx='18' cy='16' r='3'/></svg>">
 <style>
-  :root { --accent: #1ed760; --bg: #0b0b10; }
+  :root { --accent: #1ed760; --bg: #0b0b10; --art: none; }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; background: var(--bg); color: #fff; overflow: hidden;
     font-family: system-ui, "Segoe UI", Roboto, sans-serif; }
   body { container-type: size; }
-  #backdrop { position: fixed; inset: -10%; background: center/cover no-repeat; filter: blur(60px) saturate(1.3);
-    transform: scale(1.1); opacity: 0; transition: opacity .4s; }
-  #backdrop.on { opacity: 1; }
+  .ic { width: 1em; height: 1em; display: inline-block; vertical-align: -0.14em; flex: none; }
+
+  /* The cover, blurred over the whole screen. Two layers, so a new cover fades over the old one. */
+  .backdrop { position: fixed; inset: -10%; background: center/cover no-repeat; filter: blur(60px) saturate(1.3);
+    transform: scale(1.1); opacity: 0; transition: opacity 1.2s ease; }
+  .backdrop.on { opacity: 1; }
   #shade { position: fixed; inset: 0; background: linear-gradient(90deg, #000b, #0008 50%, #000a); }
+
+  /* Glass: everything that floats over the party (Hierna, the QR cards, pills, notices) is frosted glass over the
+     same blurred cover, tinted with the cover's colour, so it all belongs together. */
+  .glass { background: linear-gradient(135deg, rgb(255 255 255 / .16), rgb(255 255 255 / .05)),
+      color-mix(in srgb, var(--accent) 14%, rgb(10 10 16 / .45));
+    -webkit-backdrop-filter: blur(3.2cqh) saturate(1.6); backdrop-filter: blur(3.2cqh) saturate(1.6);
+    border: 1px solid rgb(255 255 255 / .2); box-shadow: 0 1.6cqh 5cqh rgb(0 0 0 / .35), inset 0 1px 0 rgb(255 255 255 / .2); }
+  /* Full-screen layers (a notice, the break, the quiz answer) get the blurred cover as their own background. */
+  .coverbg { isolation: isolate; }
+  .coverbg::before { content: ""; position: absolute; inset: -12%; z-index: -1;
+    background: var(--art) center/cover no-repeat, var(--bg);
+    filter: blur(70px) saturate(1.5) brightness(.42); transform: scale(1.15); }
+  .coverbg::after { content: ""; position: absolute; inset: 0; z-index: -1;
+    background: radial-gradient(70% 60% at 50% 45%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%); }
+  /* While guests guess, nothing may give the song away: no cover anywhere. */
+  body.quiz .coverbg::before { background: var(--bg); }
 
   #stage { position: relative; height: 100%; display: flex; align-items: center; gap: 5cqw;
     padding: 6cqh 5cqw; }
@@ -24,34 +43,72 @@
     box-shadow: 0 2cqh 6cqh #000a; }
   #title { font-size: clamp(16px, 4.6cqh, 52px); font-weight: 700; margin-top: 3cqh; line-height: 1.15;
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  #artist { font-size: clamp(13px, 3cqh, 32px); color: #fffc; margin-top: .4em; }
-  #next { font-size: clamp(11px, 2.1cqh, 22px); color: #fff9; margin-top: .6em; }
-  #artist, #next, #next div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #next b { display: block; font-size: .8em; letter-spacing: .1em; text-transform: uppercase; color: #fff8; margin-bottom: .15em; }
-  #next div + div { margin-top: .15em; }
-  #next i { font-style: normal; color: #fff6; }
-
-  /* Skip votes from the guests' phones */
-  #votes { position: absolute; top: 2.4cqh; left: 3cqw; z-index: 3; padding: .8cqh 2cqh; border-radius: 99px;
-    background: #b3261ee6; font-weight: 700; font-size: clamp(12px, 2.6cqh, 28px); box-shadow: 0 1cqh 3cqh #0008; }
-  #votes[hidden] { display: none; }
-
-  /* "Raad het nummer": the song stays hidden while guests guess, then the answer and the top 5. */
-  body.quiz #song, body.quiz #lyrics, body.quiz #backdrop, body.reveal #lyrics { visibility: hidden; }
-  #quiz { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center;
-    padding: 6cqh 6cqw 20cqh; background: #000c; }
-  #quiz[hidden] { display: none; }
-  #quiz .card { max-width: 90cqw; animation: pop .4s cubic-bezier(.2, 1.4, .4, 1); }
-  #quiz .q { font-size: clamp(14px, 3.6cqh, 40px); font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
-  #quiz .big { font-size: clamp(28px, 11cqh, 140px); font-weight: 800; line-height: 1.1; margin: 1.5cqh 0; }
-  #quiz .clock { font-size: clamp(48px, 24cqh, 300px); font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; margin: 1cqh 0; }
-  #quiz .sub { font-size: clamp(13px, 3.4cqh, 36px); color: #fffc; }
-  #quiz ol { list-style: none; padding: 0; margin: 3cqh auto 0; font-size: clamp(13px, 3.6cqh, 40px); min-width: 40cqw; text-align: left; }
-  #quiz li { display: flex; gap: 1em; padding: .25em .8em; border-radius: 99px; }
-  #quiz li:first-child { background: #ffd54a33; }
-  #quiz li span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #artist { font-size: clamp(13px, 3cqh, 32px); color: #fffc; margin-top: .4em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #bar { height: max(4px, .8cqh); border-radius: 99px; background: #fff3; margin-top: 2.4cqh; overflow: hidden; }
   #bar > div { height: 100%; width: 0; background: var(--accent); }
+
+  /* A new song: the cover swings in, the title and artist rise. */
+  #song.swap #cover { animation: cover-in .9s cubic-bezier(.2, .9, .25, 1); }
+  #song.swap #title { animation: rise-in .7s .12s cubic-bezier(.2, .9, .25, 1) both; }
+  #song.swap #artist { animation: rise-in .7s .2s cubic-bezier(.2, .9, .25, 1) both; }
+  #song.swap #next { animation: rise-in .7s .3s cubic-bezier(.2, .9, .25, 1) both; }
+  @keyframes cover-in { from { opacity: 0; transform: perspective(60cqh) rotateY(-18deg) scale(.86); filter: blur(1cqh); } }
+  @keyframes rise-in { from { opacity: 0; transform: translateY(2cqh); filter: blur(.6cqh); } }
+
+  /* Hierna: one song is a pill, more songs a small list. Under the progress bar. */
+  #next { margin-top: 2.2cqh; font-size: clamp(11px, 2.1cqh, 22px); }
+  #next[hidden] { display: none; }
+  #next .pill { display: inline-flex; align-items: center; gap: .6em; max-width: 100%; padding: .55em 1.1em .55em .7em; border-radius: 99px; }
+  #next .pill .ic { color: var(--accent); }
+  #next .lbl { font-size: .78em; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #fffb; }
+  #next .txt { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #next .txt i, #next .row i { font-style: normal; color: #fff9; }
+  #next .list { padding: .9em 1em .7em; border-radius: 1.4em; }
+  #next .list .head { display: flex; align-items: center; gap: .5em; margin-bottom: .45em; }
+  #next .list .head .ic { color: var(--accent); }
+  #next .row { display: flex; align-items: center; gap: .7em; padding: .32em 0; min-width: 0; }
+  #next .row + .row { border-top: 1px solid rgb(255 255 255 / .1); }
+  #next .row b { flex: none; width: 1.6em; height: 1.6em; border-radius: 50%; display: grid; place-items: center;
+    font-size: .78em; background: rgb(255 255 255 / .12); }
+  #next .row:first-child b { background: var(--accent); color: #000; }
+  #next .row span { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* Pills at the top: skip votes, and "Hub niet verbonden". */
+  .pilltop { position: absolute; top: 2.4cqh; z-index: 7; display: flex; align-items: center; gap: .7em; max-width: 90cqw;
+    padding: .7em 1.3em .7em 1em; border-radius: 99px; font-weight: 700; font-size: clamp(12px, 2.4cqh, 26px); }
+  .pilltop[hidden] { display: none; }
+  #votes { left: 3cqw; z-index: 3; }
+  #votes .ic { color: #ff8a80; }
+  #votes .meter { width: 7em; height: .45em; border-radius: 99px; background: rgb(255 255 255 / .18); overflow: hidden; }
+  #votes .meter > i { display: block; height: 100%; background: #ff8a80; transition: width .4s; }
+  #hubdown { left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, rgb(255 255 255 / .14), rgb(255 255 255 / .04)),
+    rgb(120 20 20 / .5); border-color: rgb(255 140 130 / .45); }
+  #hubdown .dot { width: .6em; height: .6em; border-radius: 50%; background: #ff6b6b; box-shadow: 0 0 0 0 #ff6b6b99;
+    animation: ping 1.8s ease-out infinite; flex: none; }
+  #hubdown .ic { color: #ffb4ab; }
+  #hubdown div { min-width: 0; }
+  #hubdown small { display: block; font-weight: 500; font-size: .7em; opacity: .85; }
+  @keyframes ping { 70% { box-shadow: 0 0 0 .7em transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+
+  /* "Raad het nummer": the song stays hidden while guests guess, then the answer and the top 5. */
+  body.quiz #song, body.quiz #lyrics, body.quiz .backdrop, body.reveal #lyrics { visibility: hidden; }
+  #quiz { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 6cqh 6cqw 20cqh; }
+  #quiz[hidden] { display: none; }
+  #quiz .card { max-width: 90cqw; padding: 5cqh 6cqw; border-radius: 4.5cqh; animation: pop .5s cubic-bezier(.2, 1.4, .4, 1); }
+  #quiz .q { display: inline-flex; align-items: center; gap: .5em; font-size: clamp(14px, 3.4cqh, 38px); font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  #quiz .big { font-size: clamp(28px, 11cqh, 140px); font-weight: 800; line-height: 1.1; margin: 1.5cqh 0; }
+  #quiz .clock { font-size: clamp(48px, 24cqh, 300px); font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; margin: 1cqh 0; }
+  #quiz .sub { font-size: clamp(13px, 3.2cqh, 34px); color: #fffc; display: flex; align-items: center; justify-content: center; gap: .45em; }
+  #quiz .sub .ic { color: var(--accent); }
+  #quiz ol { list-style: none; padding: 0; margin: 3cqh auto 0; font-size: clamp(13px, 3.4cqh, 38px); min-width: 40cqw; text-align: left; }
+  #quiz li { display: flex; align-items: center; gap: .8em; padding: .3em .8em; border-radius: 99px; }
+  #quiz li:first-child { background: color-mix(in srgb, var(--accent) 28%, transparent); }
+  #quiz li .n { flex: none; width: 1.5em; height: 1.5em; border-radius: 50%; display: grid; place-items: center; font-size: .75em;
+    background: rgb(255 255 255 / .14); }
+  #quiz li:first-child .n { background: var(--accent); color: #000; }
+  #quiz li span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   #lyrics { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center;
     padding-bottom: 16cqh; text-shadow: 0 2px 10px #0009; }
@@ -73,59 +130,53 @@
 
   #corner { position: absolute; right: 3.5cqw; bottom: 4cqh; display: flex; gap: 1.6cqh; align-items: flex-end;
     max-width: 70cqw; }
-  .qrcard { display: flex; align-items: center; gap: 1.6cqh;
-    padding: 1.4cqh 2.4cqh 1.4cqh 1.4cqh; background: #0009; border: 1px solid #fff3; border-radius: 2.6cqh;
-    backdrop-filter: blur(8px); min-width: 0; }
-  .qrcard canvas { width: clamp(64px, 15cqh, 170px); height: auto; aspect-ratio: 1; display: block; flex: none; }
-  .qrcard b { display: block; font-size: clamp(12px, 2.4cqh, 24px); }
-  .qrcard span { display: block; font-size: clamp(10px, 1.7cqh, 17px); color: #fffc; margin-top: .3em; max-width: 22em; }
+  .qrcard { display: flex; align-items: center; gap: 1.8cqh; padding: 1.4cqh 2.6cqh 1.4cqh 1.4cqh; border-radius: 2.8cqh; min-width: 0; }
+  .qrcard canvas { width: clamp(64px, 15cqh, 170px); height: auto; aspect-ratio: 1; display: block; flex: none; border-radius: 1.2cqh; }
+  .qrcard b { display: flex; align-items: center; gap: .45em; font-size: clamp(12px, 2.4cqh, 24px); }
+  .qrcard b .ic { color: var(--accent); }
+  .qrcard span { display: block; font-size: clamp(10px, 1.7cqh, 17px); color: #fffc; margin-top: .35em; max-width: 22em; }
   .qrcard span code { font: inherit; color: #fff; font-weight: 700; word-break: break-all; }
   .qrcard[hidden] { display: none; }
   #corner.both .qrcard span { max-width: 13em; }
 
-  /* From the SpotiParty Hub: a notice, a break countdown, a screen's name. */
-  /* A notice fills the screen like the break: a big card over a dimmed, blurred party. */
+  /* From the SpotiParty Hub: a notice and the break fill the screen over the blurred cover. */
   #notice { position: absolute; inset: 0; z-index: 6; display: flex; align-items: center; justify-content: center;
-    background: #000b; backdrop-filter: blur(18px); padding: 6cqh 6cqw; animation: fade .35s ease-out; }
+    padding: 6cqh 6cqw; animation: fade .4s ease-out; }
   #notice[hidden] { display: none; }
-  #notice .card { width: min(88cqw, 150cqh); padding: 6cqh 6cqw 5cqh; border-radius: 5cqh; text-align: center;
-    background: #15161dee; border: .5cqh solid var(--accent); box-shadow: 0 4cqh 14cqh #000c, 0 0 10cqh color-mix(in srgb, var(--accent) 35%, transparent);
-    animation: pop .5s cubic-bezier(.2, 1.4, .4, 1); }
-  #notice .icon { font-size: clamp(36px, 16cqh, 200px); line-height: 1; }
-  #notice .kind { font-size: clamp(12px, 3.4cqh, 38px); font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--accent); margin: 1.6cqh 0 1cqh; }
+  #notice .card { position: relative; width: min(88cqw, 150cqh); padding: 6cqh 6cqw 5cqh; border-radius: 5cqh; text-align: center;
+    animation: pop .55s cubic-bezier(.2, 1.4, .4, 1); }
+  #notice .badge { width: clamp(48px, 15cqh, 180px); height: clamp(48px, 15cqh, 180px); margin: 0 auto; border-radius: 50%;
+    display: grid; place-items: center; font-size: clamp(24px, 7cqh, 84px); color: #000;
+    background: var(--accent); box-shadow: 0 0 0 1.4cqh color-mix(in srgb, var(--accent) 22%, transparent), 0 2cqh 6cqh rgb(0 0 0 / .35); }
+  #notice .kind { font-size: clamp(12px, 3.2cqh, 36px); font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent); margin: 3cqh 0 1.2cqh; }
   #notice .text { font-size: clamp(22px, 10cqh, 130px); font-weight: 800; line-height: 1.12; overflow-wrap: anywhere;
     white-space: pre-line; }
   #notice .text.long { font-size: clamp(18px, 6.6cqh, 84px); }
-  #notice .ring { width: 60%; height: 1.2cqh; margin: 4cqh auto 0; border-radius: 99px; background: #fff2; overflow: hidden; }
+  #notice .ring { width: 60%; height: 1cqh; margin: 4cqh auto 0; border-radius: 99px; background: rgb(255 255 255 / .16); overflow: hidden; }
   #notice .ring > div { height: 100%; background: var(--accent); transition: width .5s linear; }
   #notice .ring[hidden] { display: none; }
-  #notice.party .card { background: linear-gradient(135deg, #1ed760, #ff4fd8 55%, #ffb547); border-color: #fff8; color: #000; }
-  #notice.party .kind { color: #000a; }
-  #notice.party .ring { background: #0002; } #notice.party .ring > div { background: #000a; }
-  #notice.alert .card { background: #8e1d17f2; border-color: #ffb4ab; animation: pop .5s cubic-bezier(.2, 1.4, .4, 1), shake .6s .5s; }
-  #notice.alert .kind { color: #ffdad6; }
-  #notice.alert .ring > div { background: #ffdad6; }
+  #notice.party .card { background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 45%, transparent), rgb(255 79 216 / .28) 60%, rgb(255 181 71 / .3)),
+    rgb(10 10 16 / .35); }
+  #notice.party .badge { background: linear-gradient(135deg, var(--accent), #ff4fd8 60%, #ffb547); }
+  #notice.alert { --accent: #ff6b6b; }
+  #notice.alert .card { animation: pop .55s cubic-bezier(.2, 1.4, .4, 1), shake .6s .55s; }
+  #notice.alert .badge { color: #fff; }
   @keyframes fade { from { opacity: 0; } }
   @keyframes pop { from { opacity: 0; transform: scale(.85) translateY(4cqh); } }
   @keyframes shake { 20%, 60% { transform: translateX(-1.2cqh); } 40%, 80% { transform: translateX(1.2cqh); } }
-  #pause { position: absolute; inset: 0; z-index: 4; display: flex; flex-direction: column; align-items: center;
-    justify-content: center; text-align: center; background: #000d; backdrop-filter: blur(24px); gap: 2cqh; }
+  #pause { position: absolute; inset: 0; z-index: 4; display: flex; align-items: center; justify-content: center; padding: 6cqh 6cqw; }
   #pause[hidden] { display: none; }
-  #pause .t { font-size: clamp(20px, 7cqh, 80px); font-weight: 700; }
-  #pause .clock { font-size: clamp(48px, 28cqh, 340px); font-weight: 800; font-variant-numeric: tabular-nums;
+  #pause .card { display: flex; flex-direction: column; align-items: center; gap: 2cqh; text-align: center; padding: 5cqh 8cqw 6cqh; border-radius: 5cqh; }
+  #pause .t { display: flex; align-items: center; gap: .5em; font-size: clamp(20px, 6.4cqh, 76px); font-weight: 700; }
+  #pause .t .ic { color: var(--accent); }
+  #pause .clock { font-size: clamp(48px, 26cqh, 320px); font-weight: 800; font-variant-numeric: tabular-nums;
     line-height: 1; color: var(--accent); text-shadow: 0 0 6cqh color-mix(in srgb, var(--accent) 40%, transparent); }
-  #pause .sub { font-size: clamp(13px, 3.4cqh, 36px); color: #fffc; }
-  #pause .ring { width: min(60cqw, 60cqh); height: 1.2cqh; border-radius: 99px; background: #fff2; overflow: hidden; }
+  #pause .sub { font-size: clamp(13px, 3.2cqh, 34px); color: #fffc; }
+  #pause .ring { width: min(60cqw, 60cqh); height: 1cqh; border-radius: 99px; background: rgb(255 255 255 / .16); overflow: hidden; }
   #pause .ring > div { height: 100%; background: var(--accent); transition: width .5s linear; }
   #pause.done .clock { animation: pulse 1s ease-in-out infinite alternate; }
   @keyframes pulse { to { transform: scale(1.06); } }
-  /* The Hub can't be reached: a red pill on top of everything, until it is back. */
-  #hubdown { position: absolute; top: 2.4cqh; left: 50%; transform: translateX(-50%); z-index: 7; max-width: 90cqw;
-    padding: 1.1cqh 2.6cqh; border-radius: 99px; background: #b3261ef2; border: 1px solid #ffb4ab; color: #fff;
-    font-weight: 700; font-size: clamp(12px, 2.6cqh, 28px); box-shadow: 0 1cqh 4cqh #000a; text-align: center; }
-  #hubdown small { display: block; font-weight: 500; font-size: .7em; opacity: .85; }
-  #hubdown[hidden] { display: none; }
   #ident { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center;
     background: var(--accent); color: #000; font-weight: 800; font-size: clamp(28px, 14cqh, 180px); text-align: center; padding: 5cqw; }
   #ident[hidden] { display: none; }
@@ -134,6 +185,7 @@
   @container (max-aspect-ratio: 1/1) {
     #stage { flex-direction: column; justify-content: center; gap: 3cqh; text-align: center; }
     #song { width: min(32cqh, 70cqw); }
+    #next .list { text-align: left; }
     #lyrics { flex: none; width: 100%; padding: 0 0 20cqh; }
     #lyrics .l0, #lyrics .l3 { display: none; }
     #corner { right: auto; left: 50%; transform: translateX(-50%); bottom: 2.5cqh; }
@@ -143,18 +195,21 @@
   }
   @container (max-height: 260px) {
     #lyrics .l0, #lyrics .l2, #lyrics .l3 { display: none; }
-    #corner { display: none; }
+    #corner, #next { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #song.swap *, #notice, #notice .card, #quiz .card { animation: none !important; }
   }
 
   /* Controls: only while the mouse moves. */
-  #tools { position: absolute; top: 2cqh; right: 2cqw; display: flex; gap: 8px; opacity: 0; transition: opacity .3s; }
+  #tools { position: absolute; top: 2cqh; right: 2cqw; z-index: 8; display: flex; gap: 8px; opacity: 0; transition: opacity .3s; }
   body.mouse #tools { opacity: 1; }
-  #tools button { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #fff3; background: #0008;
-    color: #fff; font-size: 18px; cursor: pointer; }
+  #tools button { width: 40px; height: 40px; border-radius: 50%; color: #fff; font-size: 18px; cursor: pointer;
+    display: grid; place-items: center; }
   body.kiosk #tools { display: none; }
 
   /* Settings */
-  #settings { position: absolute; inset: 0; background: #000c; display: none; overflow: auto; padding: 24px 16px; }
+  #settings { position: absolute; inset: 0; z-index: 9; background: #000c; display: none; overflow: auto; padding: 24px 16px; }
   #settings.open { display: block; }
   #settings form { max-width: 560px; margin: 0 auto; background: #16171d; border: 1px solid #fff2; border-radius: 16px;
     padding: 20px 22px; }
@@ -170,15 +225,17 @@
   #settings button.go { background: var(--accent); color: #000; font-weight: 600; }
   #settings code { color: #fff; background: #fff1; padding: 1px 5px; border-radius: 4px; word-break: break-all; }
   #settings .msg { color: #1ed760; font-size: 13px; min-height: 1.2em; margin-top: 6px; }
-  #settings .msg.err { color: #ff7b72; }
+  #settings .msg.err, #settings p.err { color: #ff7b72; }
   #settings [data-src] { display: none; }
-  #settings[data-source="spotify"] [data-src~="spotify"], #settings[data-source="ha"] [data-src~="ha"] { display: block; }
+  #settings[data-source="spotify"] [data-src~="spotify"], #settings[data-source="ha"] [data-src~="ha"],
+  #settings[data-source="tv"] [data-src~="tv"] { display: block; }
   #settings .check { display: flex; gap: 10px; align-items: center; color: #fff; font-size: 14px; }
   #settings .check input { width: 20px; height: 20px; }
 </style>
 </head>
 <body class="idle">
-<div id="backdrop"></div>
+<div class="backdrop" id="backdrop"></div>
+<div class="backdrop" id="backdrop2"></div>
 <div id="shade"></div>
 
 <main id="stage">
@@ -186,49 +243,51 @@
     <div id="cover"></div>
     <div id="title"></div>
     <div id="artist"></div>
-    <div id="next" hidden></div>
     <div id="bar"><div></div></div>
+    <div id="next" hidden></div>
   </section>
   <section id="lyrics">
     <p class="l0"></p><p class="l1"></p><p class="l2"></p><p class="l3"></p>
   </section>
 </main>
 
-<div id="idle">Zet muziek aan 🎉</div>
-<div id="quiz" hidden><div class="card"></div></div>
-<div id="votes" hidden></div>
+<div id="idle">Zet muziek aan</div>
+<div id="quiz" class="coverbg" hidden><div class="card glass"></div></div>
+<div id="votes" class="pilltop glass" hidden><i data-icon="thumbs-down"></i><span></span><div class="meter"><i></i></div></div>
 
 <div id="corner">
-  <aside id="wifi" class="qrcard" hidden>
+  <aside id="wifi" class="qrcard glass" hidden>
     <canvas width="340" height="340"></canvas>
-    <div><b>📶 Gasten-wifi</b><span>Scan met je camera, of typ:<br><code class="ssid"></code><br><code class="pass"></code></span></div>
+    <div><b><i data-icon="wifi"></i>Gasten-wifi</b><span>Scan met je camera, of typ:<br><code class="ssid"></code><br><code class="pass"></code></span></div>
   </aside>
-  <aside id="jam" class="qrcard" hidden>
+  <aside id="jam" class="qrcard glass" hidden>
     <canvas width="340" height="340"></canvas>
-    <div><b>Doe mee met de Jam</b><span>Scan met je camera en zet je nummer in de wachtrij.</span></div>
+    <div><b><i data-icon="users"></i><em>Doe mee met de Jam</em></b><span>Scan met je camera en zet je nummer in de wachtrij.</span></div>
   </aside>
 </div>
 
-<div id="notice" hidden>
-  <div class="card">
-    <div class="icon"></div>
+<div id="notice" class="coverbg" hidden>
+  <div class="card glass">
+    <div class="badge"></div>
     <div class="kind"></div>
     <div class="text"></div>
     <div class="ring"><div></div></div>
   </div>
 </div>
-<div id="pause" hidden>
-  <div class="t"></div>
-  <div class="clock"></div>
-  <div class="ring"><div></div></div>
-  <div class="sub"></div>
+<div id="pause" class="coverbg" hidden>
+  <div class="card glass">
+    <div class="t"><i data-icon="coffee"></i><span></span></div>
+    <div class="clock"></div>
+    <div class="ring"><div></div></div>
+    <div class="sub"></div>
+  </div>
 </div>
 <div id="ident" hidden></div>
-<div id="hubdown" hidden>⚠️ Hub niet verbonden<small></small></div>
+<div id="hubdown" class="pilltop glass" hidden><span class="dot"></span><i data-icon="wifi-off"></i><div>Hub niet verbonden<small></small></div></div>
 
 <div id="tools">
-  <button id="fs" title="Volledig scherm (F)">⛶</button>
-  <button id="gear" title="Instellingen (S)">⚙</button>
+  <button id="fs" class="glass" title="Volledig scherm (F)"><i data-icon="maximize"></i></button>
+  <button id="gear" class="glass" title="Instellingen (S)"><i data-icon="settings"></i></button>
 </div>
 
 <div id="settings" data-source="spotify">
@@ -240,7 +299,19 @@
     <select id="source">
       <option value="spotify">Spotify via de Hub (je account, op elk apparaat)</option>
       <option value="ha">Home Assistant media player</option>
+      <option value="tv" id="src-tv" hidden>Spotify op deze tv</option>
     </select>
+
+    <div data-src="tv">
+      <p>SpotiParty toont wat Spotify op deze tv speelt, als de Hub zelf geen nummer heeft. De afstandsbediening en
+        het dashboard kunnen de muziek pauzeren en overslaan.</p>
+      <div id="tv-access">
+        <p class="err">SpotiParty mag nog niet zien wat er speelt. Geef <b>toegang tot meldingen</b> (SpotiParty leest
+          geen meldingen).</p>
+        <div class="row"><button id="tv-grant" class="go">Toegang geven</button></div>
+      </div>
+      <label class="check"><input type="checkbox" id="tv-auto"> SpotiParty vanzelf openen als Spotify begint te spelen</label>
+    </div>
 
     <div data-src="ha">
       <p id="ha-embedded" hidden>Verbonden via het Home Assistant-dashboard waar deze pagina in staat.</p>
@@ -258,7 +329,7 @@
 
     <div data-src="spotify">
       <h3>Spotify</h3>
-      <p>Spotify koppel je één keer in het <b>Hub-dashboard</b> (bij <b>🎵 Muziek bedienen</b>). Alle schermen tonen
+      <p>Spotify koppel je één keer in het <b>Hub-dashboard</b> (bij <b>Muziek bedienen</b>). Alle schermen tonen
         dan het nummer van dat account, met songtekst en "Hierna".</p>
     </div>
 
@@ -309,6 +380,7 @@
   </form>
 </div>
 
+<script src="icons.js"></script>
 <script src="qr.js"></script>
 <script src="party.js"></script>
 <script src="hub.js"></script>

@@ -12,7 +12,7 @@ SpotiParty is gemaakt om zo min mogelijk te weten.
 * **Spotify** krijgt het verzoek om drie rechten: `user-read-playback-state` en `user-read-currently-playing` (wat er speelt en wat erna komt) en `user-modify-playback-state` (afspelen, pauzeren, overslaan en volume). Dat laatste gebruikt de Hub alleen voor de knoppen in het dashboard, de pauze-aftelklok en de 👎 Skip-stemmen. Inloggen gebeurt met PKCE, zonder dat er een geheime sleutel in SpotiParty staat.
 * **Feestspellen:** de namen en scores van _Raad het nummer_ en de Skip-stemmen staan alleen in het geheugen van de Hub, tot je ze wist of de Hub stopt.
 * **lrclib.net** krijgt alleen de artiest, de titel, het album en de lengte van het nummer, om de songtekst op te zoeken.
-* **De telefoonpagina van de tv** draait alleen in je eigen netwerk, en alleen zolang SpotiParty open is.
+* **De tv-app** laadt het scherm van je eigen Hub, in je eigen netwerk; de songteksten komen van lrclib.net.
 * **Het PC-scherm** (`:8769`) luistert alleen op `127.0.0.1`. Alleen de Hub (`:8770`) is bereikbaar in je eigen netwerk, en alles wat iets verandert vraagt de PIN.
 * **Updates:** de Windows-app vraagt bij GitHub wat de nieuwste release van SpotiParty is, en downloadt die daar. Er wordt niets over jou meegestuurd.
 * **Home Assistant:** de kaart gebruikt de login van je dashboard. Een langlevend token heb je alleen nodig als je SpotiParty buiten Home Assistant draait, en dat token staat dan alleen in die browser.

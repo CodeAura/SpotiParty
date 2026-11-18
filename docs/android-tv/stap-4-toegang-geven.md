@@ -10,7 +10,7 @@ SpotiParty moet kunnen zien welk nummer er op de tv speelt. Android regelt dat v
 | Instelling                                  |             | Waarvoor                                                |
 | ------------------------------------------- | ----------- | ------------------------------------------------------- |
 | **Meldingstoegang** → SpotiParty            | ✅ verplicht | Zien welk nummer er speelt                              |
-| **Weergeven vóór andere apps** → SpotiParty | ⭕ optioneel | SpotiParty mag vanzelf openen zodra Spotify begint te spelen (zet je aan op de telefoonpagina, standaard uit) |
+| **Weergeven vóór andere apps** → SpotiParty | ⭕ optioneel | SpotiParty mag vanzelf openen zodra Spotify begint te spelen (zet je aan met **Menu** in de instellingen van het scherm, standaard uit) |
 
 Je kunt dit op twee manieren instellen.
 

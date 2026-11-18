@@ -60,7 +60,7 @@ Software te installeren of te gebruiken ga je akkoord met deze voorwaarden.
 10. Onderdelen van derden
    Sommige onderdelen vallen onder hun eigen licentie, die voor die onderdelen voorgaat:
 
-   - De QR-codegenerator (web/qr.js en android/party-mode/.../Qr.java) is gebaseerd op de
+   - De QR-codegenerator (web/qr.js) is gebaseerd op de
      QR Code generator library van Project Nayuki, uitgegeven onder de MIT-licentie:
 
        Copyright (c) Project Nayuki. (MIT License)
@@ -79,6 +79,9 @@ Software te installeren of te gebruiken ga je akkoord met deze voorwaarden.
          for any claim, damages or other liability, whether in an action of contract, tort or
          otherwise, arising from, out of or in connection with the Software or the use or other
          dealings in the Software.
+
+   - De iconen in web/icons.js komen van Lucide (https://lucide.dev), uitgegeven onder de
+     ISC-licentie; de licentietekst staat bovenin dat bestand.
 
    - De Gradle-wrapper (gradlew, gradlew.bat en gradle/wrapper/) valt onder de Apache License 2.0;
      zie de kop van die bestanden.

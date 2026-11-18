@@ -25,6 +25,7 @@
 * [SpotiParty Hub](hub/README.md)
   * [Hub en admin-dashboard](hub/hub-dashboard.md)
   * [Feestspellen](hub/feestspellen.md)
+  * [Hub op een Linux-server](hub/linux-server.md)
 * [Gebruik](gebruik/README.md)
   * [Sneltoetsen en URL-opties](gebruik/sneltoetsen-en-url-opties.md)
 * [Hulp en achtergrond](hulp/README.md)

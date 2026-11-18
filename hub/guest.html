@@ -4,14 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SpotiParty</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎉</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231ed760' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M9 18V5l12-2v13'/><circle cx='6' cy='18' r='3'/><circle cx='18' cy='16' r='3'/></svg>">
 <style>
   :root { --accent: #1ed760; --bg: #0b0b10; --card: #16171d; --line: #ffffff1f; --muted: #b9bcc6; --err: #ff7b72; }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: #fff; font: 16px/1.45 system-ui, "Segoe UI", Roboto, sans-serif;
     padding: 16px 16px 40px; }
   main { max-width: 480px; margin: 0 auto; display: grid; gap: 14px; }
-  h1 { font-size: 22px; margin: 4px 0 0; }
+  h1 { font-size: 22px; margin: 4px 0 0; display: flex; align-items: center; gap: 8px; }
+  .ic { width: 1.1em; height: 1.1em; flex: none; vertical-align: -0.18em; color: var(--accent, #1ed760); }
+  h2 { display: flex; align-items: center; gap: 8px; }
+  button .ic { color: inherit; }
+
   .hub { color: var(--muted); font-size: 14px; }
   section { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 16px 18px; }
   section[hidden] { display: none; }
@@ -41,31 +45,31 @@
 <body>
 <main>
   <div>
-    <h1>🎉 SpotiParty</h1>
+    <h1><i data-icon="party-popper"></i>SpotiParty</h1>
     <div class="hub" id="hub"></div>
   </div>
 
   <section id="now">
-    <h2>🎵 Nu</h2>
+    <h2><i data-icon="music"></i>Nu</h2>
     <div class="song" id="song">…</div>
   </section>
 
   <section id="jam" hidden>
-    <h2>🎶 Doe mee met de Jam</h2>
+    <h2><i data-icon="users"></i>Doe mee met de Jam</h2>
     <p>Zet je eigen nummers in de wachtrij.</p>
     <a class="btn go" id="jam-link" target="_blank" rel="noopener">Open de Jam in Spotify</a>
   </section>
 
   <section id="vote" hidden>
-    <h2>👎 Dit nummer overslaan?</h2>
+    <h2><i data-icon="skip-forward"></i>Dit nummer overslaan?</h2>
     <p id="vote-text"></p>
     <div class="bar"><div id="vote-bar"></div></div>
-    <button class="skip" id="vote-btn">👎 Skip</button>
+    <button class="skip" id="vote-btn">Skip</button>
     <div class="msg" id="vote-msg"></div>
   </section>
 
   <section id="quiz" hidden>
-    <h2>🎤 Raad het nummer</h2>
+    <h2><i data-icon="mic-vocal"></i>Raad het nummer</h2>
     <div id="quiz-round"></div>
     <label for="name">Je naam</label>
     <input id="name" maxlength="24" autocomplete="nickname" placeholder="Bijv. Lisa">
@@ -73,12 +77,14 @@
     <input id="answer" maxlength="120" autocomplete="off" autocapitalize="off" placeholder="Wat speelt er?">
     <button class="go" id="guess-btn">Raden</button>
     <div class="msg" id="quiz-msg"></div>
-    <h2 style="margin-top:16px">🏆 Stand <small id="myscore" style="color:var(--muted);font-weight:400"></small></h2>
+    <h2 style="margin-top:16px"><i data-icon="trophy"></i>Stand <small id="myscore" style="color:var(--muted);font-weight:400"></small></h2>
     <ol id="top"></ol>
   </section>
 </main>
 
+<script src="/icons.js"></script>
 <script>
+Icon.fill(document.body);
 "use strict";
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -105,7 +111,7 @@ function render() {
   const s = state;
   $("hub").textContent = s.hub ? "Hub: " + s.hub : "";
   $("song").innerHTML = s.song ? `${esc(s.song.title)}<small>${esc(s.song.artist)}</small>`
-    : s.quiz_on && s.round && s.round.open ? "🤫 Geheim: raad het nummer!" : "Er speelt nu niets";
+    : s.quiz_on && s.round && s.round.open ? "Geheim: raad het nummer!" : "Er speelt nu niets";
 
   $("jam").hidden = !s.jam;
   if (s.jam) $("jam-link").href = s.jam;
@@ -116,7 +122,7 @@ function render() {
     $("vote-text").textContent = `${n} van ${need} stemmen om over te slaan.`;
     $("vote-bar").style.width = `${Math.min(100, n / need * 100)}%`;
     $("vote-btn").disabled = s.voted;
-    $("vote-btn").textContent = s.voted ? "Je hebt gestemd" : "👎 Skip";
+    $("vote-btn").textContent = s.voted ? "Je hebt gestemd" : "Skip";
   }
 
   $("quiz").hidden = !s.quiz_on;
@@ -124,7 +130,7 @@ function render() {
     const r = s.round;
     if (r && r.id !== roundId) { roundId = r.id; $("answer").value = ""; msg("quiz-msg", ""); }
     $("quiz-round").innerHTML = !r ? "<p>Wacht op het volgende nummer.</p>"
-      : r.done ? "<p>✅ Goed geraden! Wacht op het volgende nummer.</p>"
+      : r.done ? "<p>" + Icon.svg("circle-check") + " Goed geraden! Wacht op het volgende nummer.</p>"
       : r.open ? `<div class="clock">0:${String(r.left).padStart(2, "0")}</div><p style="text-align:center">Raad het nummer dat nu speelt!</p>`
       : "<p>De tijd is om. Het antwoord staat op het scherm.</p>";
     const can = !!(r && r.open && !r.done && r.tries < 3);

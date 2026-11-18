@@ -4,7 +4,7 @@
 "use strict";
 const Hub = (() => {
   const POLL_MS = 2000;
-  const VERSION = "web-2";
+  const VERSION = "web-3";
   let timer = 0, offset = 0, last = null, fails = 0, status = "", res = "";
   const done = new Set();   // command ids already run, so a repeated answer never pauses or skips twice
 
@@ -18,14 +18,19 @@ const Hub = (() => {
   }
   function kind() {
     const k = params.get("kind");
-    if (["web", "pi", "ha"].includes(k)) return k;
+    if (["web", "pi", "ha", "tv"].includes(k)) return k;
     return HA.embedded() ? "ha" : "web";
   }
-  function defaultName() { return { pi: "Raspberry Pi", ha: "Home Assistant", web: "PC" }[kind()]; }
+  function defaultName() {
+    if (kind() === "tv" && window.SpotiPartyTV) { try { return window.SpotiPartyTV.deviceName() || "Android TV"; } catch {} }
+    return { pi: "Raspberry Pi", ha: "Home Assistant", web: "PC", tv: "Android TV" }[kind()];
+  }
   function name() { return params.get("name") || store.get("screen_name") || defaultName(); }
 
   function base() {
     let u = params.get("hub") || store.get("hub_url");
+    // Opened from a hub (http://<hub>:8770/scherm/): that hub.
+    if (!u && /^https?:$/.test(location.protocol) && location.pathname.startsWith("/scherm/")) u = location.origin;
     if (!u && /^(127\.0\.0\.1|localhost)$/.test(location.hostname)) u = "http://127.0.0.1:8770";
     if (!u) return "";
     if (!/^https?:\/\//.test(u)) u = "http://" + u;
@@ -41,7 +46,7 @@ const Hub = (() => {
 
   async function poll() {
     const b = base();
-    if (!b) { apply(null); status = ""; hubDown("Geen Hub-adres ingesteld: druk op S (of ⚙) en vul het in bij Hub."); return; }
+    if (!b) { apply(null); status = ""; hubDown("Geen Hub-adres ingesteld: druk op S (of het tandwiel) en vul het in bij Hub."); return; }
     if (location.protocol === "https:" && b.startsWith("http:")) {
       status = "Deze pagina draait via https://, de Hub via http://: de browser blokkeert dat. Open SpotiParty via http:// op je eigen netwerk.";
       hubDown("Open deze pagina via http:// op je eigen netwerk.");
@@ -81,7 +86,7 @@ const Hub = (() => {
     if (done.size > 200) done.clear();
   }
 
-  const NOTICE = { info: ["📢", "Mededeling"], party: ["🎉", "Feest!"], alert: ["⚠️", "Belangrijk"] };
+  const NOTICE = { info: ["megaphone", "Mededeling"], party: ["party-popper", "Feest!"], alert: ["triangle-alert", "Belangrijk"] };
 
   /** The song of the account the music comes from, as the Hub reports it: it goes before this screen's own source. */
   function applyMusic(m) {
@@ -93,32 +98,13 @@ const Hub = (() => {
       sampledAt: (m.progress_at || Date.now() + offset) - offset,   // the hub's clock to this screen's
       playing: !!m.playing, art: m.art || "",
     });
-    const el = $("next");
-    if (Array.isArray(m.upnext)) {
-      // The next songs in the account's queue, as many as the dashboard says (0, 1, 3 or 5).
-      const list = m.upnext.filter(x => x && x.title);
-      el.replaceChildren();
-      if (list.length > 1) {
-        const h = document.createElement("b");
-        h.textContent = "Hierna";
-        el.append(h);
-      }
-      list.forEach(x => {
-        const row = document.createElement("div");
-        row.textContent = (list.length > 1 ? "" : "Hierna: ") + x.title;
-        if (x.artist) {
-          const a = document.createElement("i");
-          a.textContent = " · " + x.artist;
-          row.append(a);
-        }
-        el.append(row);
-      });
-      el.hidden = !list.length;
-    } else {
-      el.textContent = m.next ? "Hierna: " + m.next : "";
-      el.hidden = !m.next;
-    }
+    // The next songs in the account's queue, as many as the dashboard says (0, 1, 3 or 5).
+    const list = Array.isArray(m.upnext) ? m.upnext : m.next ? [{ title: m.next }] : [];
+    const key = JSON.stringify(list);
+    if (key !== nextKey) { nextKey = key; renderNext(list); }
   }
+
+  let nextKey = "";
 
   /** Skip votes and the quiz, as the Hub reports them. */
   let party = null, quizKey = "";
@@ -126,7 +112,10 @@ const Hub = (() => {
     party = p || null;
     const v = party && party.votes, vb = $("votes");
     vb.hidden = !v;
-    if (v) vb.textContent = `👎 ${v[0]}/${v[1]} willen overslaan`;
+    if (v) {
+      vb.querySelector("span").textContent = `${v[0]}/${v[1]} willen overslaan`;
+      vb.querySelector(".meter > i").style.width = `${Math.min(100, v[0] / Math.max(1, v[1]) * 100)}%`;
+    }
     const q = party && party.quiz, box = $("quiz");
     document.body.classList.toggle("quiz", !!(q && q.phase === "guess"));
     document.body.classList.toggle("reveal", !!(q && q.phase === "reveal"));
@@ -137,21 +126,28 @@ const Hub = (() => {
     quizKey = key;
     const card = box.querySelector(".card");
     card.replaceChildren();
-    const add = (cls, text) => { const e = document.createElement("div"); e.className = cls; e.textContent = text; card.append(e); };
+    const add = (cls, text, icon) => {
+      const e = document.createElement("div");
+      e.className = cls;
+      if (icon) e.innerHTML = Icon.svg(icon);
+      e.append(text);
+      card.append(e);
+    };
     if (q.phase === "guess") {
-      add("q", "🎤 Raad het nummer!");
+      add("q", "Raad het nummer!", "mic-vocal");
       add("clock", "");
-      add("sub", "Scan de QR-code en raad op je telefoon");
+      add("sub", "Scan de QR-code en raad op je telefoon", "scan-line");
       add("sub right", "");
     } else {
-      add("q", "Het was");
+      add("q", "Het was", "music");
       add("big", q.title);
       add("sub", q.artist);
       if (q.top && q.top.length) {
         const ol = document.createElement("ol");
         q.top.forEach(([n, pts], i) => {
           const li = document.createElement("li"), s = document.createElement("span"), b = document.createElement("b");
-          s.textContent = `${["🥇", "🥈", "🥉"][i] || i + 1 + "."} ${n}`;
+          li.innerHTML = `<span class="n">${i ? i + 1 : Icon.svg("crown")}</span>`;
+          s.textContent = n;
           b.textContent = pts;
           li.append(s, b);
           ol.append(li);
@@ -166,7 +162,10 @@ const Hub = (() => {
     if (!q || q.phase !== "guess") return;
     const card = $("quiz").querySelector(".card"), clock = card.querySelector(".clock"), r = card.querySelector(".right");
     if (clock) clock.textContent = String(Math.max(0, Math.ceil((q.until - (Date.now() + offset)) / 1000)));
-    if (r) r.textContent = q.right ? `✅ ${q.right} ${q.right === 1 ? "gast heeft" : "gasten hebben"} het al goed` : "";
+    if (r) {
+      const t = q.right ? `${q.right} ${q.right === 1 ? "gast heeft" : "gasten hebben"} het al goed` : "";
+      if (r.dataset.t !== t) { r.dataset.t = t; r.innerHTML = t ? Icon.svg("circle-check") : ""; r.append(t); }
+    }
   }
 
   function apply(d) {
@@ -174,13 +173,16 @@ const Hub = (() => {
     // What the empty screen says: Spotify is linked at the Hub only.
     if (source !== "ha") {
       $("idle").textContent = !d ? "Geen SpotiParty Hub gevonden. Start SpotiParty op de pc met de Hub."
-        : d.spotify === false ? HUB_NEEDED : "Zet muziek aan in Spotify \u{1F389}";
+        : d.spotify === false ? HUB_NEEDED : "Zet muziek aan in Spotify";
     }
     // The Jam link set in the dashboard counts on every screen.
     const jam = d && d.jam && isSpotifyLink(d.jam) ? d.jam : "";
     // With skip votes or the quiz on, the QR code leads to the hub's guest page (the Jam link is on it too).
     const guest = d && d.guest && /^http:\/\/[\d.]+:\d+\/gast$/.test(d.guest) ? d.guest : "";
-    if (jam !== hubJam || guest !== hubGuest) { hubJam = jam; hubGuest = guest; showJam(); }
+    const has = d && d.guest_has ? d.guest_has : null;
+    if (jam !== hubJam || guest !== hubGuest || JSON.stringify(has) !== JSON.stringify(hubHas)) {
+      hubJam = jam; hubGuest = guest; hubHas = has; showJam();
+    }
     applyParty(d && d.party);
     last = d && d.pro ? d : null;
     const n = last && last.notice;
@@ -189,8 +191,8 @@ const Hub = (() => {
     else if (box.dataset.id !== n.id || box.hidden) {
       box.dataset.id = n.id;
       const style = NOTICE[n.style] ? n.style : "info";
-      box.className = style;
-      box.querySelector(".icon").textContent = NOTICE[style][0];
+      box.className = style + " coverbg";
+      box.querySelector(".badge").innerHTML = Icon.svg(NOTICE[style][0]);
       box.querySelector(".kind").textContent = NOTICE[style][1];
       const text = box.querySelector(".text");
       text.textContent = n.text;
@@ -233,7 +235,12 @@ const Hub = (() => {
     const left = b.until - (Date.now() + offset), total = b.minutes * 60000;
     el.hidden = false;
     el.classList.toggle("done", left <= 0);
-    el.querySelector(".t").textContent = left > 0 ? b.title : "We gaan weer verder! 🎉";
+    const t = el.querySelector(".t"), state = left > 0 ? "run" : "done";
+    if (t.dataset.state !== state) {
+      t.dataset.state = state;
+      t.innerHTML = Icon.svg(left > 0 ? "coffee" : "party-popper") + "<span></span>";
+    }
+    t.querySelector("span").textContent = left > 0 ? b.title : "We gaan weer verder!";
     el.querySelector(".clock").textContent = left > 0 ? mmss(left) : "0:00";
     el.querySelector(".sub").textContent = left > 0 ? "De muziek gaat zo weer verder" : "";
     el.querySelector(".ring > div").style.width = `${Math.max(0, Math.min(100, left / total * 100))}%`;
@@ -255,6 +262,8 @@ const Hub = (() => {
   $("hub-save").onclick = () => {
     const u = $("hub-url").value.trim();
     if (u) store.set("hub_url", u); else store.del("hub_url");
+    // The TV app loads the screen from the hub: it moves to the new one (or searches again when empty).
+    if (window.SpotiPartyTV && u && base() !== location.origin) { try { window.SpotiPartyTV.useHub(u); } catch {} }
     const n = $("screen-name").value.trim();
     if (n) store.set("screen_name", n); else store.del("screen_name");
     fails = 2;

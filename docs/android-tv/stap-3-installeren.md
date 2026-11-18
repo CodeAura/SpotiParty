@@ -33,13 +33,13 @@ Je ziet `Success` als het gelukt is. De `-r` zorgt ervoor dat een oudere versie 
 {% endstep %}
 
 {% step %}
-### Lyrics installeren
+### De oude Lyrics-app
+
+Had je de **Lyrics**-app van een oudere versie? Die is niet meer nodig:
 
 ```bash
-adb install -r android/lyrics/app/build/outputs/apk/release/app-release.apk
+adb uninstall io.github.cleanyourtv.lyrics
 ```
-
-Lyrics heeft geen eigen scherm en verschijnt dus niet tussen je apps. Dat hoort zo.
 {% endstep %}
 {% endstepper %}
 

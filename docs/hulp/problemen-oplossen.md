@@ -36,7 +36,7 @@ Zoek hieronder de melding of het probleem dat je ziet.
 | Probleem                                               | Oplossing                                                                                                                                                       |
 | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | _Geen songtekst voor dit nummer_                       | [lrclib.net](https://lrclib.net) heeft dit nummer niet. Bij heel nieuwe of onbekende nummers komt dat voor.                                                     |
-| **Tv:** _Installeer de Lyrics-add-on voor songteksten_ | Installeer de Lyrics-app. Staat hij er al op? Dan zijn de apps op verschillende PC's gebouwd. Verwijder beide en installeer ze opnieuw, gebouwd op dezelfde PC. |
+| **Tv:** blijft op _De SpotiParty Hub zoeken_ | Draait de Hub, in hetzelfde netwerk? Vul anders het adres uit het dashboard in op de tv (bijv. `192.168.1.20:8770`) en kies **Verbinden**. |
 
 ## Android TV
 
@@ -46,7 +46,7 @@ Zoek hieronder de melding of het probleem dat je ziet.
 | De QR-code voor je telefoon werkt niet       | Je telefoon moet op hetzelfde wifi-netwerk zitten als de tv.                                                |
 | _De tv is niet verbonden met een netwerk_    | De tv heeft geen netwerk. Controleer wifi of kabel.                                                         |
 | _Dat is geen Spotify-link_                   | Plak de uitnodiging van je Jam, die begint met `https://spotify.link/`.                                     |
-| SpotiParty opent niet vanzelf                | Dat staat standaard uit. Geef **Weergeven vóór andere apps** (stap 4) en zet **Vanzelf openen** aan op de telefoonpagina (**Menu**). |
+| SpotiParty opent niet vanzelf                | Dat staat standaard uit. Geef **Weergeven vóór andere apps** (stap 4) en zet **Vanzelf openen** aan in de instellingen van het scherm (**Menu**). |
 | De tv verschijnt niet in het dashboard       | Druk op **Menu**, scan de code en vul het adres van de Hub in.                                               |
 | `INSTALL_FAILED_UPDATE_INCOMPATIBLE`         | Je bouwt op een andere PC dan eerst. Zie [Updaten en verwijderen](../android-tv/updaten-en-verwijderen.md). |
 

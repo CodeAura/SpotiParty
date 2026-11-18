@@ -113,6 +113,10 @@ koppel je één keer je Spotify-account en je Jam-link, en alle schermen in huis
 De desktop-app en de Raspberry Pi starten de Hub vanzelf. Open daarna `http://<adres-van-die-computer>:8770` en vul de
 PIN in. Er draait één Hub per netwerk: start je de app op een tweede pc, dan wordt die een scherm van de eerste Hub.
 
+**Op een server die altijd aan staat?** De Hub draait ook zonder scherm op Linux, met systemd of Docker:
+`sudo ./server/install.sh` of `cd server && docker compose up -d --build`. Het feestscherm staat dan op
+`http://<server>:8770/scherm/`, voor elke browser of smart-tv. Zie [Hub op een Linux-server](docs/hub/linux-server.md).
+
 <img src="docs/images/hub-dashboard.png" alt="Het Hub-dashboard: vier schermen online, Muziek bedienen, de Jam-link met QR-code en het Feest-blok met Skip-stemmen en Raad het nummer" width="860">
 
 | Onderdeel in het dashboard | Wat het doet |
@@ -275,8 +279,9 @@ Bijwerken: `git pull` en `sudo ./pi/install.sh` opnieuw; je instellingen blijven
 ## 📺 Installeren op de tv
 
 Dit werkt op Android TV en Google TV met Android 8 of nieuwer, zoals Chromecast met Google TV, Sony, Philips,
-TCL, Hisense en NVIDIA Shield. Je installeert twee apps: **SpotiParty** zelf en **Lyrics**, een hulpje zonder
-eigen scherm dat de songteksten opzoekt.
+TCL, Hisense en NVIDIA Shield. Je installeert één app: **SpotiParty**. Die toont hetzelfde scherm als de webapp,
+rechtstreeks van je Hub (`http://<hub>:8770/scherm/`). Werkt de Hub zichzelf bij, dan heeft de tv meteen de nieuwe
+versie: de app zelf hoef je daarvoor niet opnieuw te installeren.
 
 <img src="docs/images/tv-install.svg" alt="Vijf stappen: debuggen aan, bouwen, installeren, toegang geven, openen en verbinden met de Hub" width="860">
 
@@ -297,17 +302,10 @@ Je hebt **JDK 17** en de **Android SDK** (platform 34) nodig. Installeer je
 git clone https://github.com/CodeAura/SpotiParty.git
 cd SpotiParty/android/party-mode
 ./gradlew assembleRelease
-cd ../lyrics
-./gradlew assembleRelease
 cd ../..
 ```
 
 Op Windows schrijf je `gradlew.bat assembleRelease` in plaats van `./gradlew assembleRelease`.
-
-> [!IMPORTANT]
-> Bouw beide apps op **dezelfde PC**. Ze moeten met dezelfde sleutel ondertekend zijn, anders krijgt SpotiParty
-> geen songteksten van de Lyrics-app. Liever niet zelf bouwen? De workflow **Android TV apps** onder
-> [Actions](../../actions) maakt beide APK's, met dezelfde sleutel.
 
 ### Stap 3: Installeren
 
@@ -316,15 +314,13 @@ adb connect 192.168.1.50
 ```
 
 Vervang `192.168.1.50` door het IP-adres van je tv. Op de tv verschijnt **"USB-foutopsporing toestaan?"**: kies
-**Toestaan**. Installeer daarna beide apps:
+**Toestaan**. Installeer daarna de app:
 
 ```bash
 adb install -r android/party-mode/app/build/outputs/apk/release/app-release.apk
 ```
 
-```bash
-adb install -r android/lyrics/app/build/outputs/apk/release/app-release.apk
-```
+Had je de oude **Lyrics**-app nog? Die is niet meer nodig: `adb uninstall io.github.cleanyourtv.lyrics`.
 
 ### Stap 4: Toegang geven
 
@@ -356,15 +352,16 @@ adb shell appops set io.github.cleanyourtv.partymode SYSTEM_ALERT_WINDOW allow
 
 ### Stap 5: Openen en verbinden met de Hub
 
-1. Open **SpotiParty** op de tv en zet muziek aan.
-2. De tv **zoekt de Hub zelf** op het netwerk en verschijnt in het dashboard onder **📺 Schermen**. Vanaf dan komen
-   de Jam-link, de komende nummers, meldingen, de pauze en de feestspellen uit de Hub.
-3. Vindt de tv de Hub niet (sommige routers blokkeren dat), druk dan op **Menu**, scan de code met je telefoon en vul
-   op de pagina die opent het adres van de Hub in. Daar geef je de tv ook een naam, en zet je **Vanzelf openen**
-   aan of uit (standaard uit).
+1. Open **SpotiParty** op de tv.
+2. De tv **zoekt de Hub zelf** op het netwerk, laadt het scherm van de Hub en verschijnt in het dashboard onder
+   **Schermen**. De Jam-link, de komende nummers, meldingen, de pauze en de feestspellen komen allemaal uit de Hub.
+3. Vindt de tv de Hub niet (sommige routers blokkeren dat), vul dan op de tv het adres in dat in het dashboard staat,
+   bijvoorbeeld `192.168.1.20:8770`, en kies **Verbinden**.
+4. Met **Menu** op de afstandsbediening open je de instellingen van het scherm: de naam van de tv, het adres van de
+   Hub en **SpotiParty vanzelf openen als Spotify begint te spelen** (standaard uit).
 
-Zonder Hub kun je op diezelfde telefoonpagina nog steeds een Jam-link plakken; **↻ Nieuwe Jam** (twee keer OK) haalt
-die weer weg. Je telefoon moet op hetzelfde wifi-netwerk zitten als de tv.
+Heeft de Hub geen nummer (er is nog geen Spotify-account gekoppeld), dan toont de tv wat er op de tv zelf speelt.
+De afstandsbediening pauzeert en slaat over, ook als de muziek van de Hub komt.
 
 ---
 
@@ -472,7 +469,7 @@ Stopt de Jam, dan werkt de oude link niet meer. Start dan een nieuwe Jam en plak
 
 | Knop (Android TV) | Wat het doet |
 |---|---|
-| **Menu** | De code voor de telefoonpagina terughalen |
+| **Menu** | De instellingen van het scherm (naam, Hub-adres, Vanzelf openen) |
 | **↻ Nieuwe Jam**, twee keer **OK** | Een Jam-link die je met de telefoon zette weghalen |
 
 | Toevoeging aan de URL | Wat het doet |
@@ -498,7 +495,7 @@ Stopt de Jam, dan werkt de oude link niet meer. Start dan een nieuwe Jam en plak
 | De Windows-app werkt zich niet bij | Automatisch bijwerken kan pas vanaf 2.7.0. Kom je van 2.6.0 of ouder, installeer [`SpotiParty-Setup-2.7.1.exe`](../../releases/download/v2.7.1/SpotiParty-Setup-2.7.1.exe) dan één keer met de hand. |
 | De Mac-app werkt zich niet bij | Dat kan pas vanaf 2.7.1, en alleen als SpotiParty in **Apps** staat (niet vanaf de `.dmg` of uit Downloads). Sleep [`SpotiParty-macos-apple-silicon.dmg`](../../releases/latest/download/SpotiParty-macos-apple-silicon.dmg) één keer met de hand naar **Apps**. |
 | **Tv:** *"SpotiParty mag nog niet zien wat er speelt"* | Zet **Meldingstoegang** aan (stap 4 van de tv-installatie). |
-| **Tv:** geen songtekst, *"Installeer de Lyrics-add-on"* | Installeer de Lyrics-app, gebouwd op dezelfde PC als SpotiParty. |
+| **Tv:** blijft op *De SpotiParty Hub zoeken* | Vul het adres van de Hub in op de tv. Controleer of de Hub draait en of tv en Hub in hetzelfde netwerk zitten. |
 | *"Geen songtekst voor dit nummer"* | lrclib.net heeft dit nummer niet. Bij heel nieuwe of onbekende nummers komt dat voor. |
 | **HA:** HACS meldt *"no spotiparty-card.js"* | De release mist het kaartbestand. De nieuwste release heeft het wel: werk bij naar de nieuwste versie. |
 | **HA:** na een update verandert er niets | Herlaad met **Ctrl+F5**, en kijk bij **Bronnen** dat er maar één `spotiparty-card.js` staat. |
@@ -530,10 +527,11 @@ Meer oplossingen in [docs/hulp](docs/hulp/problemen-oplossen.md).
 
 | Map | Wat erin zit |
 |---|---|
+| `server/` | De Hub op een Linux-server: `install.sh` (systemd), `Dockerfile` en `docker-compose.yml` |
 | `web/` | Het feestscherm (HTML/JS), plus `serve.py` |
 | `hub/` | De Hub: `spotiparty_hub.py`, het dashboard, de gastenpagina, Spotify en de feestspellen |
 | `desktop/` | De desktop-app, de auto-updater, de Windows-installer en de Mac-buildscript |
-| `android/` | De Android TV-apps `party-mode` en `lyrics` |
+| `android/` | De Android TV-app `party-mode` (een WebView met het scherm van de Hub); `lyrics` is niet meer nodig |
 | `pi/` | Het installatiescript voor de Raspberry Pi |
 | `tools/build_ha.py` | Maakt `dist/spotiparty-card.js` voor Home Assistant |
 | `docs/` | De volledige handleiding (GitBook) |

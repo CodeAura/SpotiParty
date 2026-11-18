@@ -4,14 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SpotiParty Hub</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎛️</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231ed760' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><line x1='21' x2='14' y1='4' y2='4'/><line x1='10' x2='3' y1='4' y2='4'/><line x1='21' x2='12' y1='12' y2='12'/><line x1='8' x2='3' y1='12' y2='12'/><line x1='21' x2='16' y1='20' y2='20'/><line x1='12' x2='3' y1='20' y2='20'/><line x1='14' x2='14' y1='2' y2='6'/><line x1='8' x2='8' y1='10' y2='14'/><line x1='16' x2='16' y1='18' y2='22'/></svg>">
 <style>
   :root { --accent: #1ed760; --bg: #0b0b10; --card: #16171d; --line: #ffffff1f; --muted: #b9bcc6; --err: #ff7b72; }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: #fff; font: 15px/1.45 system-ui, "Segoe UI", Roboto, sans-serif; }
   header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line);
     position: sticky; top: 0; background: #0b0b10ee; backdrop-filter: blur(8px); z-index: 2; }
-  header h1 { font-size: 18px; margin: 0; flex: 1; }
+  header h1 { font-size: 18px; margin: 0; flex: 1; display: flex; align-items: center; gap: 8px; }
+  .ic { width: 1.1em; height: 1.1em; flex: none; vertical-align: -0.18em; color: var(--accent, #1ed760); }
+  .player .ic, button .ic { color: inherit; }
+  .player button { display: inline-grid; place-items: center; }
+
   main { max-width: 1100px; margin: 0 auto; padding: 16px; display: grid; gap: 16px;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
   section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; min-width: 0; }
@@ -82,26 +86,26 @@
 </head>
 <body>
 <header>
-  <h1>🎛️ SpotiParty Hub <span id="hubname" style="color:var(--muted);font-weight:400"></span></h1>
+  <h1><i data-icon="sliders-horizontal"></i>SpotiParty Hub <span id="hubname" style="color:var(--muted);font-weight:400"></span></h1>
 </header>
 
 <main>
   <section class="wide">
-    <h2>📺 Schermen <small id="count"></small></h2>
+    <h2><i data-icon="monitor"></i>Schermen <small id="count"></small></h2>
     <div id="screens"><p class="empty">Nog geen schermen. Open SpotiParty op je tv, PC of Raspberry Pi: ze melden zich hier vanzelf.</p></div>
   </section>
 
   <section>
-    <h2>🎵 Muziek bedienen <small id="m-acct"></small></h2>
+    <h2><i data-icon="music"></i>Muziek bedienen <small id="m-acct"></small></h2>
     <div id="m-linked" hidden>
       <div class="nowplaying" id="m-song"></div>
       <p class="nowplaying" id="m-device" style="color:var(--muted);font-size:13px"></p>
       <div class="player">
-        <button data-cmd="volume_down" title="Zachter">🔉</button>
-        <button data-cmd="previous" title="Vorige">⏮</button>
-        <button data-cmd="toggle" class="big" id="m-toggle" title="Afspelen of pauzeren">⏯</button>
-        <button data-cmd="next" title="Volgende">⏭</button>
-        <button data-cmd="volume_up" title="Harder">🔊</button>
+        <button data-cmd="volume_down" title="Zachter"><i data-icon="volume-1"></i></button>
+        <button data-cmd="previous" title="Vorige"><i data-icon="skip-back"></i></button>
+        <button data-cmd="toggle" class="big" id="m-toggle" title="Afspelen of pauzeren"><i data-icon="play"></i></button>
+        <button data-cmd="next" title="Volgende"><i data-icon="skip-forward"></i></button>
+        <button data-cmd="volume_up" title="Harder"><i data-icon="volume-2"></i></button>
       </div>
       <div class="msg" id="m-msg"></div>
       <p>Bedient je Spotify-account, op welk apparaat het ook speelt. De pauzeknop pauzeert hier ook.
@@ -127,7 +131,7 @@
   </section>
 
   <section>
-    <h2>🎶 Spotify Jam</h2>
+    <h2><i data-icon="users"></i>Spotify Jam</h2>
     <div class="wifi">
       <div>
         <p>Plak hier één keer de link van je Jam: alle schermen tonen dan dezelfde QR-code.</p>
@@ -142,7 +146,7 @@
   </section>
 
   <section>
-    <h2>🎉 Feest <small id="p-live"></small></h2>
+    <h2><i data-icon="party-popper"></i>Feest <small id="p-live"></small></h2>
     <div class="wifi">
       <div>
         <label for="p-upnext">Komende nummers op het scherm</label>
@@ -150,7 +154,7 @@
           <option value="0">Geen</option><option value="1">1 (alleen "Hierna")</option>
           <option value="3">3</option><option value="5">5</option>
         </select>
-        <label class="check"><input type="checkbox" id="p-vote"> 👎 Gasten mogen stemmen om over te slaan</label>
+        <label class="check"><input type="checkbox" id="p-vote"> Gasten mogen stemmen om over te slaan</label>
         <div class="row"><label>Stemmen nodig<input id="p-need" type="number" min="1" max="50" value="3" inputmode="numeric"></label></div>
         <div class="row"><button class="go" id="p-save">Opslaan</button></div>
         <div class="msg" id="p-msg"></div>
@@ -160,7 +164,7 @@
         <p style="font-size:12px;margin-top:6px"><a id="guest-link" target="_blank" rel="noopener" style="color:var(--muted)"></a></p>
       </div>
     </div>
-    <h2 style="margin-top:14px">🎤 Raad het nummer</h2>
+    <h2 style="margin-top:14px"><i data-icon="mic-vocal"></i>Raad het nummer</h2>
     <p>Titel, hoes en songtekst blijven 15 seconden verborgen. Gasten raden op hun telefoon; wie het snelst de titel raadt, krijgt de meeste punten.</p>
     <div class="row"><button class="go" id="q-toggle">Quiz starten</button><button id="q-reset">Scores wissen</button></div>
     <div class="msg" id="q-msg"></div>
@@ -170,13 +174,13 @@
   </section>
 
   <section>
-    <h2>💬 Melding op het scherm</h2>
+    <h2><i data-icon="message-square-text"></i>Melding op het scherm</h2>
     <div id="notice-live"></div>
     <label for="n-text">Bericht</label>
-    <textarea id="n-text" maxlength="280" placeholder="Bijv. De pizza's zijn er! 🍕"></textarea>
+    <textarea id="n-text" maxlength="280" placeholder="Bijv. De pizza's zijn er!"></textarea>
     <div class="row">
       <label>Stijl<select id="n-style">
-        <option value="info">Gewoon</option><option value="party">Feest 🎉</option><option value="alert">Belangrijk ⚠️</option>
+        <option value="info">Gewoon</option><option value="party">Feest</option><option value="alert">Belangrijk</option>
       </select></label>
       <label>Hoe lang<select id="n-secs">
         <option value="15">15 seconden</option><option value="30" selected>30 seconden</option><option value="60">1 minuut</option>
@@ -190,7 +194,7 @@
   </section>
 
   <section>
-    <h2>⏸️ Korte pauze</h2>
+    <h2><i data-icon="coffee"></i>Korte pauze</h2>
     <div id="break-live"></div>
     <p>Zet een aftelklok op de schermen. Als de tijd om is, staat er dat het feest verdergaat.</p>
     <label>Hoeveel minuten?</label>
@@ -210,7 +214,7 @@
   </section>
 
   <section>
-    <h2>📶 Gasten-wifi</h2>
+    <h2><i data-icon="wifi"></i>Gasten-wifi</h2>
     <div class="wifi">
       <div>
         <label for="w-ssid">Netwerknaam (SSID)</label>
@@ -230,7 +234,7 @@
   </section>
 
   <section>
-    <h2>⚙️ Hub</h2>
+    <h2><i data-icon="settings"></i>Hub</h2>
     <p>Open dit dashboard op je telefoon:</p>
     <p id="urls"></p>
     <label for="h-name">Naam van deze hub</label>
@@ -244,7 +248,7 @@
 
 <div id="login">
   <form onsubmit="return false">
-    <h2>🎛️ SpotiParty Hub</h2>
+    <h2><i data-icon="sliders-horizontal"></i>SpotiParty Hub</h2>
     <p>Vul de PIN in. Je vindt hem in het venster van de SpotiParty-app, of in de terminal van je Raspberry Pi.</p>
     <input id="pin" inputmode="numeric" autocomplete="current-password" maxlength="12" type="password">
     <div class="row"><button class="go" id="pin-go">Inloggen</button></div>
@@ -252,11 +256,14 @@
   </form>
 </div>
 
+<script src="icons.js"></script>
 <script src="qr.js"></script>
 <script>
+Icon.fill(document.body);
 "use strict";
 const $ = id => document.getElementById(id);
-const KIND = { tv: "📺 Android TV", web: "💻 Browser", pi: "🍓 Raspberry Pi", ha: "🏠 Home Assistant" };
+const KIND = { tv: ["tv", "Android TV"], web: ["laptop", "Browser"], pi: ["cpu", "Raspberry Pi"], ha: ["house", "Home Assistant"] };
+const kindLabel = k => KIND[k] ? Icon.svg(KIND[k][0]) + " " + KIND[k][1] : esc(k);
 let pin = sessionStorage.getItem("hub.pin") || localStorage.getItem("hub.pin") || "";
 let state = null, offset = 0, formsFilled = false;
 
@@ -325,8 +332,8 @@ function render() {
   $("screens").innerHTML = s.screens.length ? s.screens.map(x => `
     <div class="screen">
       <div class="top"><span class="dot ${x.online ? "on" : ""}"></span><b title="${esc(x.id)}">${esc(x.name)}</b></div>
-      <div class="meta">${KIND[x.kind] || x.kind} · ${esc(x.ip)} · ${x.online ? "online" : `${x.ago < 120 ? x.ago + " s" : Math.round(x.ago / 60) + " min"} geleden`}</div>
-      <div class="song">${x.song ? (x.playing ? "▶️ " : "⏸ ") + esc(x.song) : "Geen muziek"}</div>
+      <div class="meta">${kindLabel(x.kind)} · ${esc(x.ip)} · ${x.online ? "online" : `${x.ago < 120 ? x.ago + " s" : Math.round(x.ago / 60) + " min"} geleden`}</div>
+      <div class="song">${x.song ? Icon.svg(x.playing ? "play" : "pause") + " " + esc(x.song) : "Geen muziek"}</div>
       ${resText(x.res) ? `<div class="err">${esc(resText(x.res))}</div>` : ""}
       <div class="row">
         <button data-act="ident" data-id="${esc(x.id)}">Aanwijzen</button>
@@ -377,9 +384,9 @@ function renderPlayer() {
   if (!$("sp-client").value && sp.client) $("sp-client").value = sp.client;
   const p = sp.player;
   $("m-acct").textContent = sp.linked ? "Spotify-account" : "";
-  $("m-song").textContent = !p ? "…" : p.title ? (p.playing ? "▶️ " : "⏸ ") + p.title + (p.artist ? " – " + p.artist : "") : "Er speelt niets";
+  $("m-song").textContent = !p ? "…" : p.title ? p.title + (p.artist ? " – " + p.artist : "") : "Er speelt niets";
   $("m-device").textContent = p && p.device ? "op " + p.device + (p.volume != null ? ` · volume ${p.volume}%` : "") : "";
-  $("m-toggle").textContent = p && p.playing ? "⏸" : "▶";
+  $("m-toggle").innerHTML = Icon.svg(p && p.playing ? "pause" : "play");
   if (sp.error && !$("m-msg").dataset.sent) msg("m-msg", sp.error, true);
 }
 document.querySelector(".player").onclick = async e => {
@@ -448,7 +455,7 @@ function renderParty() {
     $("guest-link").href = state.guest;
     $("guest-link").textContent = state.guest;
   }
-  $("p-live").textContent = [pa.vote_on ? `👎 ${pa.votes || 0}/${pa.vote_needed}` : "", pa.quiz_on ? "🎤 quiz loopt" : ""]
+  $("p-live").textContent = [pa.vote_on ? `skip ${pa.votes || 0}/${pa.vote_needed}` : "", pa.quiz_on ? "quiz loopt" : ""]
     .filter(Boolean).join(" · ");
   $("q-toggle").textContent = pa.quiz_on ? "Quiz stoppen" : "Quiz starten";
   $("q-toggle").className = pa.quiz_on ? "bad" : "go";
@@ -487,7 +494,7 @@ function renderBreak() {
     $("b-more").onclick = () => api("break-extend", { minutes: 5 }).then(refresh).catch(e => msg("b-msg", e.message, true));
     $("b-stop").onclick = () => api("break-clear", {}).then(refresh).catch(e => msg("b-msg", e.message, true));
   }
-  $("b-clock").textContent = left > 0 ? mmss(left) : "Afgelopen 🎉";
+  $("b-clock").textContent = left > 0 ? mmss(left) : "Afgelopen";
 }
 setInterval(renderBreak, 250);
 

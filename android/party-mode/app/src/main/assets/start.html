@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpotiParty</title>
+<!-- Shown by the TV app until it finds a SpotiParty Hub; then the screen itself comes from the Hub. -->
+<style>
+  :root { --accent: #1ed760; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0b0b10; color: #fff; overflow: hidden;
+    font-family: system-ui, Roboto, sans-serif; }
+  body { display: grid; place-items: center; background:
+    radial-gradient(60% 70% at 25% 30%, #ff4e8a55, transparent 70%),
+    radial-gradient(60% 70% at 80% 75%, #7b3cff55, transparent 70%), #0b0b10; }
+  .card { width: min(880px, 86vw); padding: 5vh 5vw; border-radius: 4vh; text-align: center;
+    background: linear-gradient(135deg, #ffffff29, #ffffff0d), #0a0a1073;
+    -webkit-backdrop-filter: blur(24px); backdrop-filter: blur(24px);
+    border: 1px solid #ffffff33; box-shadow: 0 2vh 6vh #00000059; }
+  svg { width: 9vh; height: 9vh; color: var(--accent); }
+  h1 { font-size: 5vh; margin: 2vh 0 1vh; }
+  p { font-size: 2.6vh; color: #ffffffcc; margin: 1vh 0; }
+  .spin { display: inline-block; width: 2.4vh; height: 2.4vh; border: .4vh solid #ffffff33; border-top-color: var(--accent);
+    border-radius: 50%; animation: spin 1s linear infinite; vertical-align: -.4vh; margin-right: .8vh; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  form { display: flex; gap: 1.5vh; justify-content: center; margin-top: 4vh; }
+  input, button { font: inherit; font-size: 2.6vh; padding: 1.6vh 2.4vh; border-radius: 1.6vh; border: 2px solid #ffffff33;
+    background: #ffffff14; color: #fff; }
+  input { width: 50%; }
+  input:focus, button:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 .5vh #1ed76055; }
+  button { background: var(--accent); color: #000; font-weight: 700; border-color: transparent; }
+  small { display: block; margin-top: 3vh; font-size: 2vh; color: #ffffff80; }
+</style>
+</head>
+<body>
+<div class="card">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+    aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+  <h1>SpotiParty</h1>
+  <p id="why"><span class="spin"></span>De SpotiParty Hub zoeken op je netwerk...</p>
+  <p>Start SpotiParty op je pc, Mac, Raspberry Pi of server. Vindt de tv hem niet vanzelf? Vul dan het adres in
+    dat in het dashboard staat.</p>
+  <form id="f">
+    <input id="addr" inputmode="url" autocomplete="off" spellcheck="false" placeholder="192.168.1.20:8770">
+    <button>Verbinden</button>
+  </form>
+  <small id="ver"></small>
+</div>
+<script>
+"use strict";
+const tv = window.SpotiPartyTV;
+const why = decodeURIComponent(location.hash.slice(1));
+if (why) document.getElementById("why").innerHTML = '<span class="spin"></span>' +
+  why.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+const addr = document.getElementById("addr");
+try { addr.value = tv.typedHub(); document.getElementById("ver").textContent = "SpotiParty voor Android TV " + tv.version(); } catch {}
+document.getElementById("f").onsubmit = e => {
+  e.preventDefault();
+  try { tv.useHub(addr.value.trim()); } catch {}
+};
+</script>
+</body>
+</html>
