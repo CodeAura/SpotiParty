@@ -183,10 +183,18 @@
 
   /* Narrow (a small dashboard card, a phone): stacked, lyrics below. */
   @container (max-aspect-ratio: 1/1) {
-    #stage { flex-direction: column; justify-content: center; gap: 3cqh; text-align: center; }
-    #song { width: min(32cqh, 70cqw); }
-    #next .list { text-align: left; }
-    #lyrics { flex: none; width: 100%; padding: 0 0 20cqh; }
+    /* Room at the bottom for the QR code; a smaller cover; Hierna only the next song. */
+    #stage { flex-direction: column; justify-content: center; gap: 2.5cqh; text-align: center; padding: 3cqh 5cqw 20cqh; }
+    #song { width: min(90cqw, 70cqh); }
+    #cover { width: min(24cqh, 60cqw); margin: 0 auto; }
+    #bar, #next { width: min(100%, 44cqh); margin-left: auto; margin-right: auto; }
+    #title { margin-top: 1.6cqh; }
+    #bar { margin-top: 1.4cqh; }
+    #next { margin-top: 1.4cqh; }
+    #next .list { text-align: left; padding: .6em .9em; }
+    #next .list .head { display: none; }
+    #next .list .row ~ .row { display: none; }
+    #lyrics { flex: none; width: 100%; padding: 0; }
     #lyrics .l0, #lyrics .l3 { display: none; }
     #corner { right: auto; left: 50%; transform: translateX(-50%); bottom: 2.5cqh; }
     .qrcard { padding: 1cqh; }

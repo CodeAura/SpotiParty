@@ -5,16 +5,18 @@ import SpotlightCard from "../components/reactbits/SpotlightCard/SpotlightCard.j
 import ScrollReveal from "../components/reactbits/ScrollReveal/ScrollReveal.jsx";
 import ShinyText from "../components/reactbits/ShinyText/ShinyText.jsx";
 import Pic from "../components/Pic.jsx";
+import { MicVocal, QrCode, Sunset, ListMusic, PartyPopper, Lock, Music, MessageSquareText, Coffee, Wifi, Users, Server }
+  from "lucide-react";
 
 const SPOTS = [
-  { box: [3.9, 13.1, 26.5, 57.6], title: "Wat er speelt",
-    text: "De hoes, titel en artiest, groot in beeld. De hoes kleurt de hele achtergrond en de balk loopt mee met het nummer." },
-  { box: [32.5, 27.8, 38.1, 28.3], title: "De songtekst, in de maat",
+  { box: [3.9, 9.2, 25.8, 60.4], title: "Wat er speelt",
+    text: "De hoes, titel en artiest, groot in beeld. De hoes kleurt de hele achtergrond, en bij elk nieuw nummer draait hij zo in beeld." },
+  { box: [32.5, 27.8, 38, 28.4], title: "De songtekst, in de maat",
     text: "De regel die nu gezongen wordt staat groot in het midden. Teksten komen van lrclib.net: gratis, zonder account." },
-  { box: [3.9, 71.3, 26.5, 11.8], title: "Hierna",
-    text: "De komende 1, 3 of 5 nummers uit de wachtrij. Zo weet iedereen wanneer zijn nummer aan de beurt is." },
-  { box: [63.1, 76.7, 34.1, 20.7], title: "Eén QR-code voor iedereen",
-    text: "Vrienden scannen en zetten hun eigen nummers in de Jam. Met de feestspellen aan leidt de code naar de gastenpagina." },
+  { box: [3.9, 69.6, 25.8, 21], title: "Hierna",
+    text: "Onder de balk, als glas over de hoes: één nummer als pil, of de komende 3 of 5 als lijstje." },
+  { box: [62.6, 76.8, 35, 20.4], title: "Eén QR-code voor iedereen",
+    text: "Vrienden scannen en doen mee met de Jam. Staan de feestspellen aan, dan zegt de kaart precies wat scannen doet." },
 ];
 
 export function Explain() {
@@ -83,12 +85,12 @@ export function Explain() {
 }
 
 const FEATURES = [
-  ["🎤", "Meezingen", "De songtekst loopt regel voor regel mee. De regel die nu gezongen wordt staat groot in beeld."],
-  ["📱", "Jam-QR voor iedereen", "Vrienden scannen de code en zetten hun nummers in de wachtrij. Overslaan of het volume veranderen kunnen ze niet."],
-  ["🌅", "Sfeer uit de hoes", "De hoes kleurt het hele scherm, en de kleuren lopen mee met elk nieuw nummer."],
-  ["⏭️", "Hierna in de wachtrij", "Iedereen ziet welke nummers eraan komen: één, drie of vijf, zoals jij wilt."],
-  ["🎉", "Feestspellen", "Gasten stemmen om een nummer over te slaan, of spelen Raad het nummer op hun telefoon."],
-  ["🔒", "Privé", "Geen account bij ons en geen tracking. Alles draait in je eigen netwerk, op je eigen Hub."],
+  [MicVocal, "Meezingen", "De songtekst loopt regel voor regel mee. De regel die nu gezongen wordt staat groot in beeld."],
+  [QrCode, "Jam-QR voor iedereen", "Vrienden scannen de code en zetten hun nummers in de wachtrij. Overslaan of het volume veranderen kunnen ze niet."],
+  [Sunset, "Sfeer uit de hoes", "De hoes kleurt het hele scherm. Meldingen, de pauze en Hierna liggen er als glas overheen, in dezelfde kleuren."],
+  [ListMusic, "Hierna in de wachtrij", "Iedereen ziet welke nummers eraan komen: één, drie of vijf, zoals jij wilt."],
+  [PartyPopper, "Feestspellen", "Gasten stemmen om een nummer over te slaan, of spelen Raad het nummer op hun telefoon."],
+  [Lock, "Privé", "Geen account bij ons en geen tracking. Alles draait in je eigen netwerk, op je eigen Hub."],
 ];
 
 export function Features() {
@@ -114,10 +116,10 @@ export function Features() {
         <p className="lead">Geen telefoon die rondgaat. Iedereen ziet wat er speelt, zingt mee en kiest zelf het volgende nummer.</p>
       </div>
       <div className="wrap features">
-        {FEATURES.map(([icon, title, text]) => (
+        {FEATURES.map(([Icon, title, text]) => (
           <div key={title} className="feature-wrap">
             <SpotlightCard className="feature" spotlightColor="rgba(255, 78, 138, 0.22)" theme="dark">
-              <div className="icon" aria-hidden="true">{icon}</div>
+              <div className="icon" aria-hidden="true"><Icon size={30} strokeWidth={1.75} /></div>
               <h3>{title}</h3>
               <p>{text}</p>
             </SpotlightCard>
@@ -129,11 +131,12 @@ export function Features() {
 }
 
 const HUB = [
-  ["🎵", "Muziek bedienen", "Vorige, pauze, volgende en het volume, op welk apparaat je Spotify ook speelt."],
-  ["💬", "Meldingen", "“De pizza's zijn er! 🍕” groot op de schermen die je kiest."],
-  ["⏸️", "Korte pauze", "Een aftelklok op alle schermen. De muziek pauzeert en gaat daarna vanzelf verder."],
-  ["📶", "Gasten-wifi", "Een QR-code naast de Jam-code: één scan en je gasten zitten op je gastennetwerk."],
-  ["🎶", "Eén Jam-link", "Eén keer plakken, en elk scherm in huis toont dezelfde QR-code."],
+  [Music, "Muziek bedienen", "Vorige, pauze, volgende en het volume, op welk apparaat je Spotify ook speelt."],
+  [MessageSquareText, "Meldingen", "“De pizza's zijn er!” groot op de schermen die je kiest."],
+  [Coffee, "Korte pauze", "Een aftelklok op alle schermen. De muziek pauzeert en gaat daarna vanzelf verder."],
+  [Wifi, "Gasten-wifi", "Een QR-code naast de Jam-code: één scan en je gasten zitten op je gastennetwerk."],
+  [Users, "Eén Jam-link", "Eén keer plakken, en elk scherm in huis toont dezelfde QR-code."],
+  [Server, "Ook op een server", "De Hub draait ook op Linux, met systemd of Docker. Elke browser of tv opent het scherm op /scherm/."],
 ];
 
 export function Hub() {
@@ -152,6 +155,8 @@ export function Hub() {
         scrollTrigger: { trigger: ".hub-grid", start: "top 80%" } });
       gsap.from(".hub-item", { x: 60, opacity: 0, duration: 0.8, ease: "power3.out", stagger: 0.1,
         scrollTrigger: { trigger: ".hub-list", start: "top 80%" } });
+      gsap.from(".notice-shot .frame", { scale: 0.88, opacity: 0, y: 60, duration: 1.1, ease: "power3.out",
+        scrollTrigger: { trigger: ".notice-shot", start: "top 85%" } });
     });
   }, { scope: root });
 
@@ -166,19 +171,24 @@ export function Hub() {
           <div className="browser">
             <div className="browser-bar"><i /><i /><i /><span>192.168.1.20:8770</span></div>
             <div className="browser-view">
-              <Pic name="dashboard" width="1600" height="1519"
+              <Pic name="dashboard" width="1600" height="1520"
                 alt="Het SpotiParty Hub-dashboard met de schermen, Muziek bedienen, de Spotify Jam en het Feest-blok" />
             </div>
           </div>
           <div className="hub-list">
-            {HUB.map(([icon, title, text]) => (
+            {HUB.map(([Icon, title, text]) => (
               <div key={title} className="hub-item">
-                <span className="icon" aria-hidden="true">{icon}</span>
+                <span className="icon" aria-hidden="true"><Icon size={24} strokeWidth={1.75} /></span>
                 <div><b>{title}</b><span>{text}</span></div>
               </div>
             ))}
           </div>
         </div>
+        <figure className="notice-shot">
+          <div className="frame"><Pic name="notice" width="1600" height="900"
+            alt="Een melding op het feestscherm: “De pizza's zijn er!” op een glazen kaart over de wazige hoes van het nummer" /></div>
+          <figcaption>Eén tik in het dashboard, en de melding staat groot op elk scherm: als glas over de hoes die speelt.</figcaption>
+        </figure>
       </div>
     </section>
   );

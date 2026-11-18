@@ -79,10 +79,13 @@ function showArt(url) {
   old.after(bd);   // on top of the old one, still under the rest of the screen
   // Fade the new one in once the image is there, then let the old one go.
   const img = new Image();
-  img.onload = img.onerror = () => requestAnimationFrame(() => {
+  // Not requestAnimationFrame: that never runs in a hidden tab or a TV app in the background.
+  img.onload = img.onerror = () => {
+    if (layers[backLayer] !== bd) return;   // an even newer cover came first
+    void bd.offsetWidth;                    // start the fade from opacity 0
     bd.classList.add("on");
     setTimeout(() => { if (layers[backLayer] === bd) old.classList.remove("on"); }, 1300);
-  });
+  };
   img.src = url;
   accentFrom(url);
 }

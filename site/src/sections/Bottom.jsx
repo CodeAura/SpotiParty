@@ -8,6 +8,7 @@ import ShinyText from "../components/reactbits/ShinyText/ShinyText.jsx";
 import SplitText from "../components/reactbits/SplitText/SplitText.jsx";
 import Magnet from "../components/reactbits/Magnet/Magnet.jsx";
 import Pic from "../components/Pic.jsx";
+import { Tv, Laptop, Apple, Cpu, Server, House } from "lucide-react";
 
 const PANELS = [
   { img: "screen", tag: "Komende nummers", title: "Iedereen weet wat er komt",
@@ -69,11 +70,12 @@ export function Party() {
 }
 
 const PLATFORMS = [
-  ["📺", "Android TV & Google TV", "Sony, Philips, TCL, Hisense, Chromecast met Google TV, NVIDIA Shield…"],
-  ["💻", "Windows", "Installeren, dubbelklikken, klaar. Werkt zichzelf bij."],
-  ["🍎", "macOS", <>Voor Macs met Apple silicon, werkt zichzelf bij. <a href="https://github.com/CodeAura/SpotiParty/releases/latest">Download de .dmg</a>; Intel volgt.</>],
-  ["🍓", "Raspberry Pi", "Een vast feestscherm aan je tv of beamer, en als je wilt ook de Hub."],
-  ["🏠", "Home Assistant", "Als kaart via HACS, ook op je wandtablet. Werkt met Sonos, Cast en Music Assistant."],
+  [Tv, "Android TV & Google TV", "Hetzelfde scherm als op de pc, rechtstreeks van je Hub: elke update van de Hub staat meteen op de tv."],
+  [Laptop, "Windows", "Installeren, dubbelklikken, klaar. Werkt zichzelf bij."],
+  [Apple, "macOS", <>Voor Macs met Apple silicon, werkt zichzelf bij. <a href="https://github.com/CodeAura/SpotiParty/releases/latest">Download de .dmg</a>; Intel volgt.</>],
+  [Cpu, "Raspberry Pi", "Een vast feestscherm aan je tv of beamer, en als je wilt ook de Hub."],
+  [Server, "Linux-server", "De Hub zonder scherm, op je NAS of thuisserver: met systemd of Docker."],
+  [House, "Home Assistant", "Als kaart via HACS, ook op je wandtablet. Werkt met Sonos, Cast en Music Assistant."],
 ];
 
 export function Platforms() {
@@ -98,8 +100,8 @@ export function Platforms() {
           <h2>Op het scherm dat je al hebt</h2>
           <p className="lead" style={{ marginTop: 18 }}>Eén Hub, zoveel schermen als je wilt. Ze vinden elkaar vanzelf in je netwerk.</p>
           <ul className="plist">
-            {PLATFORMS.map(([icon, title, text]) => (
-              <li key={title}><span className="icon" aria-hidden="true">{icon}</span><div><b>{title}</b><span>{text}</span></div></li>
+            {PLATFORMS.map(([Icon, title, text]) => (
+              <li key={title}><span className="icon" aria-hidden="true"><Icon size={26} strokeWidth={1.75} /></span><div><b>{title}</b><span>{text}</span></div></li>
             ))}
           </ul>
         </div>
@@ -117,7 +119,7 @@ export function Platforms() {
 }
 
 const STEPS = [
-  ["Installeer de Hub", "De Windows- of Mac-app, of een Raspberry Pi. Het venster toont het adres en de PIN van het dashboard.", 5],
+  ["Installeer de Hub", "De Windows- of Mac-app, een Raspberry Pi of een Linux-server. Je krijgt het adres en de PIN van het dashboard.", 5],
   ["Koppel je Spotify", "Eén keer, in het dashboard. Alle schermen tonen daarna wat je account speelt.", 3],
   ["Start een Jam", "Plak de link in het dashboard. De QR-code staat op elk scherm en je vrienden scannen hem.", 1],
 ];
@@ -213,7 +215,8 @@ export function Pricing() {
 
 const FAQ = [
   ["Heb ik Spotify Premium nodig?", "Om een Jam te starten wel: zo werkt Spotify. Wat er speelt en de songteksten tonen werkt met elk Spotify-account."],
-  ["Wat is de Hub?", "Een klein programma op je pc, Mac of Raspberry Pi. Daar koppel je één keer Spotify en je Jam-link, en vanuit het dashboard op je telefoon bestuur je alle schermen."],
+  ["Wat is de Hub?", "Een klein programma op je pc, Mac, Raspberry Pi of Linux-server. Daar koppel je één keer Spotify en je Jam-link, en vanuit het dashboard op je telefoon bestuur je alle schermen."],
+  ["Hoe krijgt mijn tv updates?", "Vanzelf. De tv-app toont het scherm rechtstreeks van je Hub. Werkt de Hub zichzelf bij, dan heeft de tv de nieuwe versie zodra je SpotiParty opent."],
   ["Is het een abonnement?", "Nee. Je betaalt één keer en houdt SpotiParty, met updates. De Windows- en Mac-app werken zichzelf bij."],
   ["Kunnen mijn vrienden de muziek overnemen?", "Nee. Zet in je Jam de optie Gasten mogen afspelen bedienen uit, dan kunnen ze alleen nummers toevoegen. Overslaan kan alleen als jij de Skip-stemmen aanzet, en dan pas bij genoeg stemmen."],
   ["Werkt het op mijn tv?", "Op tv's en mediaspelers met Android TV of Google TV, Android 8 of nieuwer. Samsung (Tizen) en LG (webOS) worden niet ondersteund; sluit daar een pc, Mac of Raspberry Pi aan met HDMI."],
