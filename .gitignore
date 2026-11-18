@@ -8,3 +8,7 @@ desktop/dist/
 desktop/build/
 *.spec
 .DS_Store
+
+# website (Vite)
+site/node_modules/
+site/dist/
