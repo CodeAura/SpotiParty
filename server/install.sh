@@ -5,24 +5,30 @@
 #   sudo ./server/install.sh                  # install or update (your settings stay)
 #   sudo ./server/install.sh --port 8770      # another port for the dashboard (default 8770)
 #   sudo ./server/install.sh --firewall       # also open the ports in ufw or firewalld
+#   sudo ./server/install.sh --no-auto-update # no nightly update to the newest release
 #   sudo ./server/install.sh --uninstall
 #
 # What it does: copies hub/ and web/ to /opt/spotiparty, makes a system user "spotiparty" without a login, and
 # adds the service spotiparty-hub. Settings (PIN, Spotify login, Jam link) are kept in /var/lib/spotiparty.
-# Updating: git pull, then run this script again.
+# Updates: every night at about 04:30 the timer spotiparty-update checks GitHub for a newer release (a v* tag) and,
+# if there is one and no music plays, installs it with this script. By hand: sudo spotiparty-update
 set -euo pipefail
 
 DEST=/opt/spotiparty
 DATA=/var/lib/spotiparty
 SVC=/etc/systemd/system/spotiparty-hub.service
+UPD=/usr/local/sbin/spotiparty-update
+UPD_SVC=/etc/systemd/system/spotiparty-update.service
+UPD_TIMER=/etc/systemd/system/spotiparty-update.timer
 SRC="$(cd "$(dirname "$0")/.." && pwd)"
-PORT=8770 FIREWALL=0 UNINSTALL=0
+PORT=8770 FIREWALL=0 UNINSTALL=0 AUTOUPDATE=1
 while [ $# -gt 0 ]; do
   case "$1" in
     --port) PORT="$2"; shift ;;
     --firewall) FIREWALL=1 ;;
     --uninstall) UNINSTALL=1 ;;
-    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    --no-auto-update) AUTOUPDATE=0 ;;
+    -h|--help) sed -n '2,14p' "$0"; exit 0 ;;
     *) echo "Onbekende optie: $1 (zie --help)" >&2; exit 2 ;;
   esac
   shift
@@ -33,8 +39,8 @@ command -v systemctl >/dev/null || { echo "Dit script heeft systemd nodig. Gebru
 case "$PORT" in ''|*[!0-9]*) echo "--port moet een getal zijn." >&2; exit 2 ;; esac
 
 if [ "$UNINSTALL" = 1 ]; then
-  systemctl disable --now spotiparty-hub 2>/dev/null || true
-  rm -f "$SVC"
+  systemctl disable --now spotiparty-hub spotiparty-update.timer 2>/dev/null || true
+  rm -f "$SVC" "$UPD" "$UPD_SVC" "$UPD_TIMER"
   systemctl daemon-reload
   rm -rf "$DEST"
   echo "De SpotiParty Hub is verwijderd. De instellingen staan nog in $DATA (verwijder die zelf als je wilt)."
@@ -104,6 +110,79 @@ systemctl daemon-reload
 systemctl enable spotiparty-hub >/dev/null
 systemctl restart spotiparty-hub
 
+# ---------- automatic updates ----------
+if [ "$AUTOUPDATE" = 1 ] && command -v git >/dev/null && git -C "$SRC" rev-parse --git-dir >/dev/null 2>&1; then
+  echo "→ Automatische updates (elke nacht rond 04:30)"
+  cat > "$UPD" <<EOF
+#!/usr/bin/env bash
+# Made by SpotiParty's server/install.sh: updates the Hub to the newest release on GitHub (the highest v* tag).
+# Run by the timer spotiparty-update every night, or by hand:  sudo spotiparty-update [--now]
+set -euo pipefail
+SRC="$SRC"
+PORT="$PORT"
+cd "\$SRC"
+git fetch -q --tags --force origin
+latest="\$(git tag -l 'v[0-9]*' --sort=-v:refname | head -1)"
+[ -n "\$latest" ] || { echo "Geen release gevonden op GitHub."; exit 0; }
+# Only forward: a checkout that already contains this release (or is newer) stays as it is.
+if git merge-base --is-ancestor "\$latest" HEAD; then
+  echo "SpotiParty is bijgewerkt (\$(git describe --tags --always))."
+  exit 0
+fi
+if [ -n "\$(git status --porcelain --untracked-files=no)" ]; then
+  echo "Er zijn eigen wijzigingen in \$SRC: niet bijgewerkt naar \$latest." >&2
+  exit 1
+fi
+# Never in the middle of a party: with music playing, the next night.
+if [ "\${1:-}" != "--now" ] && command -v python3 >/dev/null && python3 - "\$PORT" <<'PY'
+import json, sys, urllib.request
+try:
+    with urllib.request.urlopen(f"http://127.0.0.1:{sys.argv[1]}/api/guest?voter=updater", timeout=5) as r:
+        sys.exit(0 if json.load(r).get("song") else 1)
+except Exception:
+    sys.exit(1)
+PY
+then
+  echo "Er speelt muziek: \$latest wordt de volgende nacht geïnstalleerd (of nu met: spotiparty-update --now)."
+  exit 0
+fi
+echo "SpotiParty bijwerken naar \$latest"
+git -c advice.detachedHead=false checkout -q "\$latest"
+exec "\$SRC/server/install.sh" --port "\$PORT"
+EOF
+  chmod 755 "$UPD"
+  cat > "$UPD_SVC" <<EOF
+[Unit]
+Description=SpotiParty Hub: update to the newest release
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=$UPD
+EOF
+  cat > "$UPD_TIMER" <<EOF
+[Unit]
+Description=SpotiParty Hub: look for a new release every night
+
+[Timer]
+OnCalendar=*-*-* 04:30
+RandomizedDelaySec=30min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+EOF
+  systemctl daemon-reload
+  systemctl enable --now spotiparty-update.timer >/dev/null 2>&1
+elif [ "$AUTOUPDATE" = 0 ]; then
+  systemctl disable --now spotiparty-update.timer 2>/dev/null || true
+  rm -f "$UPD" "$UPD_SVC" "$UPD_TIMER"
+  systemctl daemon-reload
+else
+  echo "→ Geen automatische updates: deze map is geen git-kloon (installeer met git clone voor updates)."
+fi
+
 if [ "$FIREWALL" = 1 ]; then
   if command -v ufw >/dev/null && ufw status | grep -q "Status: active"; then
     echo "→ ufw: poort $PORT/tcp en 8771/udp open"
@@ -136,6 +215,7 @@ echo "  Scherm:     http://$IP:$PORT/scherm/  (open dit op een tv, tablet of pc)
 echo "  Gasten:     http://$IP:$PORT/gast"
 echo
 echo "Status:  systemctl status spotiparty-hub     Logboek:  journalctl -u spotiparty-hub -f"
+[ -x "$UPD" ] && echo "Updates: elke nacht vanzelf (journalctl -u spotiparty-update), of nu: sudo spotiparty-update"
 if [ "$FIREWALL" = 0 ] && { command -v ufw >/dev/null || command -v firewall-cmd >/dev/null; }; then
   echo "Staat er een firewall aan? Zet dan poort $PORT/tcp en 8771/udp open, of start dit script met --firewall."
 fi

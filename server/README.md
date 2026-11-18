@@ -6,7 +6,7 @@ De Hub zonder scherm, op een server die altijd aan staat. Dashboard: `http://<se
 **systemd (Debian, Ubuntu, Fedora, Arch, ...):**
 
 ```bash
-sudo ./server/install.sh            # installeren of bijwerken; --port, --firewall, --uninstall
+sudo ./server/install.sh            # installeren; werkt zich elke nacht bij (--no-auto-update, --port, --firewall, --uninstall)
 ```
 
 **Docker (Linux):**

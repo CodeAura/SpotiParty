@@ -47,9 +47,21 @@ Aan het eind staat het adres van het dashboard in beeld.
 | -------------- | -------------------------------------------------------------- |
 | `--port 8770`  | Een andere poort voor het dashboard                            |
 | `--firewall`   | Zet poort 8770/tcp en 8771/udp open in ufw of firewalld        |
+| `--no-auto-update` | Geen automatische updates (zie hieronder)                  |
 | `--uninstall`  | Haalt de dienst en `/opt/spotiparty` weg (je instellingen blijven) |
 
-**Bijwerken:** `git pull` en daarna opnieuw `sudo ./server/install.sh`. Je instellingen blijven staan.
+### Bijwerken gaat vanzelf
+
+Het script zet ook de timer `spotiparty-update` aan. Elke nacht rond **04:30** kijkt die op GitHub of er een nieuwere
+release is, en installeert die dan met hetzelfde script. Je instellingen blijven staan.
+
+* Speelt er op dat moment muziek, dan wacht de update tot de volgende nacht: een feest wordt nooit onderbroken.
+* Alleen echte releases (`v2.9.0` en zo), nooit half-afgemaakt werk.
+* Nu meteen bijwerken: `sudo spotiparty-update` (of `sudo spotiparty-update --now`, ook als er muziek speelt).
+* Wat er gebeurde: `journalctl -u spotiparty-update`. Wanneer de volgende keer is: `systemctl list-timers spotiparty-update`.
+* Liever zelf bijwerken? Start het script met `--no-auto-update`.
+
+Dit werkt alleen als je SpotiParty met `git clone` hebt neergezet, zoals hierboven.
 
 **Status en logboek:**
 
