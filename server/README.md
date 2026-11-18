@@ -13,7 +13,7 @@ sudo ./server/install.sh            # installeren of bijwerken; --port, --firewa
 
 ```bash
 cd server && docker compose up -d --build
-docker compose logs hub             # de PIN
+docker compose logs hub             # het adres; open het en kies je PIN
 ```
 
 | Bestand              | Wat                                                                  |

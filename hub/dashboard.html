@@ -247,7 +247,18 @@
 </main>
 
 <div id="login">
-  <form onsubmit="return false">
+  <form id="setup-form" onsubmit="return false" hidden>
+    <h2><i data-icon="sliders-horizontal"></i>Welkom bij je Hub</h2>
+    <p>Deze Hub is net geïnstalleerd. Kies een PIN (4 tot 12 cijfers): daarmee open je dit dashboard, ook op je
+      telefoon. Alleen wie de PIN kent, kan de muziek en de schermen bedienen.</p>
+    <label for="new-pin">Nieuwe PIN</label>
+    <input id="new-pin" inputmode="numeric" autocomplete="new-password" maxlength="12" type="password">
+    <label for="new-pin2">Nog een keer</label>
+    <input id="new-pin2" inputmode="numeric" autocomplete="new-password" maxlength="12" type="password">
+    <div class="row"><button class="go" id="setup-go">PIN instellen</button></div>
+    <div class="msg" id="setup-msg"></div>
+  </form>
+  <form id="login-form" onsubmit="return false">
     <h2><i data-icon="sliders-horizontal"></i>SpotiParty Hub</h2>
     <p>Vul de PIN in. Je vindt hem in het venster van de SpotiParty-app, of in de terminal van je Raspberry Pi.</p>
     <input id="pin" inputmode="numeric" autocomplete="current-password" maxlength="12" type="password">
@@ -277,13 +288,43 @@ async function api(path, body) {
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   const data = await r.json().catch(() => ({}));
+  if (r.status === 401 && data.setup) { showSetup(); throw new Error(data.error); }
   if (r.status === 401) { showLogin(data.error); throw new Error(data.error || "PIN"); }
   if (!r.ok) throw new Error(data.error || "Er ging iets mis (" + r.status + ").");
   return data;
 }
 
+/** First start of a server Hub: no PIN yet, so you choose one here. */
+function showSetup() {
+  $("login").classList.add("open");
+  $("setup-form").hidden = false;
+  $("login-form").hidden = true;
+  setTimeout(() => $("new-pin").focus(), 50);
+}
+$("setup-go").onclick = async () => {
+  const a = $("new-pin").value.trim(), b = $("new-pin2").value.trim();
+  if (!/^\d{4,12}$/.test(a)) return msg("setup-msg", "Een PIN is 4 tot 12 cijfers.", true);
+  if (a !== b) return msg("setup-msg", "De twee PIN's zijn niet gelijk.", true);
+  try {
+    const r = await fetch("/api/setup", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pin: a }) });
+    const d = await r.json().catch(() => ({}));
+    if (r.status === 409) { $("setup-form").hidden = true; $("login-form").hidden = false; return showLogin(d.error); }
+    if (!r.ok) throw new Error(d.error || "Er ging iets mis.");
+    pin = a;
+    localStorage.setItem("hub.pin", pin);
+    $("setup-form").hidden = true;
+    $("login-form").hidden = false;
+    $("login").classList.remove("open");
+    await refresh();
+  } catch (e) { msg("setup-msg", e.message, true); }
+};
+$("new-pin2").addEventListener("keydown", e => { if (e.key === "Enter") $("setup-go").click(); });
+
 function showLogin(err) {
   $("login").classList.add("open");
+  $("setup-form").hidden = true;
+  $("login-form").hidden = false;
   msg("pin-msg", err && pin ? err : "", !!err);
   setTimeout(() => $("pin").focus(), 50);
 }
@@ -580,8 +621,11 @@ $("h-save").onclick = async () => {
 };
 
 setInterval(() => { if (pin && !$("login").classList.contains("open")) refresh().catch(() => {}); }, 2000);
-if (!pin) showLogin();
-else refresh().catch(() => {});
+fetch("/api/setup").then(r => r.json()).catch(() => ({})).then(s => {
+  if (s.needed) showSetup();
+  else if (!pin) showLogin();
+  else refresh().catch(() => {});
+});
 </script>
 </body>
 </html>

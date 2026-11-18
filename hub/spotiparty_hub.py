@@ -89,7 +89,10 @@ def wifi_qr(w) -> str:
 
 
 class Hub:
-    def __init__(self, data_dir: pathlib.Path, web_dir: pathlib.Path, port: int = PORT, static_dir=HERE):
+    def __init__(self, data_dir: pathlib.Path, web_dir: pathlib.Path, port: int = PORT, static_dir=HERE,
+                 setup_pin: bool = False):
+        # setup_pin (a server): on the very first start there is no PIN yet; the dashboard asks you to choose one.
+        self.setup_pin = setup_pin
         self.data_dir = pathlib.Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.web_dir = pathlib.Path(web_dir)
@@ -119,6 +122,8 @@ class Hub:
             cfg = json.loads(self.file.read_text("utf-8"))
         except (OSError, ValueError):
             cfg = {}
+        if "pin" not in cfg and self.setup_pin:
+            cfg["pin"] = ""            # no PIN until you choose one in the dashboard (POST /api/setup)
         cfg.setdefault("pin", f"{secrets.randbelow(10 ** 6):06d}")
         cfg.setdefault("name", platform.node().split(".")[0] or "SpotiParty")
         cfg.setdefault("jam", "")
@@ -454,7 +459,27 @@ class Hub:
                 return 200, {}
         return 404, {"error": "onbekend"}
 
+    def needs_pin(self):
+        """First start of a server: no PIN chosen yet."""
+        return not self.cfg.get("pin")
+
+    def setup(self, pin):
+        """Choose the first PIN. Only while there is none: after that it changes in the dashboard, with the PIN."""
+        pin = str(pin or "")
+        if not (pin.isdigit() and 4 <= len(pin) <= 12):
+            return 400, {"error": "Een PIN is 4 tot 12 cijfers."}
+        if len(set(pin)) == 1 or pin in "01234567890123456789" or pin in "98765432109876543210":
+            return 400, {"error": "Kies een PIN die niet makkelijk te raden is (niet 0000 of 1234)."}
+        with self.lock:
+            if not self.needs_pin():
+                return 409, {"error": "Er is al een PIN. Log in met die PIN."}
+            self.cfg["pin"] = pin
+            self._save()
+        return 200, {}
+
     def pin_ok(self, pin, ip):
+        if self.needs_pin():
+            return False
         with self.lock:
             n, until = self.fails.get(ip, [0, 0])
             if until > time.time():
@@ -592,7 +617,11 @@ class HubHandler(http.server.BaseHTTPRequestHandler):
             return self._send(200, raw=page.encode(), ctype="text/html; charset=utf-8")
         if url.path == "/api/ping":
             return self._send(200, {"hub": self.hub.cfg["name"], "port": self.hub.port}, cors=True)
+        if url.path == "/api/setup":
+            return self._send(200, {"needed": self.hub.needs_pin(), "hub": self.hub.cfg["name"]})
         if url.path == "/api/admin/state":
+            if self.hub.needs_pin():
+                return self._send(401, {"error": "Kies eerst een PIN.", "setup": True})
             if not self.hub.pin_ok(self.headers.get("X-SpotiParty-Pin", ""), self.client_address[0]):
                 return self._send(401, {"error": "PIN klopt niet."})
             self.hub.admin_seen = time.time()
@@ -619,12 +648,20 @@ class HubHandler(http.server.BaseHTTPRequestHandler):
                 return self._send(400, {"error": "json"})
             code, obj = self.hub.guest_action(url.path[len("/api/guest/"):], body)
             return self._send(code, obj)
-        if not url.path.startswith("/api/admin/"):
+        if not url.path.startswith("/api/admin/") and url.path != "/api/setup":
             return self._send(404, {"error": "niet gevonden"})
         # Same-origin only: a page elsewhere on the web can't drive the hub through your browser.
         origin = self.headers.get("Origin")
         if origin and urllib.parse.urlsplit(origin).netloc != self.headers.get("Host", ""):
             return self._send(403, {"error": "origin"})
+        if url.path == "/api/setup":
+            try:
+                body = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 1024)) or b"{}")
+            except (ValueError, OSError):
+                return self._send(400, {"error": "json"})
+            return self._send(*self.hub.setup(body.get("pin")))
+        if self.hub.needs_pin():
+            return self._send(401, {"error": "Kies eerst een PIN.", "setup": True})
         if not self.hub.pin_ok(self.headers.get("X-SpotiParty-Pin", ""), self.client_address[0]):
             return self._send(401, {"error": "PIN klopt niet."})
         try:
@@ -644,11 +681,16 @@ def main():
     ap.add_argument("--port", type=int, default=PORT)
     ap.add_argument("--data", type=pathlib.Path, default=default_data_dir())
     ap.add_argument("--web", type=pathlib.Path, default=HERE.parent / "web")
+    ap.add_argument("--setup-pin", action="store_true",
+                    help="first start without a PIN: choose it in the dashboard (for a server)")
     a = ap.parse_args()
-    hub = Hub(a.data, a.web, a.port).start()
+    hub = Hub(a.data, a.web, a.port, setup_pin=a.setup_pin).start()
     for u in hub.admin_state()["urls"]:
         print(f"SpotiParty Hub: {u}")
-    print(f"Dashboard-PIN: {hub.cfg['pin']}   (Ctrl+C stopt)")
+    if hub.needs_pin():
+        print("Nog geen PIN: open het dashboard hierboven en kies er een.   (Ctrl+C stopt)")
+    else:
+        print(f"Dashboard-PIN: {hub.cfg['pin']}   (Ctrl+C stopt)")
     try:
         while True:
             time.sleep(3600)

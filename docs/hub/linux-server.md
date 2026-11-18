@@ -11,7 +11,7 @@ feestscherm zelf komen dan allemaal van die server.
 
 | Adres                               | Wat                                                          |
 | ----------------------------------- | ------------------------------------------------------------ |
-| `http://<server>:8770/`             | Het dashboard (met de PIN)                                   |
+| `http://<server>:8770/`             | Het dashboard (de eerste keer kies je hier de PIN)           |
 | `http://<server>:8770/scherm/`      | Het feestscherm: open het op een tv, tablet of pc            |
 | `http://<server>:8770/gast`         | De gastenpagina (Jam, Skip en de quiz)                       |
 
@@ -37,7 +37,11 @@ Het script:
 * start de dienst `spotiparty-hub`, ook na een herstart;
 * bewaart je instellingen (PIN, Spotify-login, Jam-link) in `/var/lib/spotiparty`.
 
-Aan het eind staan het adres van het dashboard en de PIN in beeld.
+Aan het eind staat het adres van het dashboard in beeld.
+
+{% hint style="info" %}
+**De eerste keer kies je zelf een PIN.** Een nieuwe Hub op een server heeft nog geen PIN: open het dashboard en je krijgt het scherm **Welkom bij je Hub**. Kies daar een PIN van 4 tot 12 cijfers (niet `0000` of `1234`). Doe dit meteen na het installeren: tot er een PIN is, kan iedereen in je netwerk hem kiezen. Een PIN die je later wilt veranderen, pas je aan in het dashboard bij **Hub**.
+{% endhint %}
 
 | Optie          | Wat het doet                                                   |
 | -------------- | -------------------------------------------------------------- |
@@ -60,7 +64,7 @@ journalctl -u spotiparty-hub -f
 git clone https://github.com/CodeAura/SpotiParty.git
 cd SpotiParty/server
 docker compose up -d --build
-docker compose logs hub      # hier staat de PIN
+docker compose logs hub      # het adres; open het en kies je PIN
 ```
 
 De container gebruikt `network_mode: host`, zodat Android TV de Hub vanzelf vindt (UDP-broadcast op poort 8771) en

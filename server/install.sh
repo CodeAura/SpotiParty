@@ -83,7 +83,7 @@ Wants=network-online.target
 [Service]
 User=spotiparty
 Group=spotiparty
-ExecStart=$PY $DEST/hub/spotiparty_hub.py --data $DATA --web $DEST/web --port $PORT
+ExecStart=$PY $DEST/hub/spotiparty_hub.py --data $DATA --web $DEST/web --port $PORT --setup-pin
 Restart=always
 RestartSec=3
 Environment=PYTHONUNBUFFERED=1
@@ -121,13 +121,17 @@ for _ in $(seq 1 20); do
   [ -s "$DATA/hub.json" ] && break
   sleep 0.5
 done
-PIN="$("$PY" -c 'import json,sys; print(json.load(open(sys.argv[1])).get("pin", "?"))' "$DATA/hub.json" 2>/dev/null || echo "?")"
+PIN="$("$PY" -c 'import json,sys; print(json.load(open(sys.argv[1])).get("pin", ""))' "$DATA/hub.json" 2>/dev/null || true)"
 IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
 [ -n "$IP" ] || IP="<ip-van-deze-server>"
 
 echo
 echo "SpotiParty Hub draait."
-echo "  Dashboard:  http://$IP:$PORT/        PIN: $PIN"
+if [ -z "$PIN" ]; then
+  echo "  Dashboard:  http://$IP:$PORT/        Open het en kies je PIN (de eerste keer)."
+else
+  echo "  Dashboard:  http://$IP:$PORT/        PIN: $PIN"
+fi
 echo "  Scherm:     http://$IP:$PORT/scherm/  (open dit op een tv, tablet of pc)"
 echo "  Gasten:     http://$IP:$PORT/gast"
 echo

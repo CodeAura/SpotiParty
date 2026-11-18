@@ -16,4 +16,4 @@ VOLUME ["/data"]
 EXPOSE 8770 8771/udp
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
   CMD python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8770/api/ping', timeout=4)"
-CMD ["python3", "hub/spotiparty_hub.py", "--data", "/data", "--web", "/app/web", "--port", "8770"]
+CMD ["python3", "hub/spotiparty_hub.py", "--data", "/data", "--web", "/app/web", "--port", "8770", "--setup-pin"]
