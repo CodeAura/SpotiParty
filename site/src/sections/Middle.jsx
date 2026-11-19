@@ -66,7 +66,7 @@ export function Explain() {
             ))}
           </div>
           <div>
-            <span className="eyebrow grad-text" id="explain-title">Wat je ziet</span>
+            <span className="eyebrow" id="explain-title">Wat je ziet</span>
             <div className="explain-items">
               {SPOTS.map((s, i) => (
                 <div key={i} className="explain-item">
@@ -111,7 +111,7 @@ export function Features() {
   return (
     <section ref={root} id="functies">
       <div className="wrap center sec-head features-head">
-        <span className="eyebrow grad-text">Functies</span>
+        <span className="eyebrow">Functies</span>
         <h2>Alles wat een feest nodig heeft</h2>
         <p className="lead">Geen telefoon die rondgaat. Iedereen ziet wat er speelt, zingt mee en kiest zelf het volgende nummer.</p>
       </div>
@@ -136,7 +136,7 @@ const HUB = [
   [Coffee, "Korte pauze", "Een aftelklok op alle schermen. De muziek pauzeert en gaat daarna vanzelf verder."],
   [Wifi, "Gasten-wifi", "Een QR-code naast de Jam-code: één scan en je gasten zitten op je gastennetwerk."],
   [Users, "Eén Jam-link", "Eén keer plakken, en elk scherm in huis toont dezelfde QR-code."],
-  [Server, "Ook op een server", "De Hub draait ook op Linux, met systemd of Docker. Elke browser of tv opent het scherm op /scherm/."],
+  [Server, "Ook op een server", <>De Hub draait ook op Linux, met systemd of Docker. Elke browser of tv opent het scherm op <code>/scherm/</code>.</>],
 ];
 
 export function Hub() {

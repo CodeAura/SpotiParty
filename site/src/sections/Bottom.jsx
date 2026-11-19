@@ -8,14 +8,15 @@ import ShinyText from "../components/reactbits/ShinyText/ShinyText.jsx";
 import SplitText from "../components/reactbits/SplitText/SplitText.jsx";
 import Magnet from "../components/reactbits/Magnet/Magnet.jsx";
 import Pic from "../components/Pic.jsx";
-import { Tv, Laptop, Apple, Cpu, Server, House } from "lucide-react";
+import { Tv, Laptop, Apple, Cpu, Server, House, ListMusic, MicVocal, ThumbsDown, Plus, Download } from "lucide-react";
+import { useLatestRelease } from "../lib/latestRelease.js";
 
 const PANELS = [
-  { img: "screen", tag: "Komende nummers", title: "Iedereen weet wat er komt",
+  { img: "screen", tag: [ListMusic, "Komende nummers"], title: "Iedereen weet wat er komt",
     text: "De schermen tonen de volgende één, drie of vijf nummers uit de wachtrij. Kies het aantal in het dashboard." },
-  { img: "quiz", tag: "🎤 Raad het nummer", title: "Wie raadt hem het snelst?", phone: true,
+  { img: "quiz", tag: [MicVocal, "Raad het nummer"], title: "Wie raadt hem het snelst?", phone: true,
     text: "Bij elk nieuw nummer blijven titel en hoes 15 seconden geheim. Gasten raden op hun telefoon: hoe sneller, hoe meer punten." },
-  { img: "reveal", tag: "👎 Skip en de top 5", title: "En de winnaar is…",
+  { img: "reveal", tag: [ThumbsDown, "Skip en de top 5"], title: "En de winnaar is…",
     text: "Daarna het antwoord en de top 5. Met genoeg Skip-stemmen slaat de Hub het nummer over: het feest beslist mee." },
 ];
 
@@ -46,8 +47,9 @@ export function Party() {
     <section ref={root} id="feest" className="party">
       <div className="party-pin">
         <div className="wrap party-head">
-          <span className="eyebrow grad-text">Feestspellen</span>
+          <span className="eyebrow">Feestspellen</span>
           <h2>Meer dan meezingen</h2>
+          <p className="lead">Raad het nummer en de andere feestspellen komen straks in het <a href="#prijzen">Feestpakket</a>.</p>
         </div>
         <div className="party-track">
           {PANELS.map((p) => (
@@ -57,7 +59,7 @@ export function Party() {
                 {p.phone && <Pic name="guest" eager className="phone" width="780" height="2200" alt="De gastenpagina op een telefoon: Jam, Skip en het raadvak" />}
               </div>
               <div className="panel-text">
-                <span className="panel-tag">{p.tag}</span>
+                <span className="panel-tag">{(([Icon, text]) => <><Icon size={15} strokeWidth={2.25} aria-hidden="true" />{text}</>)(p.tag)}</span>
                 <h3>{p.title}</h3>
                 <p>{p.text}</p>
               </div>
@@ -96,7 +98,7 @@ export function Platforms() {
     <section ref={root} id="overal">
       <div className="wrap platforms">
         <div>
-          <span className="eyebrow grad-text">Waar het werkt</span>
+          <span className="eyebrow">Waar het werkt</span>
           <h2>Op het scherm dat je al hebt</h2>
           <p className="lead" style={{ marginTop: 18 }}>Eén Hub, zoveel schermen als je wilt. Ze vinden elkaar vanzelf in je netwerk.</p>
           <ul className="plist">
@@ -139,7 +141,7 @@ export function Steps() {
   return (
     <section ref={root} id="zo-werkt-het">
       <div className="wrap center sec-head">
-        <span className="eyebrow grad-text">Zo werkt het</span>
+        <span className="eyebrow">Zo werkt het</span>
         <h2>In tien minuten klaar voor het feest</h2>
       </div>
       <div className="wrap steps">
@@ -157,19 +159,18 @@ export function Steps() {
   );
 }
 
-const PRICES = [
-  { plan: "Desktop", price: "€9,99", for: "Voor je pc, Mac of beamer",
-    items: [["Windows- en Mac-app"], ["Hub met dashboard"], ["Songteksten, Jam-QR en Hierna"], ["Android TV", true], ["Home Assistant", true]] },
-  { plan: "Thuis", price: "€14,99", for: "Alle schermen in huis", hot: true,
-    items: [["Alles uit Desktop"], ["Android TV-app"], ["Home Assistant-kaart"], ["Raspberry Pi"], ["Feestspellen"]] },
-  { plan: "Vrienden", price: "€29,99", for: "Drie keer Thuis, om weg te geven",
-    items: [["3 × alles uit Thuis"], ["Per persoon een eigen code"], ["Leuk als cadeau"], ["Zelf te verdelen"], ["Bespaar €15"]] },
-];
+// Opens the visitor's own Home Assistant (via my.home-assistant.io) and adds SpotiParty to HACS as a dashboard card.
+const HACS = "https://my.home-assistant.io/redirect/hacs_repository/?owner=CodeAura&repository=SpotiParty&category=plugin";
+
+const FREE = ["Windows- en Mac-app, werkt zichzelf bij", "Hub met dashboard op je telefoon", "Songteksten, Jam-QR en Hierna",
+  "Meldingen, pauze en gasten-wifi", "Android TV, Raspberry Pi, Home Assistant en Linux-server", "Open source, op GitHub"];
+const PARTY = ["Alles uit Gratis", "Raad het nummer, met scorebord op het scherm", "Gasten spelen mee op hun telefoon",
+  "Nieuwe feestspellen als ze uitkomen", "Eén keer betalen, geen abonnement"];
 
 export function Pricing() {
   const root = useRef(null);
   const dialog = useRef(null);
-  const [choice, setChoice] = useState(PRICES[1]);
+  const rel = useLatestRelease();
   useGSAP(() => {
     const mm = gsap.matchMedia();
     mm.add("(prefers-reduced-motion: no-preference)", () => {
@@ -178,35 +179,49 @@ export function Pricing() {
     });
   }, { scope: root });
 
-  const buy = (p) => { setChoice(p); dialog.current?.showModal(); };
-
   return (
     <section ref={root} id="prijzen">
       <div className="wrap center sec-head">
-        <span className="eyebrow grad-text">Prijzen</span>
-        <h2>Eén keer betalen, voor altijd feest</h2>
-        <p className="lead">Geen abonnement. Updates zitten erbij.</p>
+        <span className="eyebrow">Prijzen</span>
+        <h2>Gratis feest. Met spellen nog leuker.</h2>
+        <p className="lead">SpotiParty is open source en gratis. Wil je feestspellen spelen, dan is er straks het Feestpakket.</p>
       </div>
       <div className="wrap prices">
-        {PRICES.map((p) => (
-          <div key={p.plan} className="price-wrap">
-            <SpotlightCard className={`price${p.hot ? " hot" : ""}`} spotlightColor="rgba(123, 60, 255, 0.25)" theme="dark">
-              {p.hot && <span className="badge"><ShinyText text="Meest gekozen" color="#ff9fbf" shineColor="#ffffff" speed={2.5} /></span>}
-              <h3>{p.plan}</h3>
-              <p className="for">{p.for}</p>
-              <div className="amount">{p.price} <small>eenmalig</small></div>
-              <ul>{p.items.map(([t, no]) => <li key={t} className={no ? "no" : ""}>{t}</li>)}</ul>
-              <button className={`btn ${p.hot ? "btn-primary" : "btn-ghost"}`} onClick={() => buy(p)}>Koop {p.plan}</button>
-            </SpotlightCard>
-          </div>
-        ))}
+        <div className="price-wrap">
+          <SpotlightCard className="price" spotlightColor="rgba(30, 215, 96, 0.16)" theme="dark">
+            <h3>Gratis</h3>
+            <p className="for">Alles om van elk scherm een feestscherm te maken</p>
+            <div className="amount">€0 <small>voor altijd</small></div>
+            <ul>{FREE.map((t) => <li key={t}>{t}</li>)}</ul>
+            <div className="downloads">
+              <a className="btn btn-primary" href={rel.exe}><Download size={18} strokeWidth={2.25} aria-hidden="true" />Windows</a>
+              <a className="btn btn-ghost" href={rel.dmg}><Download size={18} strokeWidth={2.25} aria-hidden="true" />Mac</a>
+              <a className="btn btn-ha hacs" href={HACS} target="_blank" rel="noopener noreferrer">
+                <House size={18} strokeWidth={2.25} aria-hidden="true" />Home Assistant via HACS</a>
+            </div>
+            <p className="dl-note">
+              {rel.version ? `Versie ${rel.version}. ` : ""}Mac: Apple silicon. <a href={rel.page}>Alle downloads en de broncode</a>
+            </p>
+          </SpotlightCard>
+        </div>
+        <div className="price-wrap">
+          <SpotlightCard className="price hot" spotlightColor="rgba(255, 78, 138, 0.2)" theme="dark">
+            <span className="badge"><ShinyText text="Binnenkort" color="#ff9fbf" shineColor="#ffffff" speed={2.5} /></span>
+            <h3>Feestpakket</h3>
+            <p className="for">Feestspellen voor jou en je gasten</p>
+            <div className="amount">€11,99 <small>eenmalig</small></div>
+            <ul>{PARTY.map((t) => <li key={t}>{t}</li>)}</ul>
+            <button className="btn btn-ghost" onClick={() => dialog.current?.showModal()}>Binnenkort beschikbaar</button>
+          </SpotlightCard>
+        </div>
       </div>
-      <p className="note">Concept-prijzen, inclusief btw. Spotify Premium is nodig om een Jam te starten.</p>
+      <p className="note">Prijs inclusief btw. Spotify Premium is nodig om een Jam te starten.</p>
 
       <dialog ref={dialog} className="checkout" aria-labelledby="co-title" onClick={(e) => e.target === dialog.current && dialog.current.close()}>
-        <h3 id="co-title">Bijna klaar</h3>
-        <p>De winkel gaat binnenkort open. In dit concept wordt er nog niets afgerekend.</p>
-        <div className="summary"><span>SpotiParty {choice.plan}</span><span>{choice.price}</span></div>
+        <h3 id="co-title">Het Feestpakket komt eraan</h3>
+        <p>Raad het nummer en de andere feestspellen komen binnenkort in het Feestpakket. Er wordt nu nog niets afgerekend;
+          SpotiParty zelf kun je al gratis downloaden.</p>
+        <div className="summary"><span>SpotiParty Feestpakket</span><span>€11,99</span></div>
         <button className="btn btn-primary" onClick={() => dialog.current.close()}>Oké</button>
       </dialog>
     </section>
@@ -217,12 +232,12 @@ const FAQ = [
   ["Heb ik Spotify Premium nodig?", "Om een Jam te starten wel: zo werkt Spotify. Wat er speelt en de songteksten tonen werkt met elk Spotify-account."],
   ["Wat is de Hub?", "Een klein programma op je pc, Mac, Raspberry Pi of Linux-server. Daar koppel je één keer Spotify en je Jam-link, en vanuit het dashboard op je telefoon bestuur je alle schermen."],
   ["Hoe krijgt mijn tv updates?", "Vanzelf. De tv-app toont het scherm rechtstreeks van je Hub. Werkt de Hub zichzelf bij, dan heeft de tv de nieuwe versie zodra je SpotiParty opent."],
-  ["Is het een abonnement?", "Nee. Je betaalt één keer en houdt SpotiParty, met updates. De Windows- en Mac-app werken zichzelf bij."],
+  ["Is SpotiParty echt gratis?", "Ja. SpotiParty is open source: de apps, de Hub en de broncode staan gratis op GitHub, met updates. De Windows- en Mac-app werken zichzelf bij."],
+  ["Wat zit er in het Feestpakket?", "Feestspellen zoals Raad het nummer, met een scorebord op het scherm. Je gasten spelen mee op hun telefoon. Het kost €11,99, één keer, en komt binnenkort."],
   ["Kunnen mijn vrienden de muziek overnemen?", "Nee. Zet in je Jam de optie Gasten mogen afspelen bedienen uit, dan kunnen ze alleen nummers toevoegen. Overslaan kan alleen als jij de Skip-stemmen aanzet, en dan pas bij genoeg stemmen."],
   ["Werkt het op mijn tv?", "Op tv's en mediaspelers met Android TV of Google TV, Android 8 of nieuwer. Samsung (Tizen) en LG (webOS) worden niet ondersteund; sluit daar een pc, Mac of Raspberry Pi aan met HDMI."],
   ["Werkt het ook zonder Spotify, met Sonos bijvoorbeeld?", "Via Home Assistant werkt SpotiParty met elke media player: Sonos, Cast, Music Assistant, Plex en meer."],
   ["Wat doen jullie met mijn gegevens?", "Niets. We hebben geen server die meekijkt. Je Spotify-login en instellingen blijven op je eigen Hub, in je eigen netwerk."],
-  ["Kan ik mijn geld terugkrijgen?", "Ja, binnen 14 dagen, zonder vragen."],
 ];
 
 function FaqItem({ q, a }) {
@@ -237,7 +252,7 @@ function FaqItem({ q, a }) {
   });
   return (
     <div className={`faq-item${open ? " open" : ""}`}>
-      <button className="faq-q" aria-expanded={open} onClick={toggle}>{q}<span className="plus" aria-hidden="true">+</span></button>
+      <button className="faq-q" aria-expanded={open} onClick={toggle}>{q}<span className="plus" aria-hidden="true"><Plus size={16} strokeWidth={2.5} /></span></button>
       <div ref={body} className="faq-a" role="region"><p>{a}</p></div>
     </div>
   );
@@ -255,7 +270,7 @@ export function Faq() {
   return (
     <section ref={root} id="faq">
       <div className="wrap center sec-head">
-        <span className="eyebrow grad-text">Vragen</span>
+        <span className="eyebrow">Vragen</span>
         <h2>Veelgestelde vragen</h2>
       </div>
       <div className="wrap faq">{FAQ.map(([q, a]) => <FaqItem key={q} q={q} a={a} />)}</div>
@@ -281,8 +296,8 @@ export function Final() {
         <img className="logo" src="/assets/icon.png" alt="" width="84" height="84" />
         <SplitText text="Klaar voor het volgende feest?" tag="h2" splitType="words" delay={80} duration={1}
           from={{ opacity: 0, y: 50 }} to={{ opacity: 1, y: 0 }} textAlign="center" />
-        <p className="lead">Zet SpotiParty vanavond nog op je scherm.</p>
-        <Magnet padding={60} magnetStrength={3}><a className="btn btn-primary" href="#prijzen">Bekijk de prijzen</a></Magnet>
+        <p className="lead">Zet SpotiParty vanavond nog op je scherm. Gratis en open source.</p>
+        <Magnet padding={60} magnetStrength={3}><a className="btn btn-primary" href="#prijzen">Download gratis</a></Magnet>
       </div>
     </section>
   );

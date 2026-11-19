@@ -18,7 +18,7 @@ export function Nav() {
   }, { scope: ref });
   return (
     <>
-      <div className="concept">Concept: betalen is nog niet gekoppeld. Prijzen en teksten zijn voorbeelden.</div>
+      <div className="concept">SpotiParty is nu open source en gratis. Het Feestpakket met feestspellen komt binnenkort.</div>
       <nav ref={ref} className="nav">
         <div className="wrap">
           <a className="brand" href="#top"><img src="/assets/icon.png" alt="" width="34" height="34" />SpotiParty</a>
@@ -31,7 +31,7 @@ export function Nav() {
             <a href="#faq">Vragen</a>
           </div>
           <Magnet padding={40} magnetStrength={4} wrapperClassName="btn-wrap">
-            <a className="btn btn-primary" href="#prijzen">Koop nu</a>
+            <a className="btn btn-primary" href="#prijzen">Download</a>
           </Magnet>
         </div>
       </nav>
@@ -63,10 +63,10 @@ export function Hero() {
   return (
     <header ref={root} id="top" className="hero">
       <div className="hero-bg" aria-hidden="true">
-        <Aurora colorStops={["#7b3cff", "#ff4e8a", "#ffb347"]} amplitude={1.1} blend={0.55} speed={0.6} height={0.5} />
+        <Aurora colorStops={["#241245", "#b8346b", "#241245"]} amplitude={0.7} blend={0.4} speed={0.4} height={0.4} />
       </div>
       <div className="wrap">
-        <span className="eyebrow grad-text">Voor feestjes, borrels en zondagmiddagen</span>
+        <span className="eyebrow">Voor feestjes, borrels en zondagmiddagen</span>
         <h1>
           <SplitText text="Maak van elk scherm een" tag="span" splitType="chars" delay={28} duration={1.1}
             from={{ opacity: 0, y: 70 }} to={{ opacity: 1, y: 0 }} threshold={0} rootMargin="0px" textAlign="center" />{" "}
@@ -75,10 +75,10 @@ export function Hero() {
         <BlurText className="lead" animateBy="words" delay={35} stepDuration={0.3} direction="bottom" threshold={0}
           text="Het nummer dat speelt groot op je tv, pc, Mac of Home Assistant-dashboard. De songtekst loopt in de maat mee, je vrienden zetten met één QR-code hun nummers in de wachtrij, en vanuit één dashboard bestuur je alle schermen in huis." />
         <div className="hero-ctas">
-          <Magnet padding={50} magnetStrength={3}><a className="btn btn-primary" href="#prijzen">Koop SpotiParty · vanaf €9,99</a></Magnet>
+          <Magnet padding={50} magnetStrength={3}><a className="btn btn-primary" href="#prijzen">Download gratis</a></Magnet>
           <Magnet padding={50} magnetStrength={3}><a className="btn btn-ghost" href="#zo-werkt-het">Zo werkt het</a></Magnet>
         </div>
-        <div className="trust"><span>Eenmalig betalen, geen abonnement</span><span>Werkt met je eigen Spotify</span><span>14 dagen geld terug</span></div>
+        <div className="trust"><span>Gratis en open source</span><span>Werkt met je eigen Spotify</span><span>Windows, Mac, tv en Home Assistant</span></div>
       </div>
       <div className="tv-stage">
         <div className="tv">
