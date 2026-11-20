@@ -14,7 +14,7 @@ Een release op GitHub is voor drie dingen tegelijk de bron:
 | De **auto-updater** (Mac, vanaf 2.7.1) | `SpotiParty-macos-apple-silicon.dmg` en `SpotiParty-macos-intel.dmg`, met precies die naam |
 | **HACS** (Home Assistant)   | `spotiparty-card.js` als bijlage           |
 
-De nieuwste release is nu [**v2.8.0**](https://github.com/CodeAura/SpotiParty/releases/tag/v2.8.0), met `SpotiParty-Setup-2.8.0.exe`, `SpotiParty-macos-apple-silicon.dmg` en `spotiparty-card.js`.
+De nieuwste release is nu [**v2.9.0**](https://github.com/CodeAura/SpotiParty/releases/tag/v2.9.0), met `SpotiParty-Setup-2.9.0.exe`, `SpotiParty-macos-apple-silicon.dmg` en `spotiparty-card.js`.
 
 ## Stap voor stap
 

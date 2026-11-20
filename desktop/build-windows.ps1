@@ -53,14 +53,15 @@ Start-Sleep 1
 if (Get-NetTCPConnection -State Listen -LocalPort 8769, 8770 -ErrorAction SilentlyContinue) {
   Write-Warning "Poort 8769 of 8770 is al in gebruik: de rooktest test dan niet deze build."
 }
+# -TimeoutSec: a request that hangs counts as a miss, so the test can never wait forever.
 $p = Start-Process (Join-Path $Out "SpotiParty.exe") -PassThru
 $ok = $false; $hubOk = $false
 foreach ($i in 1..30) {
-  try { if ((Invoke-WebRequest http://127.0.0.1:8769/index.html -UseBasicParsing).Content -match "SpotiParty") { $ok = $true; break } } catch {}
+  try { if ((Invoke-WebRequest http://127.0.0.1:8769/index.html -UseBasicParsing -TimeoutSec 3).Content -match "SpotiParty") { $ok = $true; break } } catch {}
   Start-Sleep 1
 }
 foreach ($i in 1..10) {
-  try { if ((Invoke-WebRequest http://127.0.0.1:8770/api/ping -UseBasicParsing).Content -match "hub") { $hubOk = $true; break } } catch {}
+  try { if ((Invoke-WebRequest http://127.0.0.1:8770/api/ping -UseBasicParsing -TimeoutSec 3).Content -match "hub") { $hubOk = $true; break } } catch {}
   Start-Sleep 1
 }
 # --onefile runs as two processes (a launcher and the app): stop both, or the next run finds this one.
