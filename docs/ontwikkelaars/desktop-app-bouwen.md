@@ -63,4 +63,12 @@ Resultaat: `desktop/dist/SpotiParty-Setup-2.7.0.exe`. Zorg dat `/DAppVersion` en
 
 ## Een .dmg maken (macOS)
 
-Dat doet `desktop/build-macos.sh` al. De `.dmg` bevat de app en een snelkoppeling naar **Apps**, zodat je hem er meteen in kunt slepen.
+Dat doet `desktop/build-macos.sh` al, met [dmgbuild](https://github.com/dmgbuild/dmgbuild). Open je de `.dmg`, dan zie je een klein venster: SpotiParty links, de map **Apps** rechts en een roze pijl ertussen, met *Sleep SpotiParty naar Apps* eronder.
+
+| Bestand | Wat |
+|---|---|
+| `desktop/dmg/settings.py` | Het venster: grootte, plek van de iconen, geen werkbalk |
+| `desktop/dmg/background.png` en `background@2x.png` | De achtergrond met de pijl (de `@2x` is voor Retina) |
+| `desktop/dmg/make_background.py` | Maakt die achtergrond opnieuw, bijvoorbeeld na een andere tekst |
+
+De achtergrond is licht, omdat Finder de namen onder de iconen altijd zwart schrijft, ook in donkere modus. De app staat bovenin de `.dmg`, zodat de Mac-updater hem op dezelfde plek vindt.

@@ -39,7 +39,8 @@ echo "→ Python: $PY ($("$PY" -c 'import sys, tkinter; print(sys.version.split(
 
 echo "→ Bouwomgeving in desktop/build/venv"
 [ -x "$WORK/venv/bin/python" ] || "$PY" -m venv "$WORK/venv"
-"$WORK/venv/bin/pip" install --quiet --upgrade pyinstaller pillow
+# dmgbuild draws the .dmg window (background, icon places) without scripting Finder.
+"$WORK/venv/bin/pip" install --quiet --upgrade pyinstaller pillow "dmgbuild==1.6.2"
 
 echo "→ SpotiParty.app ($ARCH)"
 # Absolute paths: PyInstaller resolves --add-data and --icon relative to the spec folder.
@@ -66,13 +67,15 @@ fi
 # instead of asking at every start. Not an Apple Developer ID: the first start still needs "Open anyway".
 codesign --force --deep --sign - "$OUT/SpotiParty.app"
 
+# The .dmg opens as a small window: SpotiParty on the left, Apps on the right, an arrow "drag me there" between them.
+# The layout is in desktop/dmg/settings.py, the picture in desktop/dmg/background(@2x).png (make_background.py).
 echo "→ SpotiParty-macos-$ARCH.dmg"
-rm -rf "$WORK/dmg" "$OUT/SpotiParty-macos-$ARCH.dmg"
-mkdir -p "$WORK/dmg"
-cp -R "$OUT/SpotiParty.app" "$WORK/dmg/"
-ln -s /Applications "$WORK/dmg/Applications"
-hdiutil create -quiet -volname SpotiParty -srcfolder "$WORK/dmg" -ov -format UDZO "$OUT/SpotiParty-macos-$ARCH.dmg"
-rm -rf "$WORK/dmg"
+rm -f "$OUT/SpotiParty-macos-$ARCH.dmg"
+tiffutil -cathidpicheck "$ROOT/desktop/dmg/background.png" "$ROOT/desktop/dmg/background@2x.png" \
+  -out "$WORK/dmg-background.tiff" > /dev/null
+"$WORK/venv/bin/dmgbuild" -s "$ROOT/desktop/dmg/settings.py" -D app="$OUT/SpotiParty.app" \
+  -D bg="$WORK/dmg-background.tiff" "SpotiParty" "$OUT/SpotiParty-macos-$ARCH.dmg" > "$WORK/dmgbuild.log" 2>&1 \
+  || { tail -20 "$WORK/dmgbuild.log"; exit 1; }
 
 echo
 echo "✅ Klaar:"

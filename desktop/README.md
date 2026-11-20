@@ -19,7 +19,8 @@ powershell -ExecutionPolicy Bypass -File desktop\build-windows.ps1 -Version 2.7.
 ```
 
 macOS: one script builds `desktop/dist/SpotiParty.app` and `SpotiParty-macos-<arch>.dmg` (it makes its own
-virtual environment in `desktop/build/`; needs Python 3.10+ with Tk 8.6):
+virtual environment in `desktop/build/`; needs Python 3.10+ with Tk 8.6). The .dmg opens as a drag-to-Apps window,
+laid out in `desktop/dmg/` (dmgbuild settings and the background picture):
 
 ```bash
 ./desktop/build-macos.sh
