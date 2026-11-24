@@ -109,8 +109,6 @@
     <h2><i data-icon="music"></i>Muziek bedienen <small id="m-acct"></small></h2>
     <div id="m-linked" hidden>
       <div class="accts" id="m-accts" aria-label="Spotify-accounts"></div>
-      <label class="check" id="m-auto-row" hidden><input type="checkbox" id="m-auto"> Automatisch wisselen naar het
-        account dat speelt</label>
       <div class="nowplaying" id="m-song"></div>
       <p class="nowplaying" id="m-device" style="color:var(--muted);font-size:13px"></p>
       <div class="player">
@@ -439,8 +437,6 @@ function renderAccounts(sp) {
   const accts = sp.accounts || [];
   if (addingAccount && accts.length > (renderAccounts.count || 0)) addingAccount = false;   // the new one is in
   renderAccounts.count = accts.length;
-  $("m-auto-row").hidden = accts.length < 2;
-  $("m-auto").checked = !!sp.auto;
   const key = JSON.stringify(accts);
   if (key === acctsKey) return;
   acctsKey = key;
@@ -458,10 +454,6 @@ $("m-accts").onclick = async e => {
   if (!b || b.classList.contains("on")) return;
   msg("m-msg", "Wisselen…");
   try { await api("spotify-use", { key: b.dataset.key }); msg("m-msg", ""); refresh(); }
-  catch (err) { msg("m-msg", err.message, true); }
-};
-$("m-auto").onchange = async e => {
-  try { await api("spotify-auto", { on: e.target.checked }); refresh(); }
   catch (err) { msg("m-msg", err.message, true); }
 };
 $("sp-cancel").onclick = e => { e.preventDefault(); addingAccount = false; renderPlayer(); };

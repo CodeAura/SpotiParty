@@ -7,7 +7,7 @@ dashboard then asks to paste it, like the TV's phone page does.
 
 Several accounts can be linked (an account switcher): all through the same Spotify app (Client ID), at most five
 while that app is in Development Mode. One is active: the screens show what it plays and the dashboard controls it.
-With "auto" on, the hub moves to another linked account when that one plays and the active one doesn't.
+Only the host chooses the active account (in the dashboard): the hub never switches on its own.
 
 Tokens are kept in the hub's data folder (hub.json, next to the PIN); nothing goes anywhere but Spotify.
 """
@@ -30,13 +30,10 @@ class SpotifyError(Exception):
     """What went wrong, in words for the dashboard."""
 
 
-AUTO_SCAN_S = 12   # with "auto" on and nothing playing: how often the other accounts are asked whether they play
-
-
 class Spotify:
     def __init__(self, cfg: dict, save, port: int):
         # The hub's config dict: sp_client, sp_accounts [{key, user, name, image, refresh, access, expires, scope}],
-        # sp_active (a key) and sp_auto.
+        # sp_active (a key).
         self.cfg = cfg
         self.save = save          # called (under the hub's lock) after the tokens change
         self.port = port
@@ -44,8 +41,6 @@ class Spotify:
         self.pending = {}         # state -> verifier, for logins in progress
         self.player = None        # last known: {title, artist, playing, device, volume, at}
         self.player_err = ""
-        self.seen = {}            # key -> {playing, title, at}: what the other accounts played when last asked
-        self._next_scan = 0.0
         self._profiled = set()    # accounts whose name was asked this session (once, also when it failed)
         self._migrate()
 
@@ -60,7 +55,7 @@ class Spotify:
             self.cfg.pop(k, None)
         if accts and not any(a["key"] == self.cfg.get("sp_active") for a in accts):
             self.cfg["sp_active"] = accts[0]["key"]
-        self.cfg.setdefault("sp_auto", False)
+        self.cfg.pop("sp_auto", None)   # 2.10.0 could switch on its own; that is gone: you choose
 
     # ---------- accounts ----------
     def _accounts(self):
@@ -75,13 +70,12 @@ class Spotify:
         return next((a for a in self._accounts() if a["key"] == key), None)
 
     def accounts(self):
-        """For the dashboard: who is linked, which one is active, and what the others played when last asked."""
+        """For the dashboard: who is linked, and which one is active (and whether it plays)."""
         act = self.active()
         out = []
         for a in self._accounts():
             on = act is not None and a["key"] == act["key"]
-            seen = self.seen.get(a["key"]) or {}
-            playing = bool(self.player and self.player.get("playing")) if on else bool(seen.get("playing"))
+            playing = on and bool(self.player and self.player.get("playing"))
             out.append({"key": a["key"], "name": a.get("name") or "Spotify-account", "user": a.get("user", ""),
                         "image": a.get("image", ""), "active": on, "playing": playing})
         return out
@@ -105,16 +99,11 @@ class Spotify:
             if not a:
                 return
             accts.remove(a)
-            self.seen.pop(key, None)
             if self.cfg.get("sp_active") == key:
                 self.cfg["sp_active"] = accts[0]["key"] if accts else ""
                 self.player = None
             self.save()
 
-    def set_auto(self, on: bool) -> None:
-        self.cfg["sp_auto"] = bool(on)
-        self._next_scan = 0.0
-        self.save()
 
     @property
     def redirect(self):
@@ -283,8 +272,7 @@ class Spotify:
         raise SpotifyError(f"Spotify zei {st}" + (f" ({message})" if message else "") + ".")
 
     def refresh(self, with_queue=False):
-        """What the active account plays now: for the dashboard, and for every screen (they show its song).
-        With "auto" on and nothing playing, it also asks the other accounts, and moves to one that plays."""
+        """What the active account plays now: for the dashboard, and for every screen (they show its song)."""
         if not self.linked():
             self.player = None
             return
@@ -295,29 +283,6 @@ class Spotify:
             if act.get("user"):
                 self.save()
         self._refresh(with_queue)
-        if self.cfg.get("sp_auto") and len(self._accounts()) > 1 and not (self.player and self.player.get("playing")) \
-                and time.time() >= self._next_scan:
-            self._next_scan = time.time() + AUTO_SCAN_S
-            if self._scan():
-                self._refresh(True)
-
-    def _scan(self) -> bool:
-        """Ask the other accounts whether they play; make the first one that does active. True if it moved."""
-        act = self.active()
-        for a in list(self._accounts()):
-            if act is not None and a["key"] == act["key"]:
-                continue
-            try:
-                st, p = self._call("GET", "/me/player", a)
-            except SpotifyError:
-                continue
-            playing = bool(st == 200 and p and p.get("is_playing") and p.get("item"))
-            self.seen[a["key"]] = {"playing": playing, "title": ((p or {}).get("item") or {}).get("name", ""),
-                                   "at": time.time()}
-            if playing:
-                self.use(a["key"])
-                return True
-        return False
 
     def _refresh(self, with_queue=False):
         try:

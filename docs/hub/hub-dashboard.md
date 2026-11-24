@@ -61,9 +61,9 @@ Draaien jij en je huisgenoot of partner allebei muziek? Koppel dan meerdere acco
 
 1. Zet het tweede account in je Spotify-app op [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard) onder **User Management**. Zolang de app in *Development Mode* staat, mogen er vijf accounts in.
 2. Klik in het dashboard bij **Muziek bedienen** op **+ Account** en log in met dat account. Zit je browser nog op het eerste account, log dan eerst uit op spotify.com.
-3. Bovenaan **Muziek bedienen** staat nu een rij met de accounts. Het actieve account (groen omrand) bepaalt wat alle schermen tonen en wat de knoppen bedienen. Tik op een ander account om te wisselen. Een luidsprekertje betekent: dit account speelt nu.
+3. Bovenaan **Muziek bedienen** staat nu een rij met de accounts. Het actieve account (groen omrand) bepaalt wat alle schermen tonen en wat de knoppen bedienen. Tik op een ander account om te wisselen. Speelt het actieve account, dan staat er een luidsprekertje bij.
 
-Zet **Automatisch wisselen naar het account dat speelt** aan, dan wisselt de Hub vanzelf: staat het actieve account stil en speelt een ander account, dan neemt de Hub dat over (binnen een paar seconden). Zolang het actieve account speelt, blijft de Hub erbij.
+De Hub wisselt nooit zelf: alleen jij kiest welk account actief is. Speelt er op een ander account muziek, dan verandert er op de schermen niets tot je in het dashboard op dat account tikt.
 
 Logt hetzelfde account nog eens in, dan krijgt het alleen een nieuwe koppeling; er komt geen tweede bij. Verloopt de koppeling van één account, dan verdwijnt alleen dat account uit de rij.
 * **🎉 Feest**: hoeveel komende nummers de schermen tonen, 👎 Skip-stemmen en 🎤 _Raad het nummer_, met de QR-code van de gastenpagina. Zie [Feestspellen](feestspellen.md).
