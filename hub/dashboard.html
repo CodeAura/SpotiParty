@@ -39,6 +39,16 @@
   .chips button { padding: 8px 12px; }
   .chips button.on { outline: 2px solid var(--accent); }
   .msg { font-size: 13px; min-height: 1.2em; margin-top: 6px; color: var(--accent); }
+  /* Account switcher: one pill per linked Spotify account; the active one is outlined. */
+  .accts { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .accts button.acct { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border-radius: 999px;
+    background: #ffffff0d; border: 1px solid var(--line); font-size: 14px; }
+  .accts button.acct.on { background: color-mix(in srgb, var(--accent) 16%, transparent); border-color: var(--accent); font-weight: 600; }
+  .accts .av { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; flex: none;
+    background: #3a3e4a; font-weight: 700; font-size: 13px; }
+  .accts .av img { width: 100%; height: 100%; object-fit: cover; }
+  .accts .live { display: inline-flex; color: var(--accent); }
+  .accts button.add { padding: 5px 14px; color: var(--muted); background: none; border-style: dashed; }
   .msg.err { color: var(--err); }
   .check { display: flex; gap: 10px; align-items: center; color: #fff; font-size: 14px; margin-top: 10px; }
   .check input { width: 20px; height: 20px; flex: none; }
@@ -98,6 +108,9 @@
   <section>
     <h2><i data-icon="music"></i>Muziek bedienen <small id="m-acct"></small></h2>
     <div id="m-linked" hidden>
+      <div class="accts" id="m-accts" aria-label="Spotify-accounts"></div>
+      <label class="check" id="m-auto-row" hidden><input type="checkbox" id="m-auto"> Automatisch wisselen naar het
+        account dat speelt</label>
       <div class="nowplaying" id="m-song"></div>
       <p class="nowplaying" id="m-device" style="color:var(--muted);font-size:13px"></p>
       <div class="player">
@@ -109,10 +122,14 @@
       </div>
       <div class="msg" id="m-msg"></div>
       <p>Bedient je Spotify-account, op welk apparaat het ook speelt. De pauzeknop pauzeert hier ook.
-        <a href="#" id="sp-unlink" style="color:var(--muted)">Spotify ontkoppelen</a></p>
+        <a href="#" id="sp-unlink" style="color:var(--muted)">Dit account ontkoppelen</a></p>
     </div>
     <div id="m-unlinked" hidden>
-      <p>Koppel je Spotify-account aan de Hub (Spotify Premium nodig). Eenmalig, met je eigen Spotify-app:</p>
+      <p id="sp-intro">Koppel je Spotify-account aan de Hub (Spotify Premium nodig). Eenmalig, met je eigen Spotify-app:</p>
+      <p id="sp-intro-add" hidden>Nog een account koppelen. Zet dat account eerst in je Spotify-app onder
+        <b>User Management</b> (zolang je app in Development Mode staat, mogen er vijf in). Log daarna hieronder in met
+        dat account; zit je browser nog op een ander account, log daar dan eerst uit bij Spotify.
+        <a href="#" id="sp-cancel" style="color:var(--muted)">Annuleren</a></p>
       <ol style="color:var(--muted);font-size:14px;padding-left:20px;margin:6px 0">
         <li>Zet in je app op <b>developer.spotify.com/dashboard</b> bij <b>Redirect URIs</b> ook:<br><code id="sp-redirect"></code></li>
         <li>Plak de <b>Client ID</b> hieronder en log in.</li>
@@ -417,14 +434,50 @@ function resText(res) {
   return m ? "Bediening: " + m[1] : "";
 }
 
+let addingAccount = false, acctsKey = "";
+function renderAccounts(sp) {
+  const accts = sp.accounts || [];
+  if (addingAccount && accts.length > (renderAccounts.count || 0)) addingAccount = false;   // the new one is in
+  renderAccounts.count = accts.length;
+  $("m-auto-row").hidden = accts.length < 2;
+  $("m-auto").checked = !!sp.auto;
+  const key = JSON.stringify(accts);
+  if (key === acctsKey) return;
+  acctsKey = key;
+  $("m-accts").innerHTML = accts.map(a => `
+    <button class="acct${a.active ? " on" : ""}" data-key="${esc(a.key)}" title="${a.active ? "Actief" : "Wissel naar " + esc(a.name)}"
+      aria-pressed="${a.active}">
+      <span class="av">${a.image ? `<img src="${esc(a.image)}" alt="">` : esc((a.name || "?").trim().charAt(0).toUpperCase())}</span>
+      <span>${esc(a.name)}</span>${a.playing ? `<span class="live" title="Speelt nu">${Icon.svg("volume-2")}</span>` : ""}
+    </button>`).join("") +
+    `<button class="acct add" id="m-add" title="Nog een Spotify-account koppelen">${Icon.svg("plus")} Account</button>`;
+}
+$("m-accts").onclick = async e => {
+  if (e.target.closest("#m-add")) { addingAccount = true; renderPlayer(); return; }
+  const b = e.target.closest("button[data-key]");
+  if (!b || b.classList.contains("on")) return;
+  msg("m-msg", "Wisselen…");
+  try { await api("spotify-use", { key: b.dataset.key }); msg("m-msg", ""); refresh(); }
+  catch (err) { msg("m-msg", err.message, true); }
+};
+$("m-auto").onchange = async e => {
+  try { await api("spotify-auto", { on: e.target.checked }); refresh(); }
+  catch (err) { msg("m-msg", err.message, true); }
+};
+$("sp-cancel").onclick = e => { e.preventDefault(); addingAccount = false; renderPlayer(); };
+
 function renderPlayer() {
   const sp = state.spotify || {};
+  renderAccounts(sp);
   $("m-linked").hidden = !sp.linked;
-  $("m-unlinked").hidden = !!sp.linked;
+  $("m-unlinked").hidden = !!sp.linked && !addingAccount;
+  $("sp-intro").hidden = !!sp.linked;
+  $("sp-intro-add").hidden = !sp.linked;
   $("sp-redirect").textContent = sp.redirect || "";
   if (!$("sp-client").value && sp.client) $("sp-client").value = sp.client;
   const p = sp.player;
-  $("m-acct").textContent = sp.linked ? "Spotify-account" : "";
+  const act = (sp.accounts || []).find(a => a.active);
+  $("m-acct").textContent = sp.linked ? (act && act.name ? act.name : "Spotify-account") : "";
   $("m-song").textContent = !p ? "…" : p.title ? p.title + (p.artist ? " – " + p.artist : "") : "Er speelt niets";
   $("m-device").textContent = p && p.device ? "op " + p.device + (p.volume != null ? ` · volume ${p.volume}%` : "") : "";
   $("m-toggle").innerHTML = Icon.svg(p && p.playing ? "pause" : "play");
@@ -460,7 +513,8 @@ $("sp-finish").onclick = async () => {
 };
 $("sp-unlink").onclick = async e => {
   e.preventDefault();
-  if (!confirm("Spotify ontkoppelen van de Hub?")) return;
+  const act = ((state.spotify || {}).accounts || []).find(a => a.active);
+  if (!confirm(`${act ? act.name : "Dit account"} ontkoppelen van de Hub?`)) return;
   try { await api("spotify-unlink", {}); refresh(); } catch (err) { alert(err.message); }
 };
 

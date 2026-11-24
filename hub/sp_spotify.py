@@ -5,6 +5,10 @@ The login runs in a browser: Spotify sends it back to http://127.0.0.1:<hub port
 hub answers itself when the login is done on the hub's own computer. On a phone that address doesn't open; the
 dashboard then asks to paste it, like the TV's phone page does.
 
+Several accounts can be linked (an account switcher): all through the same Spotify app (Client ID), at most five
+while that app is in Development Mode. One is active: the screens show what it plays and the dashboard controls it.
+With "auto" on, the hub moves to another linked account when that one plays and the active one doesn't.
+
 Tokens are kept in the hub's data folder (hub.json, next to the PIN); nothing goes anywhere but Spotify.
 """
 import base64
@@ -26,22 +30,99 @@ class SpotifyError(Exception):
     """What went wrong, in words for the dashboard."""
 
 
+AUTO_SCAN_S = 12   # with "auto" on and nothing playing: how often the other accounts are asked whether they play
+
+
 class Spotify:
     def __init__(self, cfg: dict, save, port: int):
-        self.cfg = cfg            # the hub's config dict: sp_client, sp_refresh, sp_access, sp_expires
+        # The hub's config dict: sp_client, sp_accounts [{key, user, name, image, refresh, access, expires, scope}],
+        # sp_active (a key) and sp_auto.
+        self.cfg = cfg
         self.save = save          # called (under the hub's lock) after the tokens change
         self.port = port
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()
         self.pending = {}         # state -> verifier, for logins in progress
         self.player = None        # last known: {title, artist, playing, device, volume, at}
         self.player_err = ""
+        self.seen = {}            # key -> {playing, title, at}: what the other accounts played when last asked
+        self._next_scan = 0.0
+        self._profiled = set()    # accounts whose name was asked this session (once, also when it failed)
+        self._migrate()
+
+    def _migrate(self):
+        """Before the account switcher the one account lived in sp_refresh, sp_access, ...: make it account one."""
+        accts = self.cfg.setdefault("sp_accounts", [])
+        if self.cfg.get("sp_refresh") and not accts:
+            accts.append({"key": secrets.token_hex(4), "user": "", "name": "", "image": "",
+                          "refresh": self.cfg["sp_refresh"], "access": self.cfg.get("sp_access", ""),
+                          "expires": self.cfg.get("sp_expires", 0), "scope": self.cfg.get("sp_scope", "")})
+        for k in ("sp_refresh", "sp_access", "sp_expires", "sp_scope"):
+            self.cfg.pop(k, None)
+        if accts and not any(a["key"] == self.cfg.get("sp_active") for a in accts):
+            self.cfg["sp_active"] = accts[0]["key"]
+        self.cfg.setdefault("sp_auto", False)
+
+    # ---------- accounts ----------
+    def _accounts(self):
+        return self.cfg.setdefault("sp_accounts", [])
+
+    def active(self):
+        """The active account (a dict in cfg), or None."""
+        accts = self._accounts()
+        return next((a for a in accts if a["key"] == self.cfg.get("sp_active")), accts[0] if accts else None)
+
+    def _find(self, key):
+        return next((a for a in self._accounts() if a["key"] == key), None)
+
+    def accounts(self):
+        """For the dashboard: who is linked, which one is active, and what the others played when last asked."""
+        act = self.active()
+        out = []
+        for a in self._accounts():
+            on = act is not None and a["key"] == act["key"]
+            seen = self.seen.get(a["key"]) or {}
+            playing = bool(self.player and self.player.get("playing")) if on else bool(seen.get("playing"))
+            out.append({"key": a["key"], "name": a.get("name") or "Spotify-account", "user": a.get("user", ""),
+                        "image": a.get("image", ""), "active": on, "playing": playing})
+        return out
+
+    def use(self, key) -> None:
+        """Make this account the active one."""
+        with self.lock:
+            if not self._find(key):
+                raise SpotifyError("Dat account is niet (meer) gekoppeld.")
+            if key != self.cfg.get("sp_active"):
+                self.cfg["sp_active"] = key
+                self.player = None
+                self.player_err = ""
+                self.save()
+
+    def remove(self, key) -> None:
+        """Unlink one account. The next one becomes active if this one was."""
+        with self.lock:
+            accts = self._accounts()
+            a = self._find(key)
+            if not a:
+                return
+            accts.remove(a)
+            self.seen.pop(key, None)
+            if self.cfg.get("sp_active") == key:
+                self.cfg["sp_active"] = accts[0]["key"] if accts else ""
+                self.player = None
+            self.save()
+
+    def set_auto(self, on: bool) -> None:
+        self.cfg["sp_auto"] = bool(on)
+        self._next_scan = 0.0
+        self.save()
 
     @property
     def redirect(self):
         return f"http://127.0.0.1:{self.port}/spotify/callback"
 
     def linked(self):
-        return bool(self.cfg.get("sp_refresh") and self.cfg.get("sp_client"))
+        a = self.active()
+        return bool(a and a.get("refresh") and self.cfg.get("sp_client"))
 
     # ---------- login ----------
     def login_url(self, client: str) -> str:
@@ -71,17 +152,44 @@ class Spotify:
         verifier, _, client = entry
         tok = self._token({"grant_type": "authorization_code", "code": q["code"], "redirect_uri": self.redirect,
                            "client_id": client, "code_verifier": verifier})
-        self.cfg["sp_client"] = client
-        self._keep(tok)
+        # Who just logged in: the same person again only gets new tokens; someone new is added to the list.
+        new = {"key": secrets.token_hex(4), "user": "", "name": "", "image": "", "refresh": "", "access": "",
+               "expires": 0, "scope": ""}
+        self._keep(tok, new, save=False)
+        self._profile(new)
+        with self.lock:
+            self.cfg["sp_client"] = client
+            same = next((a for a in self._accounts() if new["user"] and a.get("user") == new["user"]), None)
+            if same:
+                same.update({k: v for k, v in new.items() if k != "key"})
+                new = same
+            else:
+                self._accounts().append(new)
+            # Logging in means: this is the account you want now.
+            self.cfg["sp_active"] = new["key"]
+            self.player = None
+            self.save()
+
+    def _profile(self, acct):
+        """Name, Spotify user id and picture of an account (GET /me), for the switcher."""
+        try:
+            st, me = self._call("GET", "/me", acct)
+        except SpotifyError:
+            return
+        if st == 200 and me:
+            images = me.get("images") or []
+            acct["user"] = me.get("id", "")
+            acct["name"] = me.get("display_name") or me.get("id", "")
+            acct["image"] = images[0]["url"] if images and str(images[0].get("url", "")).startswith("https://") else ""
 
     def unlink(self):
-        for k in ("sp_refresh", "sp_access", "sp_expires", "sp_scope"):
-            self.cfg.pop(k, None)
-        self.player = None
-        self.save()
+        """Unlink the active account (the dashboard's "Ontkoppelen")."""
+        a = self.active()
+        if a:
+            self.remove(a["key"])
 
     # ---------- tokens ----------
-    def _token(self, form: dict) -> dict:
+    def _token(self, form: dict, acct=None) -> dict:
         req = urllib.request.Request(ACCOUNTS + "api/token", data=urllib.parse.urlencode(form).encode(),
                                      headers={"Content-Type": "application/x-www-form-urlencoded"})
         try:
@@ -92,36 +200,39 @@ class Spotify:
                 body = json.load(e)
             except ValueError:
                 body = {}
-            if form.get("grant_type") == "refresh_token" and e.code == 400:
-                self.unlink()
-                raise SpotifyError("De Spotify-koppeling is verlopen. Log opnieuw in.")
+            if form.get("grant_type") == "refresh_token" and e.code == 400 and acct is not None:
+                name = acct.get("name") or "Dit account"
+                self.remove(acct["key"])
+                raise SpotifyError(f"De Spotify-koppeling van {name} is verlopen. Log opnieuw in.")
             raise SpotifyError("Spotify weigerde de login (" + (body.get("error_description") or body.get("error")
                                or str(e.code)) + "). Klopt de Redirect URI precies?")
         except OSError:
             raise SpotifyError("Spotify is niet bereikbaar vanaf deze computer.")
 
-    def _keep(self, tok: dict):
-        self.cfg["sp_access"] = tok.get("access_token", "")
-        self.cfg["sp_expires"] = time.time() + int(tok.get("expires_in", 3600)) - 60
+    def _keep(self, tok: dict, acct: dict, save=True):
+        acct["access"] = tok.get("access_token", "")
+        acct["expires"] = time.time() + int(tok.get("expires_in", 3600)) - 60
         if tok.get("refresh_token"):
-            self.cfg["sp_refresh"] = tok["refresh_token"]
+            acct["refresh"] = tok["refresh_token"]
         if tok.get("scope"):
-            self.cfg["sp_scope"] = tok["scope"]
-        self.save()
+            acct["scope"] = tok["scope"]
+        if save:
+            self.save()
 
-    def _access(self, force=False) -> str:
-        if not self.linked():
+    def _access(self, acct, force=False) -> str:
+        if not acct or not (acct.get("refresh") or acct.get("access")) or not self.cfg.get("sp_client"):
             raise SpotifyError("Koppel eerst je Spotify-account.")
-        if force or not self.cfg.get("sp_access") or time.time() >= self.cfg.get("sp_expires", 0):
-            self._keep(self._token({"grant_type": "refresh_token", "refresh_token": self.cfg["sp_refresh"],
-                                    "client_id": self.cfg["sp_client"]}))
-        return self.cfg["sp_access"]
+        if force or not acct.get("access") or time.time() >= acct.get("expires", 0):
+            self._keep(self._token({"grant_type": "refresh_token", "refresh_token": acct["refresh"],
+                                    "client_id": self.cfg["sp_client"]}, acct), acct, save=acct in self._accounts())
+        return acct["access"]
 
-    def _call(self, method: str, path: str):
-        """(status, json or None). Retries once with a fresh token."""
+    def _call(self, method: str, path: str, acct=None):
+        """(status, json or None) for an account (the active one by default). Retries once with a fresh token."""
+        acct = acct or self.active()
         for force in (False, True):
             req = urllib.request.Request(API + path, method=method, data=b"" if method in ("PUT", "POST") else None,
-                                         headers={"Authorization": "Bearer " + self._access(force)})
+                                         headers={"Authorization": "Bearer " + self._access(acct, force)})
             try:
                 with urllib.request.urlopen(req, timeout=8) as r:
                     raw = r.read()
@@ -165,17 +276,50 @@ class Spotify:
             raise SpotifyError("Spotify staat bediening alleen toe met Premium.")
         if st == 404 or "NO_ACTIVE_DEVICE" in reason:
             raise SpotifyError("Er speelt nu geen Spotify op dit account. Zet eerst muziek aan.")
-        if st == 403 and ("scope" in message.lower() or not self.cfg.get("sp_scope", "").count("modify")):
+        if st == 403 and ("scope" in message.lower() or not (self.active() or {}).get("scope", "").count("modify")):
             raise SpotifyError("Log opnieuw in bij Spotify, dan mag de Hub de muziek bedienen.")
         if st == 403 and cmd in ("play", "pause"):
             return   # already playing / already paused: nothing to do
         raise SpotifyError(f"Spotify zei {st}" + (f" ({message})" if message else "") + ".")
 
     def refresh(self, with_queue=False):
-        """What the account plays now: for the dashboard, and for every screen (they show this account's song)."""
+        """What the active account plays now: for the dashboard, and for every screen (they show its song).
+        With "auto" on and nothing playing, it also asks the other accounts, and moves to one that plays."""
         if not self.linked():
             self.player = None
             return
+        act = self.active()
+        if act is not None and not act.get("user") and act["key"] not in self._profiled:
+            self._profiled.add(act["key"])
+            self._profile(act)   # an account from before the switcher: fill in its name once
+            if act.get("user"):
+                self.save()
+        self._refresh(with_queue)
+        if self.cfg.get("sp_auto") and len(self._accounts()) > 1 and not (self.player and self.player.get("playing")) \
+                and time.time() >= self._next_scan:
+            self._next_scan = time.time() + AUTO_SCAN_S
+            if self._scan():
+                self._refresh(True)
+
+    def _scan(self) -> bool:
+        """Ask the other accounts whether they play; make the first one that does active. True if it moved."""
+        act = self.active()
+        for a in list(self._accounts()):
+            if act is not None and a["key"] == act["key"]:
+                continue
+            try:
+                st, p = self._call("GET", "/me/player", a)
+            except SpotifyError:
+                continue
+            playing = bool(st == 200 and p and p.get("is_playing") and p.get("item"))
+            self.seen[a["key"]] = {"playing": playing, "title": ((p or {}).get("item") or {}).get("name", ""),
+                                   "at": time.time()}
+            if playing:
+                self.use(a["key"])
+                return True
+        return False
+
+    def _refresh(self, with_queue=False):
         try:
             t0 = time.time()
             st, p = self._call("GET", "/me/player?additional_types=episode")

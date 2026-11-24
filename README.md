@@ -126,7 +126,7 @@ PIN in. Er draait één Hub per netwerk: start je de app op een tweede pc, dan w
 | Onderdeel in het dashboard | Wat het doet |
 |---|---|
 | **📺 Schermen** | Alle SpotiParty-schermen in huis, met wat er speelt. Groen is online. **Aanwijzen** zet de naam groot op dat scherm; **Naam** geeft het een eigen naam. |
-| **🎵 Muziek bedienen** | Spotify koppelen, en daarna vorige, afspelen/pauze, volgende en het volume, op welk apparaat je account ook speelt. |
+| **🎵 Muziek bedienen** | Spotify koppelen, en daarna vorige, afspelen/pauze, volgende en het volume, op welk apparaat je account ook speelt. Koppel tot vijf accounts en wissel met één tik, of laat de Hub vanzelf wisselen naar het account dat speelt. |
 | **🎶 Spotify Jam** | Eén Jam-link voor alle schermen, met een voorbeeld van de QR-code. |
 | **🎉 Feest** | Hoeveel komende nummers de schermen tonen, de Skip-stemmen en *Raad het nummer*. Zie [Feestspellen](#-feestspellen). |
 | **💬 Melding** | Een bericht ("De pizza's zijn er! 🍕") groot op de schermen die je kiest, in de stijl Gewoon, Feest of Belangrijk. |

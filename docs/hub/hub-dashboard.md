@@ -53,7 +53,19 @@ Een scherm dat via **https://** draait (bijvoorbeeld Home Assistant via Nabu Cas
 ## In het dashboard
 
 * **📺 Schermen**: groen = online. **Aanwijzen** zet de naam groot op dat scherm, zodat je weet welke het is. **Naam** geeft het een eigen naam.
-* **🎵 Muziek bedienen**: wat er speelt en op welk apparaat, met 🔉 ⏮ ⏯ ⏭ 🔊. Werkt op welk apparaat je account ook speelt. Met **Spotify ontkoppelen** haal je de koppeling weg.
+* **🎵 Muziek bedienen**: wat er speelt en op welk apparaat, met 🔉 ⏮ ⏯ ⏭ 🔊. Werkt op welk apparaat je account ook speelt. Met **Dit account ontkoppelen** haal je het actieve account weg.
+
+## Meerdere Spotify-accounts
+
+Draaien jij en je huisgenoot of partner allebei muziek? Koppel dan meerdere accounts aan de Hub en wissel met één tik.
+
+1. Zet het tweede account in je Spotify-app op [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard) onder **User Management**. Zolang de app in *Development Mode* staat, mogen er vijf accounts in.
+2. Klik in het dashboard bij **Muziek bedienen** op **+ Account** en log in met dat account. Zit je browser nog op het eerste account, log dan eerst uit op spotify.com.
+3. Bovenaan **Muziek bedienen** staat nu een rij met de accounts. Het actieve account (groen omrand) bepaalt wat alle schermen tonen en wat de knoppen bedienen. Tik op een ander account om te wisselen. Een luidsprekertje betekent: dit account speelt nu.
+
+Zet **Automatisch wisselen naar het account dat speelt** aan, dan wisselt de Hub vanzelf: staat het actieve account stil en speelt een ander account, dan neemt de Hub dat over (binnen een paar seconden). Zolang het actieve account speelt, blijft de Hub erbij.
+
+Logt hetzelfde account nog eens in, dan krijgt het alleen een nieuwe koppeling; er komt geen tweede bij. Verloopt de koppeling van één account, dan verdwijnt alleen dat account uit de rij.
 * **🎉 Feest**: hoeveel komende nummers de schermen tonen, 👎 Skip-stemmen en 🎤 _Raad het nummer_, met de QR-code van de gastenpagina. Zie [Feestspellen](feestspellen.md).
 * **💬 Melding**: kies een stijl (gewoon, feest, belangrijk), hoe lang hij blijft staan en op welke schermen.
 * **⏸️ Korte pauze**: kies het aantal minuten en eventueel een eigen tekst. Met **+5 min** verleng je, met **Stoppen** haal je de klok weg. Staat **Muziek pauzeren, en na afloop weer aanzetten** aan (standaard), dan doet de Hub dat via je Spotify-account.

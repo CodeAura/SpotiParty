@@ -319,7 +319,8 @@ class Hub:
             brk = {k: v for k, v in self.brk.items() if k != "paused"} if self.brk else None
             sp = self.spotify
             spotify = {"linked": sp.linked(), "client": self.cfg.get("sp_client", ""), "redirect": sp.redirect,
-                       "player": sp.player, "error": sp.player_err}
+                       "player": sp.player, "error": sp.player_err, "accounts": sp.accounts(),
+                       "auto": bool(self.cfg.get("sp_auto"))}
             return {"now": self.now_ms(), "name": self.cfg["name"], "spotify": spotify,
                     "party": self.party.admin(), "guest": self.guest_url(), "jam": self.cfg.get("jam", ""),
                     "notice": self.notice, "brk": brk, "wifi": self.cfg["wifi"], "screens": screens,
@@ -341,7 +342,20 @@ class Hub:
                 return 200, {}
             if action == "spotify-unlink":
                 with self.lock:
-                    self.spotify.unlink()
+                    key = str(b.get("key", ""))
+                    if key:
+                        self.spotify.remove(key)
+                    else:
+                        self.spotify.unlink()
+                return 200, {}
+            if action == "spotify-use":
+                with self.lock:
+                    self.spotify.use(str(b.get("key", "")))
+                self.spotify.refresh(with_queue=True)
+                return 200, {}
+            if action == "spotify-auto":
+                with self.lock:
+                    self.spotify.set_auto(bool(b.get("on")))
                 return 200, {}
             if action == "media":
                 cmd = str(b.get("cmd", ""))
