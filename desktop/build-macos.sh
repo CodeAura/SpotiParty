@@ -40,7 +40,7 @@ echo "→ Python: $PY ($("$PY" -c 'import sys, tkinter; print(sys.version.split(
 echo "→ Bouwomgeving in desktop/build/venv"
 [ -x "$WORK/venv/bin/python" ] || "$PY" -m venv "$WORK/venv"
 # dmgbuild draws the .dmg window (background, icon places) without scripting Finder.
-"$WORK/venv/bin/pip" install --quiet --upgrade pyinstaller pillow "dmgbuild==1.6.2"
+"$WORK/venv/bin/pip" install --quiet --upgrade pyinstaller pillow certifi "dmgbuild==1.6.2"
 
 echo "→ SpotiParty.app ($ARCH)"
 # Absolute paths: PyInstaller resolves --add-data and --icon relative to the spec folder.

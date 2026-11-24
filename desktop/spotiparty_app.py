@@ -30,6 +30,30 @@ URL = f"http://127.0.0.1:{PORT}/index.html"
 APP = "SpotiParty"
 
 
+def use_trusted_certificates():
+    """HTTPS needs a list of trusted certificates. The OpenSSL inside the app looks where it was built (on a GitHub
+    build machine: /Library/Frameworks/Python.framework/...), which doesn't exist on your Mac: then every https call
+    (Spotify, the updater) fails. Point it at macOS's own list, else the one from certifi in the app."""
+    if os.environ.get("SSL_CERT_FILE"):
+        return
+    import ssl
+    paths = ssl.get_default_verify_paths()
+    if paths.cafile or (paths.capath and os.path.isdir(paths.capath) and os.listdir(paths.capath)):
+        return   # the built-in place exists (a Python installed on this computer, or Windows/Linux)
+    for candidate in ("/etc/ssl/cert.pem", "/private/etc/ssl/cert.pem"):
+        if os.path.isfile(candidate):
+            os.environ["SSL_CERT_FILE"] = candidate
+            return
+    try:
+        import certifi
+        os.environ["SSL_CERT_FILE"] = certifi.where()
+    except ImportError:
+        pass
+
+
+use_trusted_certificates()
+
+
 def bundle_dir(name: str) -> pathlib.Path:
     if getattr(sys, "frozen", False):
         return pathlib.Path(sys._MEIPASS) / name   # unpacked by PyInstaller
@@ -312,5 +336,24 @@ def main():
     root.mainloop()
 
 
+def check_https() -> int:
+    """SpotiParty --check-https: can this build reach Spotify and GitHub over https? For testing a build."""
+    import ssl
+    print("certificaten:", os.environ.get("SSL_CERT_FILE") or ssl.get_default_verify_paths())
+    bad = 0
+    for url in ("https://accounts.spotify.com/", "https://api.github.com/"):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": APP}), timeout=10) as r:
+                print("ok  ", url, r.status)
+        except urllib.error.HTTPError as e:
+            print("ok  ", url, e.code)   # an answer, so https itself works
+        except Exception as e:  # noqa: BLE001
+            print("FOUT", url, e)
+            bad += 1
+    return 1 if bad else 0
+
+
 if __name__ == "__main__":
+    if "--check-https" in sys.argv:
+        sys.exit(check_https())
     main()

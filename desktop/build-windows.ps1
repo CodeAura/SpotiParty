@@ -31,7 +31,7 @@ Write-Host "-> Python: $Python"
 Write-Host "-> Bouwomgeving in desktop\build\venv"
 $Venv = Join-Path $Work "venv"
 if (-not (Test-Path (Join-Path $Venv "Scripts\python.exe"))) { & $Python -m venv $Venv; if ($LASTEXITCODE) { throw "venv failed" } }
-& (Join-Path $Venv "Scripts\python.exe") -m pip install --quiet --disable-pip-version-check --upgrade pyinstaller pillow
+& (Join-Path $Venv "Scripts\python.exe") -m pip install --quiet --disable-pip-version-check --upgrade pyinstaller pillow certifi
 if ($LASTEXITCODE) { throw "pip install failed" }
 
 if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw "Geef een versie mee, zoals -Version 2.7.0: de auto-updater vergelijkt ermee." }
