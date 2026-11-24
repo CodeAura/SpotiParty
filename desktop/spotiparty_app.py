@@ -20,6 +20,7 @@ import socket
 import subprocess
 import sys
 import threading
+import time
 import tkinter as tk
 import urllib.parse
 import urllib.request
@@ -197,6 +198,26 @@ def button(parent, text, command, bg, fg, active, **kw):
     return b
 
 
+def port_owner(port: int) -> str:
+    """Which program listens on this TCP port ("" when unknown), for a clear message instead of a missing Hub."""
+    try:
+        if MAC or platform.system() == "Linux":
+            out = subprocess.run(["lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN"], capture_output=True, text=True,
+                                 timeout=5).stdout.splitlines()
+            return out[1].split()[0] if len(out) > 1 else ""
+        out = subprocess.run(["netstat", "-ano", "-p", "TCP"], capture_output=True, text=True, timeout=5,
+                             creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
+        for line in out.splitlines():
+            parts = line.split()
+            if len(parts) >= 5 and parts[1].endswith(f":{port}") and parts[3] == "LISTENING":
+                task = subprocess.run(["tasklist", "/FI", f"PID eq {parts[4]}", "/FO", "CSV", "/NH"], capture_output=True,
+                                      text=True, timeout=5, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0)).stdout
+                return task.split(",")[0].strip('"') if task.strip() else ""
+    except (OSError, subprocess.SubprocessError, IndexError):
+        pass
+    return ""
+
+
 def main():
     global SCREEN_URL
     updated = "--updated" in sys.argv   # started again by the updater: the screen window is still open
@@ -228,14 +249,19 @@ def main():
             remote = cfg["hub"]   # the Hub is off for now: wait for it, don't become a second one
         else:
             save_role("hub")
-    hub = None
+    hub, hub_busy = None, None
     if remote:
         SCREEN_URL = f"{URL}?" + urllib.parse.urlencode({"hub": remote, "name": platform.node() or "PC"})
     else:
-        try:
-            hub = spotiparty_hub.Hub(data_dir(), web_root(), static_dir=bundle_dir("hub")).start()
-        except OSError:
-            hub = None   # port 8770 taken (another hub runs here): the screen still works
+        # Right after an update the old SpotiParty may still be letting go of port 8770: try a few seconds.
+        for _ in range(12):
+            try:
+                hub = spotiparty_hub.Hub(data_dir(), web_root(), static_dir=bundle_dir("hub")).start()
+                break
+            except OSError:
+                time.sleep(0.5)
+        if hub is None:
+            hub_busy = port_owner(spotiparty_hub.PORT)   # the screen still works; the window says why there's no Hub
     if not updated:
         open_window()
 
@@ -251,6 +277,12 @@ def main():
         hub_url = hub.admin_state()["urls"][0]
         tk.Label(root, text=f"{THIS[0].upper() + THIS[1:]} is de Hub. Admin-dashboard (ook op je telefoon):\n{hub_url}    PIN: {hub.cfg['pin']}",
                  fg="#ffffff", bg="#0f1016", justify="left", font=font(10)).pack(anchor="w", pady=(0, 12))
+    elif hub_busy is not None:
+        who = f" door {hub_busy}" if hub_busy else ""
+        tk.Label(root, text=(f"De Hub kon niet starten: poort {spotiparty_hub.PORT} is bezet{who}.\n"
+                             "Daardoor is er geen dashboard. Sluit dat programma (of herstart je "
+                             f"{'Mac' if MAC else 'pc'}) en start SpotiParty opnieuw."),
+                 fg="#ff9b8f", bg="#0f1016", justify="left", font=font(10)).pack(anchor="w", pady=(0, 12))
     elif remote:
         name = hub_name(remote)
         tk.Label(root, text=(f"Scherm van de Hub {name} ({remote})." if name else
