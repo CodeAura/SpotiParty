@@ -25,7 +25,7 @@ Nee. Ze scannen de QR-code met hun camera. Voor de Jam gebruiken ze hun eigen Sp
 
 | Waar           | Hoe                                                                                                       |
 | -------------- | --------------------------------------------------------------------------------------------------------- |
-| Windows-app    | Vanzelf, vanaf versie 2.7.0. Van 2.6.0 of ouder één keer met de hand de nieuwe setup draaien.             |
+| Windows-app    | Vanzelf, vanaf versie 3.2.1. Van 3.2.0 of ouder één keer met de hand de nieuwe setup draaien.             |
 | Raspberry Pi   | `git pull` en `sudo ./pi/install.sh` opnieuw                                                             |
 | Home Assistant | Via HACS, en daarna **Ctrl+F5**                                                                          |
 | Android TV     | Opnieuw bouwen en installeren, zie [Updaten en verwijderen](../android-tv/updaten-en-verwijderen.md)     |

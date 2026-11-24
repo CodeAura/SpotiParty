@@ -222,7 +222,8 @@ def port_owner(port: int) -> str:
 
 def main():
     global SCREEN_URL
-    updated = "--updated" in sys.argv   # started again by the updater: the screen window is still open
+    updated = "--updated" in sys.argv   # started again by the updater
+    reopen = "--open" in sys.argv       # ... after an update at start: no screen window is open yet
     if already_running():
         if not updated:
             open_window()   # a second start: just another window on the running SpotiParty
@@ -232,7 +233,7 @@ def main():
     if upd and not updated:
         p = upd.pending()
         if p:
-            upd.install(p[1])
+            upd.install(p[1], reopen=True)
             return
     handler = functools.partial(Handler, directory=str(web_root()))
     server = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), handler)
@@ -264,7 +265,7 @@ def main():
                 time.sleep(0.5)
         if hub is None:
             hub_busy = port_owner(spotiparty_hub.PORT)   # the screen still works; the window says why there's no Hub
-    if not updated:
+    if not updated or reopen:
         open_window()
 
     root = tk.Tk()

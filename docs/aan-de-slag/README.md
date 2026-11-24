@@ -28,7 +28,7 @@ flowchart LR
 | **Rol**             | Scherm **en** Hub                       | Scherm en/of Hub                        | Scherm                                          | Scherm (kaart)                                       |
 | **Toont**           | Je Spotify-account, via de Hub          | Je Spotify-account, via de Hub          | Wat er op de tv speelt, of je account via de Hub | Elke `media_player`, of je account via de Hub       |
 | **Nodig**           | Windows 10/11, of Python 3 (Mac/Linux)  | Raspberry Pi OS (64-bit) met desktop    | Een PC om te bouwen, plus ADB                   | Home Assistant, liefst met HACS                      |
-| **Updates**         | Vanzelf (Windows, vanaf 2.7.0)          | `sudo ./pi/install.sh` opnieuw          | Opnieuw bouwen en installeren                   | Via HACS                                             |
+| **Updates**         | Vanzelf (Windows, vanaf 3.2.1)          | `sudo ./pi/install.sh` opnieuw          | Opnieuw bouwen en installeren                   | Via HACS                                             |
 | **Tijd**            | ± 5 minuten                             | ± 10 minuten                            | ± 20 minuten                                    | ± 5 minuten                                          |
 
 {% hint style="info" %}

@@ -13,6 +13,7 @@ copy. A copy run from source or a loose .exe is never touched. The flow:
        macOS: a small script waits for SpotiParty to quit, mounts the .dmg, checks the app in it (signature,
        bundle id, version), swaps it for the old one and opens it. If any check fails the old app stays.
 """
+import base64
 import json
 import os
 import pathlib
@@ -158,20 +159,44 @@ class Updater:
             return self.pending()
 
     # ---------- install ----------
-    def install(self, update: pathlib.Path) -> None:
+    def install(self, update: pathlib.Path, reopen: bool = False) -> None:
         """Install in a separate process and start SpotiParty again afterwards.
+        reopen: also open the screen window again (an update at start, before any window was open; with
+        "Nu bijwerken" the window that is open reconnects by itself).
         The caller stops this SpotiParty right after, so the update can replace it."""
         if MAC:
-            return self._install_mac(update)
+            return self._install_mac(update, reopen)
         exe = pathlib.Path(sys.executable)
-        # cmd waits 2 s for this process to end, installs, then starts the new version (without a new
-        # screen window: the one that is open reconnects by itself).
-        line = (f'timeout /t 2 /nobreak >nul & "{update}" /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /CLOSEAPPLICATIONS '
-                f'& start "" "{exe}" --updated')
-        subprocess.Popen(["cmd.exe", "/c", line], creationflags=0x08000000 | 0x00000008,   # no window, detached
-                         close_fds=True)
 
-    def _install_mac(self, dmg: pathlib.Path) -> None:
+        def ps(text) -> str:   # a PowerShell string literal
+            return "'" + str(text).replace("'", "''") + "'"
+
+        # PowerShell (in every Windows 10/11), as one encoded block: no quoting for cmd to get wrong.
+        # 1. Wait until this SpotiParty.exe has quit (the program and its unpacker, and any other copy of it);
+        #    after 30 s stop it: the setup can't replace a running .exe, and the Restart Manager the setup asks
+        #    for can't always close it (on Windows on ARM it gives up on the emulator's cache).
+        # 2. Install silently. A setup that fails is removed, so the next start doesn't try it again.
+        # 3. Start the new version (the old one again if the setup failed), always.
+        script = f"""$ErrorActionPreference = 'SilentlyContinue'
+$old = {{ Get-Process -Name SpotiParty | Where-Object {{ $_.Path -eq {ps(exe)} }} }}
+& $old | Wait-Process -Timeout 30
+& $old | Stop-Process -Force
+Start-Sleep -Seconds 1
+$p = Start-Process -FilePath {ps(update)} -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/CLOSEAPPLICATIONS' -Wait -PassThru
+if (-not $p -or $p.ExitCode -ne 0) {{ Remove-Item -LiteralPath {ps(update)} -Force }}
+Start-Process -FilePath {ps(exe)} -ArgumentList {"'--updated','--open'" if reopen else "'--updated'"}
+"""
+        encoded = base64.b64encode(script.encode("utf-16-le")).decode()
+        # Without PyInstaller's own variables, else the new SpotiParty.exe looks for this one's unpacked files.
+        env = {k: v for k, v in os.environ.items() if not k.upper().startswith(("_PYI_", "_MEIPASS"))}
+        env["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
+        subprocess.Popen(["powershell.exe", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+                          "-WindowStyle", "Hidden", "-EncodedCommand", encoded],
+                         env=env, close_fds=True, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL,
+                         creationflags=0x08000000 | 0x00000200)   # no window, own process group
+
+    def _install_mac(self, dmg: pathlib.Path, reopen: bool = False) -> None:
         app = app_bundle()
         m = LOCAL.match(dmg.name)
         if not app or not m:
@@ -186,7 +211,7 @@ APP={q(str(app))}
 DMG={q(str(dmg))}
 WANT={q(version)}
 MNT="$(mktemp -d /tmp/spotiparty-update.XXXXXX)"
-reopen() {{ open -a "$APP" --env HOME="$HOME" --args --updated; }}
+reopen() {{ open -a "$APP" --env HOME="$HOME" --args --updated{' --open' if reopen else ''}; }}
 # A rejected update is removed: the next check downloads it again instead of retrying it at every start.
 fail() {{ echo "update failed: $1"; hdiutil detach "$MNT" -quiet -force 2>/dev/null; rmdir "$MNT" 2>/dev/null; rm -f "$DMG"; reopen; exit 1; }}
 # Wait for SpotiParty to quit (at most 30 s).
