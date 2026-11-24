@@ -12,7 +12,7 @@ icon: party-horn
 Alles bestuur je vanuit één plek: de [**SpotiParty Hub**](hub/hub-dashboard.md).
 
 {% hint style="success" %}
-**Nieuwste versie: 2.9.0.** De Hub op een [Linux-server](hub/linux-server.md) werkt zichzelf bij en je kiest daar de PIN bij de eerste start; de Mac-`.dmg` opent als venster om SpotiParty naar Apps te slepen. De Windows- en Mac-app werken zichzelf bij. Kom je op Windows van 2.6.0 of ouder, installeer dan [`SpotiParty-Setup-2.9.0.exe`](https://github.com/CodeAura/SpotiParty/releases/download/v2.9.0/SpotiParty-Setup-2.9.0.exe) één keer met de hand. Alle versies staan bij [Releases](https://github.com/CodeAura/SpotiParty/releases).
+**Nieuwste versie: 2.10.0.** Koppel tot vijf Spotify-accounts aan de Hub en wissel met één tik, of laat de Hub vanzelf wisselen naar het account dat speelt (zie [Hub en admin-dashboard](hub/hub-dashboard.md)). De Windows- en Mac-app werken zichzelf bij. Kom je op Windows van 2.6.0 of ouder, installeer dan [`SpotiParty-Setup-2.10.0.exe`](https://github.com/CodeAura/SpotiParty/releases/download/v2.10.0/SpotiParty-Setup-2.10.0.exe) één keer met de hand. Alle versies staan bij [Releases](https://github.com/CodeAura/SpotiParty/releases).
 {% endhint %}
 
 ![SpotiParty: de hoes van het nummer, de songtekst en de Jam-QR-code](.gitbook/assets/web-wide.jpg)
