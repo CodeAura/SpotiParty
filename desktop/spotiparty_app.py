@@ -155,7 +155,8 @@ def hub_name(addr: str) -> str:
         return ""
 
 
-SCREEN_URL = URL   # set to the URL with ?hub=... when this PC is a screen of another Hub
+# fs=1: the screen asks to go full screen at the start (one click or F), in a browser that can't be told to.
+SCREEN_URL = URL + "?fs=1"   # with &hub=... when this PC is a screen of another Hub
 
 
 def open_window():
@@ -166,8 +167,9 @@ def open_window():
         flags = 0x08000000 if platform.system() == "Windows" else 0   # CREATE_NO_WINDOW
         # The screen must keep talking to the Hub (and run its play/pause commands) when it is behind another
         # window or minimised: without these flags Edge and Chrome slow its timers to once a minute.
+        # --start-fullscreen: the party screen fills the monitor straight away (F11 / Esc leaves it).
         subprocess.Popen([browser, f"--app={SCREEN_URL}", f"--user-data-dir={profile}", "--window-size=1280,760",
-                          "--no-first-run", "--no-default-browser-check",
+                          "--start-fullscreen", "--no-first-run", "--no-default-browser-check",
                           "--disable-background-timer-throttling", "--disable-renderer-backgrounding",
                           "--disable-backgrounding-occluded-windows"], creationflags=flags)
     else:
@@ -251,7 +253,7 @@ def main():
             save_role("hub")
     hub, hub_busy = None, None
     if remote:
-        SCREEN_URL = f"{URL}?" + urllib.parse.urlencode({"hub": remote, "name": platform.node() or "PC"})
+        SCREEN_URL = f"{URL}?" + urllib.parse.urlencode({"fs": "1", "hub": remote, "name": platform.node() or "PC"})
     else:
         # Right after an update the old SpotiParty may still be letting go of port 8770: try a few seconds.
         for _ in range(12):

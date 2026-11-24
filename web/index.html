@@ -225,6 +225,14 @@
   .game > b .ic { color: var(--accent); }
   .game .stat { color: #fffc; }
 
+  #gofs { position: fixed; left: 50%; top: 50%; z-index: 19; transform: translate(-50%, -50%); display: grid;
+    justify-items: center; gap: .4em; padding: 1.2em 2em; border-radius: 1.4em; color: #fff; cursor: pointer;
+    font: inherit; font-size: clamp(16px, 4cqh, 40px); font-weight: 800; animation: rise-in .6s cubic-bezier(.2, .9, .25, 1); }
+  #gofs[hidden] { display: none; }
+  #gofs .ic { width: 1.6em; height: 1.6em; color: var(--accent); }
+  #gofs span { white-space: nowrap; }
+  #gofs small { font-size: .45em; font-weight: 500; color: #fffb; letter-spacing: .04em; }
+
   /* The startup screen: on top of everything for a moment, then it fades away. */
   #splash { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; text-align: center;
     background: radial-gradient(60% 60% at 50% 42%, #2a1660 0%, #120b2a 55%, var(--bg) 100%);
@@ -304,6 +312,8 @@
 </head>
 <body class="idle">
 <!-- The startup screen: logo, name and maker, for a moment while the screen connects. ?splash=0 leaves it out. -->
+<!-- Opened by the desktop app (?fs=1) in a browser that can't start full screen by itself: one click or F does it. -->
+<button id="gofs" class="glass" hidden><i data-icon="maximize"></i><span>Volledig scherm</span><small>klik of druk op F</small></button>
 <div id="splash" aria-label="SpotiParty, door CodeAura">
   <div class="splash-in">
     <svg class="logo" viewBox="0 0 1024 1024" aria-hidden="true">

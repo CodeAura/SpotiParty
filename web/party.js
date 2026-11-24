@@ -778,6 +778,17 @@ $("opt-lyrics").onchange = e => {
 $("close").onclick = () => openSettings(false);
 $("gear").onclick = () => openSettings(true);
 $("fs").onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {});
+// Started by the desktop app (?fs=1): full screen right away. Chrome/Edge do it themselves (--start-fullscreen);
+// any other browser only allows it after a click or a key, so then a big button asks for one.
+const isFull = () => !!document.fullscreenElement || (innerHeight >= screen.height - 2 && innerWidth >= screen.width - 2);
+if (params.get("fs") === "1") {
+  const go = $("gofs");
+  const ask = () => { go.hidden = isFull(); };
+  setTimeout(ask, 3200);   // after the startup screen
+  go.onclick = () => document.documentElement.requestFullscreen().then(() => { go.hidden = true; }).catch(() => {});
+  addEventListener("resize", () => { if (isFull()) go.hidden = true; });
+  document.addEventListener("fullscreenchange", () => { if (document.fullscreenElement) go.hidden = true; });
+}
 
 addEventListener("keydown", e => {
   if (e.target.matches && e.target.matches("input, select")) { if (e.key === "Escape") openSettings(false); return; }
