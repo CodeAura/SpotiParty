@@ -205,6 +205,8 @@
     font-weight: 700; font-size: .8em; background: rgb(255 255 255 / .14); }
   #nextvote li .t { min-width: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #nextvote li .t i { font-style: normal; color: #fff9; }
+  #nextvote > b .left { margin-left: auto; padding: .1em .6em; border-radius: 99px; font-size: .8em;
+    font-variant-numeric: tabular-nums; background: rgb(255 255 255 / .14); }
   #nextvote li .n { flex: none; font-weight: 700; font-variant-numeric: tabular-nums; }
   #nextvote li.win { outline: 2px solid var(--accent); }
   #nextvote li.win .l { background: var(--accent); color: #000; }
@@ -298,7 +300,7 @@
     <div id="bar"><div></div></div>
     <div id="next" hidden></div>
     <aside id="nextvote" class="game glass" hidden>
-      <b><i data-icon="vote"></i><em>Stem het volgende nummer</em></b>
+      <b><i data-icon="vote"></i><em>Stem het volgende nummer</em><span class="left"></span></b>
       <ol></ol>
       <div class="how"><i data-icon="smartphone"></i><span>Stem op je telefoon: scan de QR-code</span><i data-icon="arrow-right"></i></div>
     </aside>

@@ -13,7 +13,7 @@ import { useLatestRelease } from "../lib/latestRelease.js";
 
 const PANELS = [
   { img: "games", tag: [Vote, "Stem het volgende nummer"], title: "De gasten kiezen wat er komt", phone: true,
-    text: "Drie nummers uit je afspeellijst: wie scant, stemt. De winnaar gaat vanzelf in de wachtrij. Op de telefoon ook een eigen kaart voor muziekbingo." },
+    text: "Drie nummers uit je afspeellijst en 60 seconden om te stemmen. De winnaar gaat vanzelf in de wachtrij. Op de telefoon ook een eigen kaart voor muziekbingo." },
   { img: "quiz", tag: [MicVocal, "Raad het nummer"], title: "Wie raadt hem het snelst?",
     text: "Bij elk nieuw nummer blijven titel en hoes 15 seconden geheim. Gasten raden op hun telefoon: hoe sneller, hoe meer punten." },
   { img: "winner", tag: [Crown, "Stand van de avond"], title: "En de winnaar is…",

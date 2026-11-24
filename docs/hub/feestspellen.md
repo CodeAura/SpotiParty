@@ -44,7 +44,7 @@ De Hub heeft daarvoor toestemming nodig om je afspeellijsten te lezen. Accounts 
 
 ## Stem het volgende nummer
 
-Klik op **Starten**. Bij elk nummer kiezen gasten op hun telefoon uit **drie nummers** uit de afspeellijst; op het scherm zie je de stemmen. Zo'n **25 seconden voor het einde** van het nummer zet de Hub de winnaar in de wachtrij van je Spotify-account, zodat hij meteen daarna speelt. Wie op de winnaar stemde, krijgt **10 punten**. Bij een gelijke stand beslist het lot; zonder stemmen gebeurt er niets.
+Klik op **Starten**. Bij elk nummer kiezen gasten op hun telefoon uit **drie nummers** uit de afspeellijst. Er wordt **60 seconden** gestemd: het scherm toont de stemmen en een aftelklok op de plek van *Hierna*. Daarna zet de Hub de winnaar in de wachtrij van je Spotify-account, zodat hij na dit nummer speelt, en is *Hierna* weer terug. Is het nummer korter, dan sluit het stemmen uiterlijk 25 seconden voor het einde. Wie op de winnaar stemde, krijgt **10 punten**. Bij een gelijke stand beslist het lot; zonder stemmen gebeurt er niets.
 
 {% hint style="info" %}
 Speelt er een Jam, dan komt het gekozen nummer achter de nummers die gasten al in de Jam zetten: zo werkt de wachtrij van Spotify.

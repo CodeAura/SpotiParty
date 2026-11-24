@@ -25,7 +25,8 @@ MSG_EVERY_S = 30       # one message per phone per this many seconds
 MSG_PENDING_MAX = 30   # waiting for the host; older ones drop off
 
 NEXT_OPTIONS = 3       # "Stem het volgende nummer": this many songs to choose from
-NEXT_QUEUE_LEFT_S = 25  # the winner goes into the queue when this much of the song is left
+NEXT_VOTE_S = 60       # how long guests can vote; then the winner goes into the queue
+NEXT_QUEUE_LEFT_S = 25  # a short song: the vote closes at the latest when this much of it is left
 NEXT_POINTS = 10       # for every guest who voted for the winner
 
 BINGO_SIZE = 4         # a 4 x 4 card
@@ -273,13 +274,14 @@ class Party:
         options = random.sample(fresh, min(NEXT_OPTIONS, len(fresh)))
         self.next_recent = (self.next_recent + [t["id"] for t in options])[-max(NEXT_OPTIONS, len(self.pool) // 2):]
         self.next = {"id": secrets.token_hex(4), "song": self.song, "options": options, "votes": {}, "queued": None,
-                     "closed": False}   # closed: the time is up (with or without a winner)
+                     "closed": False,   # closed: the time is up (with or without a winner)
+                     "until": time.time() + NEXT_VOTE_S}
 
     def next_vote(self, voter: str, name: str, i: int) -> dict:
         n = self.next
         if not self.next_on or not n:
             return {"ok": False, "msg": "Stemmen op het volgende nummer staat nu uit."}
-        if n["queued"] is not None or n.get("closed"):
+        if n["queued"] is not None or n.get("closed") or time.time() >= n.get("until", 0):
             return {"ok": False, "msg": "Het stemmen voor dit nummer is voorbij. Bij het volgende nummer kun je weer stemmen."}
         if not 0 <= i < len(n["options"]):
             return {"ok": False, "msg": "Kies een van de nummers."}
@@ -300,8 +302,8 @@ class Party:
         n = self.next
         if not self.next_on or not n or n.get("closed") or n["song"] != self.song:
             return None
-        if left_s > NEXT_QUEUE_LEFT_S:
-            return None
+        if left_s > NEXT_QUEUE_LEFT_S and time.time() < n.get("until", 0):
+            return None   # still voting: 60 seconds, or until shortly before the end of a short song
         n["closed"] = True             # the vote is over: off the screens, also when nobody voted
         if not n["votes"]:
             return None
@@ -378,6 +380,7 @@ class Party:
         n = self.next
         if self.next_on and n:
             out["next"] = {"id": n["id"], "queued": n["queued"], "closed": bool(n.get("closed")),
+                           "until": int(n.get("until", 0) * 1000),
                            "options": [{"title": t["title"], "artist": t["artist"], "votes": c}
                                        for t, c in zip(n["options"], self._counts())]}
         b = self.bingo
@@ -404,6 +407,7 @@ class Party:
         n = self.next
         if self.next_on and n:
             out["next"] = {"id": n["id"], "queued": n["queued"], "closed": bool(n.get("closed")), "mine": n["votes"].get(voter),
+                           "left": max(0, int(n.get("until", 0) - time.time() + 0.99)),
                            "options": [{"title": t["title"], "artist": t["artist"], "votes": c}
                                        for t, c in zip(n["options"], self._counts())]}
         b = self.bingo

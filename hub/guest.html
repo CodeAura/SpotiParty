@@ -195,8 +195,8 @@ function render() {
     $("next-text").textContent = n.queued !== null && n.queued !== undefined
       ? "Gekozen! Dit nummer komt hierna. Bij het volgende nummer stem je weer."
       : n.closed ? "Er werd niet gestemd voor dit nummer. Bij het volgende nummer kun je weer stemmen."
-      : "Welk nummer komt hierna? Het nummer met de meeste stemmen gaat in de wachtrij.";
-    const nkey = JSON.stringify(n);
+      : `Welk nummer komt hierna? Nog ${n.left} ${n.left === 1 ? "seconde" : "seconden"} om te stemmen; het nummer met de meeste stemmen gaat in de wachtrij.`;
+    const nkey = JSON.stringify({ ...n, left: 0 });   // the countdown alone is no reason to redraw the buttons
     if ($("next-opts").dataset.key !== nkey) {   // only when something changed: a tap must not land on a redrawn button
       $("next-opts").dataset.key = nkey;
       $("next-opts").innerHTML = n.options.map((o, i) => `

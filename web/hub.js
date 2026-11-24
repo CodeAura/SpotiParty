@@ -284,8 +284,17 @@ const Hub = (() => {
   }
 
   // Every half second: the countdown, from the hub's clock (so all screens agree).
+  /** The vote's seconds left, from the hub's clock (so every screen counts down together). */
+  function tickVote() {
+    const n = party && party.next, el = $("nextvote").querySelector(".left");
+    if (!n || !n.until) { el.textContent = ""; return; }
+    const s = Math.max(0, Math.ceil((n.until - (Date.now() + offset)) / 1000));
+    el.textContent = `0:${String(s).padStart(2, "0")}`;
+  }
+
   function tick() {
     tickQuiz();
+    tickVote();
     // The notice's time running out, as a bar under the text (none for "until I remove it").
     const n = last && last.notice, ring = $("notice").querySelector(".ring");
     ring.hidden = !(n && n.until && n.secs);
