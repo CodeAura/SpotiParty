@@ -23,7 +23,20 @@ import urllib.request
 
 ACCOUNTS = "https://accounts.spotify.com/"
 API = "https://api.spotify.com/v1"
-SCOPES = "user-read-playback-state user-read-currently-playing user-modify-playback-state"
+# The playlist scopes are for the party games (a playlist to vote from, bingo cards): accounts linked before 2.11
+# lack them and can only use public playlists until they log in again.
+SCOPES = ("user-read-playback-state user-read-currently-playing user-modify-playback-state "
+          "playlist-read-private playlist-read-collaborative")
+
+
+def playlist_id(text: str) -> str:
+    """A playlist from a link (open.spotify.com/playlist/ID?si=...), a URI (spotify:playlist:ID) or the bare id."""
+    text = (text or "").strip()
+    for sep in ("/playlist/", ":playlist:"):
+        if sep in text:
+            text = text.split(sep, 1)[1]
+    text = text.split("?", 1)[0].split("/", 1)[0].strip()
+    return text if 10 <= len(text) <= 40 and text.isalnum() else ""
 
 
 class SpotifyError(Exception):
@@ -270,6 +283,73 @@ class Spotify:
         if st == 403 and cmd in ("play", "pause"):
             return   # already playing / already paused: nothing to do
         raise SpotifyError(f"Spotify zei {st}" + (f" ({message})" if message else "") + ".")
+
+    # ---------- playlists and the queue (the party games) ----------
+    def _error(self, st, body, what):
+        error = (body or {}).get("error")
+        message = error.get("message", "") if isinstance(error, dict) else str(error or "")
+        if st == 401 or (st == 403 and "scope" in message.lower()):
+            return SpotifyError("Log opnieuw in bij Spotify (bij Muziek bedienen), dan mag de Hub je afspeellijsten lezen.")
+        if st == 404:
+            return SpotifyError(f"{what} niet gevonden. Is de afspeellijst privé van een ander account?")
+        if st == 403:
+            return SpotifyError(f"Spotify geeft deze app geen toegang tot {what.lower()}"
+                                " (in Development Mode alleen tot je eigen afspeellijsten).")
+        return SpotifyError(f"Spotify zei {st}" + (f" ({message})" if message else "") + ".")
+
+    def playlists(self):
+        """The active account's playlists: [{id, name, count}]."""
+        st, body = self._call("GET", "/me/playlists?limit=50")
+        if st != 200:
+            raise self._error(st, body, "Je afspeellijsten")
+        out = []
+        for p in (body or {}).get("items") or []:
+            if not p or not p.get("id"):
+                continue
+            count = (p.get("items") or p.get("tracks") or {}).get("total", 0)
+            out.append({"id": p["id"], "name": p.get("name", ""), "count": count})
+        return out
+
+    def playlist(self, text: str):
+        """(name, [{id, uri, title, artist}]) of a playlist: its songs, at most 300 (podcast episodes left out)."""
+        pid = playlist_id(text)
+        if not pid:
+            raise SpotifyError("Dat is geen afspeellijst. Plak een link als https://open.spotify.com/playlist/...")
+        st, meta = self._call("GET", f"/playlists/{pid}?fields=name")
+        if st != 200:
+            raise self._error(st, meta, "Die afspeellijst")
+        tracks, path = [], None
+        for base in (f"/playlists/{pid}/items", f"/playlists/{pid}/tracks"):   # newer name first, then the old one
+            st, body = self._call("GET", base + "?limit=100")
+            if st == 200:
+                path = base
+                break
+        if path is None:
+            raise self._error(st, body, "De nummers van die afspeellijst")
+        offset = 0
+        while body and len(tracks) < 300:
+            items = body.get("items") or []
+            offset += len(items)   # the next page starts after what came in (Spotify may send fewer than asked)
+            for it in items:
+                t = (it or {}).get("item") or (it or {}).get("track") or {}
+                if t.get("type", "track") != "track" or not t.get("id") or t.get("is_local"):
+                    continue
+                tracks.append({"id": t["id"], "uri": t.get("uri") or f"spotify:track:{t['id']}", "title": t.get("name", ""),
+                               "artist": ", ".join(a.get("name", "") for a in t.get("artists") or [])})
+            if not body.get("next") or not items:
+                break
+            st, body = self._call("GET", f"{path}?limit=100&offset={offset}")
+            if st != 200:
+                break
+        return (meta or {}).get("name", ""), tracks
+
+    def queue(self, uri: str) -> None:
+        """Put a song at the end of the account's queue (after the Jam's songs, as Spotify does)."""
+        st, body = self._call("POST", "/me/player/queue?uri=" + urllib.parse.quote(uri, safe=":"))
+        if st not in (200, 202, 204):
+            if st == 404:
+                raise SpotifyError("Er speelt nu geen Spotify op dit account, dus er is geen wachtrij.")
+            raise self._error(st, body, "De wachtrij")
 
     def refresh(self, with_queue=False):
         """What the active account plays now: for the dashboard, and for every screen (they show its song)."""

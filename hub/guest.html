@@ -40,6 +40,29 @@
   ol li { padding: 3px 0; }
   ol li b { float: right; }
   .me { color: var(--accent); }
+  textarea { width: 100%; padding: 13px 14px; border-radius: 12px; border: 1px solid #fff3; background: var(--bg); color: #fff;
+    font: inherit; font-size: 17px; margin: 6px 0 4px; resize: none; }
+  .count { text-align: right; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .score { display: flex; align-items: baseline; gap: 8px; font-size: 15px; color: var(--muted); }
+  .score b { font-size: 22px; color: #fff; }
+  /* Stem het volgende nummer */
+  .opts { display: grid; gap: 8px; margin: 8px 0 4px; }
+  .opts button { position: relative; overflow: hidden; display: flex; align-items: center; gap: 10px; text-align: left;
+    font-weight: 600; font-size: 15px; padding: 12px 14px; isolation: isolate; }
+  .opts button .fill { position: absolute; inset: 0 auto 0 0; background: #1ed76033; z-index: -1; transition: width .4s; }
+  .opts button .l { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+    background: #ffffff1f; font-size: 13px; }
+  .opts button .t { flex: 1; min-width: 0; }
+  .opts button .t small { display: block; font-weight: 400; color: var(--muted); font-size: 13px; }
+  .opts button.mine { outline: 2px solid var(--accent); }
+  .opts button.mine .l, .opts button.win .l { background: var(--accent); color: #000; }
+  /* Muziekbingo */
+  .card4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 8px 0 12px; }
+  .card4 div { aspect-ratio: 1; border-radius: 10px; background: #ffffff10; border: 1px solid var(--line); display: grid;
+    place-items: center; text-align: center; padding: 4px; font-size: 11px; line-height: 1.2; overflow: hidden;
+    overflow-wrap: break-word; -webkit-hyphens: auto; hyphens: auto; }
+  .card4 div.on { background: var(--accent); color: #000; font-weight: 700; border-color: transparent; }
+  .bingo-btn { background: #ff4fd8; }
 </style>
 </head>
 <body>
@@ -48,6 +71,13 @@
     <h1><i data-icon="party-popper"></i>SpotiParty</h1>
     <div class="hub" id="hub"></div>
   </div>
+
+  <section id="me" hidden>
+    <h2><i data-icon="users"></i>Jij</h2>
+    <label for="name">Je naam (zie je op het scherm)</label>
+    <input id="name" maxlength="24" autocomplete="nickname" placeholder="Bijv. Lisa">
+    <div class="score" id="myscore"></div>
+  </section>
 
   <section id="now">
     <h2><i data-icon="music"></i>Nu</h2>
@@ -71,13 +101,38 @@
   <section id="quiz" hidden>
     <h2><i data-icon="mic-vocal"></i>Raad het nummer</h2>
     <div id="quiz-round"></div>
-    <label for="name">Je naam</label>
-    <input id="name" maxlength="24" autocomplete="nickname" placeholder="Bijv. Lisa">
     <label for="answer">De titel (of de artiest, voor de helft van de punten)</label>
     <input id="answer" maxlength="120" autocomplete="off" autocapitalize="off" placeholder="Wat speelt er?">
     <button class="go" id="guess-btn">Raden</button>
     <div class="msg" id="quiz-msg"></div>
-    <h2 style="margin-top:16px"><i data-icon="trophy"></i>Stand <small id="myscore" style="color:var(--muted);font-weight:400"></small></h2>
+  </section>
+
+  <section id="next" hidden>
+    <h2><i data-icon="vote"></i>Stem het volgende nummer</h2>
+    <p id="next-text">Welk nummer komt hierna? Het nummer met de meeste stemmen gaat in de wachtrij.</p>
+    <div class="opts" id="next-opts"></div>
+    <div class="msg" id="next-msg"></div>
+  </section>
+
+  <section id="bingo" hidden>
+    <h2><i data-icon="grid-3x3"></i>Muziekbingo</h2>
+    <p>Speelt een nummer van je kaart, dan kleurt het vakje. Een hele rij, kolom of diagonaal? Druk op Bingo!</p>
+    <div class="card4" id="bingo-card"></div>
+    <button class="bingo-btn" id="bingo-btn">Bingo!</button>
+    <div class="msg" id="bingo-msg"></div>
+  </section>
+
+  <section id="message" hidden>
+    <h2><i data-icon="message-square-text"></i>Stuur een bericht</h2>
+    <p>Komt op het scherm zodra de host het goedkeurt.</p>
+    <textarea id="msg-text" rows="2" maxlength="80" placeholder="Bijv. Gefeliciteerd Sanne!"></textarea>
+    <div class="count" id="msg-count">0/80</div>
+    <button class="go" id="msg-btn">Versturen</button>
+    <div class="msg" id="msg-msg"></div>
+  </section>
+
+  <section id="board" hidden>
+    <h2><i data-icon="trophy"></i>Stand van de avond</h2>
     <ol id="top"></ol>
   </section>
 </main>
@@ -125,6 +180,52 @@ function render() {
     $("vote-btn").textContent = s.voted ? "Je hebt gestemd" : "Skip";
   }
 
+  const games = s.quiz_on || s.next || s.bingo || s.msg_on;
+  $("me").hidden = !games;
+  $("myscore").innerHTML = s.score ? `<b>${s.score}</b> punten · plek ${s.rank}` : "Nog geen punten";
+  $("board").hidden = !(s.quiz_on || s.next || s.bingo) && !s.top.length;
+  const myName = $("name").value.trim();
+  $("top").innerHTML = s.top.length ? s.top.map(([n, p]) =>
+    `<li class="${n === myName ? "me" : ""}">${esc(n)} <b>${p}</b></li>`).join("") : "<p>Nog geen punten.</p>";
+
+  const n = s.next;
+  $("next").hidden = !n;
+  if (n) {
+    const total = n.options.reduce((a, o) => a + o.votes, 0), done = (n.queued !== null && n.queued !== undefined) || n.closed;
+    $("next-text").textContent = n.queued !== null && n.queued !== undefined
+      ? "Gekozen! Dit nummer komt hierna. Bij het volgende nummer stem je weer."
+      : n.closed ? "Er werd niet gestemd voor dit nummer. Bij het volgende nummer kun je weer stemmen."
+      : "Welk nummer komt hierna? Het nummer met de meeste stemmen gaat in de wachtrij.";
+    const nkey = JSON.stringify(n);
+    if ($("next-opts").dataset.key !== nkey) {   // only when something changed: a tap must not land on a redrawn button
+      $("next-opts").dataset.key = nkey;
+      $("next-opts").innerHTML = n.options.map((o, i) => `
+      <button data-i="${i}" class="${i === n.mine ? "mine" : ""} ${i === n.queued ? "win" : ""}" ${done ? "disabled" : ""}>
+        <span class="fill" style="width:${total ? o.votes / total * 100 : 0}%"></span><span class="l">${"ABC"[i]}</span>
+        <span class="t">${esc(o.title)}<small>${esc(o.artist)}</small></span><span>${o.votes}</span></button>`).join("");
+    }
+  }
+
+  const b = s.bingo;
+  $("bingo").hidden = !b;
+  if (b) {
+    const key = JSON.stringify(b);
+    if ($("bingo-card").dataset.key !== key) {
+      $("bingo-card").dataset.key = key;
+      $("bingo-card").innerHTML = b.card.map(c => `<div class="${c.played ? "on" : ""}" title="${esc(c.artist)}">${esc(c.title)}</div>`).join("");
+    }
+    const size = b.size, on = b.card.map(c => c.played), lines = [];
+    for (let i = 0; i < size; i++) {
+      lines.push([...Array(size)].map((_, j) => i * size + j), [...Array(size)].map((_, j) => j * size + i));
+    }
+    lines.push([...Array(size)].map((_, j) => j * size + j), [...Array(size)].map((_, j) => j * size + size - 1 - j));
+    const full = lines.some(l => l.every(c => on[c]));
+    $("bingo-btn").disabled = b.won || !full;
+    $("bingo-btn").textContent = b.won ? "Je hebt bingo!" : full ? "Bingo!" : "Nog geen volle rij";
+  }
+
+  $("message").hidden = !s.msg_on;
+
   $("quiz").hidden = !s.quiz_on;
   if (s.quiz_on) {
     const r = s.round;
@@ -136,10 +237,6 @@ function render() {
     const can = !!(r && r.open && !r.done && r.tries < 3);
     $("guess-btn").disabled = !can;
     $("answer").disabled = !can;
-    $("myscore").textContent = s.score ? `· jij: ${s.score} punten` : "";
-    const myName = $("name").value.trim();
-    $("top").innerHTML = s.top.length ? s.top.map(([n, p]) =>
-      `<li class="${n === myName ? "me" : ""}">${esc(n)} <b>${p}</b></li>`).join("") : "<p>Nog geen punten.</p>";
   }
 }
 
@@ -158,7 +255,7 @@ $("vote-btn").onclick = async () => {
 };
 async function guess() {
   const name = $("name").value.trim(), text = $("answer").value.trim();
-  if (!name) { msg("quiz-msg", "Vul eerst je naam in.", true); $("name").focus(); return; }
+  if (!name) { msg("quiz-msg", "Vul eerst bovenaan je naam in.", true); $("name").focus(); return; }
   if (!text) return;
   store("name", name);
   try {
@@ -169,6 +266,36 @@ async function guess() {
   } catch (e) { msg("quiz-msg", e.message, true); }
 }
 $("guess-btn").onclick = guess;
+function needName(msgId) {
+  const name = $("name").value.trim();
+  if (!name) { msg(msgId, "Vul eerst bovenaan je naam in.", true); $("name").focus(); return ""; }
+  store("name", name);
+  return name;
+}
+$("next-opts").onclick = async e => {
+  const b = e.target.closest("button[data-i]");
+  if (!b) return;
+  const name = needName("next-msg");
+  if (!name) return;
+  try { const d = await post("next", { name, i: +b.dataset.i }); msg("next-msg", d.msg, !d.ok); refresh(); }
+  catch (err) { msg("next-msg", err.message, true); }
+};
+$("bingo-btn").onclick = async () => {
+  const name = needName("bingo-msg");
+  if (!name) return;
+  try { const d = await post("bingo", { name }); msg("bingo-msg", d.msg, !d.ok); refresh(); }
+  catch (err) { msg("bingo-msg", err.message, true); }
+};
+$("msg-text").addEventListener("input", () => { $("msg-count").textContent = `${$("msg-text").value.length}/80`; });
+$("msg-btn").onclick = async () => {
+  const name = needName("msg-msg");
+  if (!name) return;
+  try {
+    const d = await post("message", { name, text: $("msg-text").value });
+    msg("msg-msg", d.msg, !d.ok);
+    if (d.ok) { $("msg-text").value = ""; $("msg-count").textContent = "0/80"; }
+  } catch (err) { msg("msg-msg", err.message, true); }
+};
 $("answer").addEventListener("keydown", e => { if (e.key === "Enter") guess(); });
 $("name").addEventListener("change", () => store("name", $("name").value.trim()));
 

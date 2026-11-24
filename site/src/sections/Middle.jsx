@@ -5,17 +5,17 @@ import SpotlightCard from "../components/reactbits/SpotlightCard/SpotlightCard.j
 import ScrollReveal from "../components/reactbits/ScrollReveal/ScrollReveal.jsx";
 import ShinyText from "../components/reactbits/ShinyText/ShinyText.jsx";
 import Pic from "../components/Pic.jsx";
-import { MicVocal, QrCode, Sunset, ListMusic, PartyPopper, Lock, Music, MessageSquareText, Coffee, Wifi, Users, Server }
-  from "lucide-react";
+import { MicVocal, QrCode, Sunset, ListMusic, PartyPopper, Lock, Music, MessageSquareText, Coffee, Wifi, Users, Server,
+  UserRoundCog } from "lucide-react";
 
 const SPOTS = [
-  { box: [3.9, 9.2, 25.8, 60.4], title: "Wat er speelt",
+  { box: [3.9, 8.4, 25.9, 58.3], title: "Wat er speelt",
     text: "De hoes, titel en artiest, groot in beeld. De hoes kleurt de hele achtergrond, en bij elk nieuw nummer draait hij zo in beeld." },
-  { box: [32.5, 27.8, 38, 28.4], title: "De songtekst, in de maat",
+  { box: [32.3, 26.9, 39, 29.6], title: "De songtekst, in de maat",
     text: "De regel die nu gezongen wordt staat groot in het midden. Teksten komen van lrclib.net: gratis, zonder account." },
-  { box: [3.9, 69.6, 25.8, 21], title: "Hierna",
-    text: "Onder de balk, als glas over de hoes: één nummer als pil, of de komende 3 of 5 als lijstje." },
-  { box: [62.6, 76.8, 35, 20.4], title: "Eén QR-code voor iedereen",
+  { box: [3.9, 69.6, 25.9, 21.6], title: "Hierna",
+    text: "Onder de balk, als glas over de hoes: één nummer als pil, of de komende 3 of 5 als lijstje. Loopt er een stemming, dan staat hier de stemkaart." },
+  { box: [62.8, 76.4, 34.6, 21.1], title: "Eén QR-code voor iedereen",
     text: "Vrienden scannen en doen mee met de Jam. Staan de feestspellen aan, dan zegt de kaart precies wat scannen doet." },
 ];
 
@@ -89,7 +89,7 @@ const FEATURES = [
   [QrCode, "Jam-QR voor iedereen", "Vrienden scannen de code en zetten hun nummers in de wachtrij. Overslaan of het volume veranderen kunnen ze niet."],
   [Sunset, "Sfeer uit de hoes", "De hoes kleurt het hele scherm. Meldingen, de pauze en Hierna liggen er als glas overheen, in dezelfde kleuren."],
   [ListMusic, "Hierna in de wachtrij", "Iedereen ziet welke nummers eraan komen: één, drie of vijf, zoals jij wilt."],
-  [PartyPopper, "Feestspellen", "Gasten stemmen om een nummer over te slaan, of spelen Raad het nummer op hun telefoon."],
+  [PartyPopper, "Feestspellen", "Gasten kiezen het volgende nummer, spelen muziekbingo en Raad het nummer op hun telefoon. Aan het eind: de winnaar van de avond."],
   [Lock, "Privé", "Geen account bij ons en geen tracking. Alles draait in je eigen netwerk, op je eigen Hub."],
 ];
 
@@ -136,6 +136,8 @@ const HUB = [
   [Coffee, "Korte pauze", "Een aftelklok op alle schermen. De muziek pauzeert en gaat daarna vanzelf verder."],
   [Wifi, "Gasten-wifi", "Een QR-code naast de Jam-code: één scan en je gasten zitten op je gastennetwerk."],
   [Users, "Eén Jam-link", "Eén keer plakken, en elk scherm in huis toont dezelfde QR-code."],
+  [UserRoundCog, "Meerdere Spotify-accounts", "Koppel tot vijf accounts, van jou en je huisgenoten, en kies met één tik wie de muziek levert."],
+  [MessageSquareText, "Berichten van gasten", "Gasten sturen een berichtje vanaf hun telefoon; jij keurt het goed en het staat even boven de songtekst."],
   [Server, "Ook op een server", <>De Hub draait ook op Linux, met systemd of Docker. Elke browser of tv opent het scherm op <code>/scherm/</code>.</>],
 ];
 
@@ -171,7 +173,7 @@ export function Hub() {
           <div className="browser">
             <div className="browser-bar"><i /><i /><i /><span>192.168.1.20:8770</span></div>
             <div className="browser-view">
-              <Pic name="dashboard" width="1600" height="1520"
+              <Pic name="dashboard" width="1600" height="2800"
                 alt="Het SpotiParty Hub-dashboard met de schermen, Muziek bedienen, de Spotify Jam en het Feest-blok" />
             </div>
           </div>

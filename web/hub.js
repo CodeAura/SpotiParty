@@ -108,7 +108,58 @@ const Hub = (() => {
 
   /** Skip votes and the quiz, as the Hub reports them. */
   let party = null, quizKey = "";
+  /** A guest's message in the pill above the lyrics; the vote card above the QR code; bingo next to it. */
+  let shoutId = "";
+  function applyGames(p) {
+    const m = p && p.msg, sh = $("shout");
+    if (!m) { sh.hidden = true; shoutId = ""; }
+    else if (m.id !== shoutId) {
+      shoutId = m.id;
+      sh.querySelector("b").textContent = m.name + ":";
+      sh.querySelector("span").textContent = m.text;
+      sh.hidden = false;
+      sh.style.animation = "none"; void sh.offsetWidth; sh.style.animation = "";
+    }
+    const n = p && p.next, nv = $("nextvote");
+    // While guests vote, the card takes Hierna's place; once the song is chosen, Hierna comes back (with the winner).
+    // Only with the QR code on the screen: that is where you vote.
+    const voting = !!n && !n.closed && (n.queued === null || n.queued === undefined) && !$("jam").hidden;
+    nv.hidden = !voting;
+    if (n) {
+      const total = n.options.reduce((a, o) => a + o.votes, 0), done = n.queued !== null && n.queued !== undefined;
+      nv.classList.toggle("done", done);
+      nv.querySelector("em").textContent = done ? "Dit komt hierna" : "Stem het volgende nummer";
+      nv.querySelector("ol").replaceChildren(...n.options.map((o, i) => {
+        const li = document.createElement("li");
+        li.className = i === n.queued ? "win" : "";
+        li.innerHTML = `<span class="fill" style="width:${total ? o.votes / total * 100 : 0}%"></span>` +
+          `<span class="l">${"ABC"[i] || i + 1}</span><span class="t"></span><span class="n">${o.votes}</span>`;
+        const t = li.querySelector(".t");
+        t.textContent = o.title;
+        if (o.artist) { const a = document.createElement("i"); a.textContent = " · " + o.artist; t.append(a); }
+        return li;
+      }));
+    }
+    $("song").classList.toggle("voting", voting);
+    const b = p && p.bingo, bc = $("bingo");
+    bc.hidden = !b;
+    if (b) bc.querySelector(".stat").textContent =
+      `${b.played} ${b.played === 1 ? "nummer" : "nummers"} gespeeld · ${b.players} ${b.players === 1 ? "speler" : "spelers"}` +
+      (b.winners ? ` · ${b.winners}× bingo` : "");
+  }
+
+
+  /** What fills the screen: the quiz first, then a bingo, then the winner of the evening. */
+  function overlay(p) {
+    if (!p) return null;
+    if (p.quiz) return p.quiz;
+    if (p.bingo && p.bingo.show) return { phase: "bingo", id: "b" + p.bingo.show.name + p.bingo.show.rank, ...p.bingo.show };
+    if (p.winner) return { phase: "winner", id: "w" + p.winner.until, ...p.winner };
+    return null;
+  }
+
   function applyParty(p) {
+    applyGames(p);
     party = p || null;
     const v = party && party.votes, vb = $("votes");
     vb.hidden = !v;
@@ -116,7 +167,7 @@ const Hub = (() => {
       vb.querySelector("span").textContent = `${v[0]}/${v[1]} willen overslaan`;
       vb.querySelector(".meter > i").style.width = `${Math.min(100, v[0] / Math.max(1, v[1]) * 100)}%`;
     }
-    const q = party && party.quiz, box = $("quiz");
+    const q = overlay(party), box = $("quiz");
     document.body.classList.toggle("quiz", !!(q && q.phase === "guess"));
     document.body.classList.toggle("reveal", !!(q && q.phase === "reveal"));
     box.hidden = !q;
@@ -138,10 +189,20 @@ const Hub = (() => {
       add("clock", "");
       add("sub", "Scan de QR-code en raad op je telefoon", "scan-line");
       add("sub right", "");
+    } else if (q.phase === "bingo") {
+      add("q", q.rank === 1 ? "Bingo!" : `Bingo nummer ${q.rank}`, "grid-3x3");
+      add("big", q.name);
+      add("sub", "heeft een volle rij", "trophy");
     } else {
-      add("q", "Het was", "music");
-      add("big", q.title);
-      add("sub", q.artist);
+      if (q.phase === "winner") {
+        add("q", "Winnaar van de avond", "crown");
+        add("big", q.top && q.top.length ? q.top[0][0] : "");
+        add("sub", `${q.top && q.top.length ? q.top[0][1] : 0} punten`, "trophy");
+      } else {
+        add("q", "Het was", "music");
+        add("big", q.title);
+        add("sub", q.artist);
+      }
       if (q.top && q.top.length) {
         const ol = document.createElement("ol");
         q.top.forEach(([n, pts], i) => {

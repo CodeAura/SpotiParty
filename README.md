@@ -3,7 +3,7 @@
 # 🎉 SpotiParty
 
 **Het nummer dat speelt, groot in beeld: met meelopende songtekst, de komende nummers en een QR-code waarmee je
-vrienden meedoen met je Spotify Jam, stemmen om over te slaan en meespelen met de muziekquiz.**
+vrienden meedoen met je Spotify Jam, het volgende nummer kiezen, muziekbingo spelen en meedoen met de muziekquiz.**
 
 ## [Website SpotiParty](https://spotiparty.netlify.app/#)
 
@@ -12,17 +12,18 @@ Voor je **Android TV**, je **PC**, een **Raspberry Pi** en je **Home Assistant**
 
 [![Nieuwste release](https://img.shields.io/github/v/release/CodeAura/SpotiParty?label=nieuwste%20versie)](../../releases/latest)
 
-<img src="docs/images/web-wide.png" alt="SpotiParty: de hoes van het nummer, de songtekst en de Jam-QR-code" width="860">
+<img src="docs/images/web-wide.png" alt="SpotiParty: de hoes van het nummer als glas over de wazige achtergrond, de meelopende songtekst, de komende nummers en de Jam-QR-code" width="860">
 
 </div>
 
 ---
 
 > [!TIP]
-> **Nieuw in [2.10.2](../../releases/tag/v2.10.2): wissel tussen Spotify-accounts.** Koppel tot vijf accounts aan de
-> Hub en kies zelf met één tik welk account de muziek levert. De Windows- en Mac-app werken
-> zichzelf bij; kom je van 2.6.0 of ouder, installeer dan
-> [`SpotiParty-Setup-2.10.2.exe`](../../releases/download/v2.10.2/SpotiParty-Setup-2.10.2.exe) één keer met de hand.
+> **Nieuw in [3.0.0](../../releases/tag/v3.0.0): een gloednieuwe SpotiParty.** Gasten **kiezen het volgende nummer**,
+> spelen **muziekbingo** op hun telefoon en sturen **berichtjes** naar het scherm; alle punten tellen op tot de
+> **winnaar van de avond**. Plus: wissel tussen **Spotify-accounts** in de Hub. De Windows- en Mac-app werken zichzelf
+> bij; kom je van 2.6.0 of ouder, installeer dan
+> [`SpotiParty-Setup-3.0.0.exe`](../../releases/download/v3.0.0/SpotiParty-Setup-3.0.0.exe) één keer met de hand.
 > Zie [Wat is er nieuw](#-wat-is-er-nieuw).
 
 **Home Assistant?** 
@@ -56,13 +57,14 @@ Voor je **Android TV**, je **PC**, een **Raspberry Pi** en je **Home Assistant**
 
 | | |
 |---|---|
-| **1. Wat er speelt** | De hoes, titel, artiest en voortgang. De hoes ligt wazig over de hele achtergrond en de balk krijgt de kleur van de hoes. Staat de muziek op pauze, dan wordt het nummer gedimd. |
+| **1. Wat er speelt** | De hoes, titel, artiest en voortgang. De hoes ligt wazig over de hele achtergrond en de balk krijgt de kleur van de hoes. Bij elk nieuw nummer draait de hoes in beeld; staat de muziek op pauze, dan wordt het nummer gedimd. |
 | **2. Songtekst** | De regel die gezongen wordt staat groot in het midden en loopt in de maat mee. De teksten komen van [lrclib.net](https://lrclib.net): gratis en zonder account. |
-| **3. Hierna** | De **komende 1, 3 of 5 nummers** uit de wachtrij van je Spotify-account; hoeveel kies je in het Hub-dashboard. |
-| **4. QR-code** | Vrienden scannen de code met hun camera en zetten hun eigen nummers in de Jam-wachtrij. Staan de feestspellen aan, dan leidt de code naar de **gastenpagina**: Jam, 👎 Skip-stemmen en 🎤 Raad het nummer in één. |
+| **3. Hierna** | De **komende 1, 3 of 5 nummers** uit de wachtrij van je Spotify-account; hoeveel kies je in het Hub-dashboard. Loopt er een stemming over het volgende nummer, dan staat hier tijdelijk de stemkaart. |
+| **4. QR-code** | Vrienden scannen de code met hun camera en zetten hun eigen nummers in de Jam-wachtrij. Staan de feestspellen aan, dan leidt de code naar de **gastenpagina**, en zegt de kaart precies wat scannen doet. |
 
 Daarnaast zet je vanuit het **Hub-dashboard** meldingen, een pauze-aftelklok en een QR-code voor je gasten-wifi op
-al je schermen tegelijk.
+al je schermen tegelijk, en verschijnen goedgekeurde **berichtjes van gasten** in een balkje boven de songtekst. Alles
+wat over het scherm heen komt, is van glas over dezelfde wazige hoes.
 
 ---
 
@@ -70,7 +72,8 @@ al je schermen tegelijk.
 
 | Versie | Wat er veranderde |
 |---|---|
-| **[2.10.2](../../releases/tag/v2.10.2)** (nieuwste) | **Mac:** de app bereikt Spotify en GitHub weer. Had je 2.10.0 of 2.10.1 op de Mac, installeer deze versie dan één keer met de hand. |
+| **[3.0.0](../../releases/tag/v3.0.0)** (nieuwste) | **Een gloednieuwe SpotiParty.** Nieuwe feestspellen: **Stem het volgende nummer** (de winnaar gaat in de wachtrij), **Muziekbingo** met een eigen kaart op elke telefoon, **berichten van gasten** in een balkje boven de songtekst en de **stand van de avond** met een winnaar op alle schermen. Kies een **afspeellijst** voor de spellen in het dashboard. |
+| [2.10.2](../../releases/tag/v2.10.2) | **Mac:** de app bereikt Spotify en GitHub weer. Had je 2.10.0 of 2.10.1 op de Mac, installeer deze versie dan één keer met de hand. |
 | [2.10.1](../../releases/tag/v2.10.1) | De Hub wisselt nooit meer zelf van Spotify-account: alleen jij kiest het actieve account. |
 | [2.10.0](../../releases/tag/v2.10.0) | **Account-wisselaar:** koppel tot vijf Spotify-accounts aan de Hub en kies in het dashboard met één tik welk account actief is. |
 | [2.9.0](../../releases/tag/v2.9.0) | **Hub op een server werkt zichzelf bij**, elke nacht, en je kiest de PIN bij de eerste start. **Mac-installer:** de `.dmg` opent als venster om SpotiParty naar Apps te slepen. **Smalle schermen** (Home Assistant-kaart, tablet, telefoon) passen beter. |
@@ -124,7 +127,7 @@ PIN in. Er draait één Hub per netwerk: start je de app op een tweede pc, dan w
 `sudo ./server/install.sh` of `cd server && docker compose up -d --build`. Het feestscherm staat dan op
 `http://<server>:8770/scherm/`, voor elke browser of smart-tv. Zie [Hub op een Linux-server](docs/hub/linux-server.md).
 
-<img src="docs/images/hub-dashboard.png" alt="Het Hub-dashboard: vier schermen online, Muziek bedienen, de Jam-link met QR-code en het Feest-blok met Skip-stemmen en Raad het nummer" width="860">
+<img src="docs/images/hub-dashboard.png" alt="Het Hub-dashboard: vier schermen online, Muziek bedienen met de account-wisselaar (Mike en Sanne), en de Spotify Jam met QR-code" width="860">
 
 | Onderdeel in het dashboard | Wat het doet |
 |---|---|
@@ -179,19 +182,23 @@ Spotify vraagt dit om te weten welke app je login gebruikt.
 
 ## 🎉 Feestspellen
 
-Alle drie stel je in bij **🎉 Feest** in het Hub-dashboard. Ze werken op de Windows- en Mac-app, de Android TV-app,
+Alles stel je in bij **🎉 Feest** in het Hub-dashboard. Ze werken op de Windows- en Mac-app, de Android TV-app,
 de Raspberry Pi en de Home Assistant-kaart.
 
-<img src="docs/images/party-games.png" alt="Raad het nummer: op het scherm een aftelklok en 2 van 3 Skip-stemmen, daarna het antwoord met de top 5; op de telefoon de gastenpagina met Jam, Skip en het raadvak" width="860">
+<img src="docs/images/party-games.png" alt="Feestspellen: op het scherm de stemkaart voor het volgende nummer onder de nummerinfo, een berichtje van een gast boven de songtekst en de muziekbingo; daaronder de winnaar van de avond met de top 5; op de telefoon de gastenpagina met naam en punten, stemmen en de bingokaart" width="860">
 
 | | |
 |---|---|
 | **Komende nummers** | De schermen tonen de volgende **1, 3 of 5** nummers uit de wachtrij van je Spotify-account, of geen. |
 | **👎 Stemmen om over te slaan** | Gasten scannen de QR-code en tikken op **Skip**. Bij genoeg stemmen (instelbaar, standaard 3) slaat de Hub het nummer over. Het scherm toont hoeveel stemmen er zijn. |
-| **🎤 Raad het nummer** | Bij elk nieuw nummer blijven titel, hoes en songtekst **15 seconden** verborgen. Gasten raden op hun telefoon: snel de titel goed levert tot **100 punten** op, de artiest goed de helft, met maximaal **3 pogingen** per nummer. Daarna verschijnen het antwoord en de **top 5**. Scores wis je in het dashboard. |
+| **🎤 Raad het nummer** | Bij elk nieuw nummer blijven titel, hoes en songtekst **15 seconden** verborgen. Gasten raden op hun telefoon: snel de titel goed levert tot **100 punten** op, de artiest goed de helft, met maximaal **3 pogingen** per nummer. Daarna verschijnen het antwoord en de **top 5**. |
+| **Stem het volgende nummer** | Gasten kiezen op hun telefoon uit drie nummers uit een afspeellijst. Op het scherm staat de stemkaart zolang er gestemd wordt op de plek van *Hierna*; vlak voor het einde van het nummer zet de Hub de winnaar in de wachtrij en is *Hierna* terug. Goed gekozen: **10 punten**. |
+| **Muziekbingo** | Elke gast krijgt op zijn telefoon een kaart met 16 titels uit een afspeellijst. Wat speelt, kleurt groen; wie een volle rij, kolom of diagonaal heeft, tikt op **Bingo!** en staat groot op het scherm (**150, 100, 50 punten**). |
+| **Berichten van gasten** | Gasten sturen een kort berichtje; jij keurt het goed en het staat even in een balkje boven de songtekst. |
+| **Stand van de avond** | De punten van alle spellen bij elkaar. Aan het eind zet je de winnaar met de top 5 groot op alle schermen. |
 
-Gasten doen mee via de **gastenpagina** op `http://<hub-ip>:8770/gast`: Jam-link, Skip en de quiz in één. Staan stemmen
-of de quiz aan, dan leidt de QR-code op de schermen daarheen.
+Gasten doen mee via de **gastenpagina** op `http://<hub-ip>:8770/gast`: de Jam-link en alle spellen in één. Staat er een
+spel aan, dan leidt de QR-code op de schermen daarheen. Uitleg per spel: [Feestspellen](docs/hub/feestspellen.md).
 
 > [!NOTE]
 > Gasten moeten op **hetzelfde netwerk** zitten als de Hub. Een afgeschermd gasten-wifi kan de gastenpagina niet
@@ -203,11 +210,11 @@ of de quiz aan, dan leidt de QR-code op de schermen daarheen.
 
 ### Windows-app (aanbevolen)
 
-Download bij de nieuwste [**Release (2.10.2)**](../../releases/latest):
+Download bij de nieuwste [**Release (3.0.0)**](../../releases/latest):
 
 | Bestand | Installeren |
 |---|---|
-| [`SpotiParty-Setup-2.10.2.exe`](../../releases/download/v2.10.2/SpotiParty-Setup-2.10.2.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
+| [`SpotiParty-Setup-3.0.0.exe`](../../releases/download/v3.0.0/SpotiParty-Setup-3.0.0.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
 
 SpotiParty opent het feestscherm in een eigen venster, zonder tabbladen, en start de Hub. Er verschijnt ook een klein
 venster met het adres en de **PIN** van het dashboard, en de knoppen **Scherm openen**, **Dashboard** en **Stoppen**.
@@ -428,7 +435,7 @@ pc, en bovenaan het Hub-dashboard.
 | `name: Woonkamer-tablet` | De naam van dit scherm in het Hub-dashboard. |
 
 <table><tr>
-<td><img src="docs/images/web-card.png" alt="SpotiParty als smalle kaart in een dashboard" width="260"></td>
+<td><img src="docs/images/web-card.png" alt="SpotiParty als smalle kaart in een dashboard: hoes, titel, het eerstvolgende nummer, de songtekst en de QR-code" width="260"></td>
 <td>
 
 **Werkt meteen, zonder token.** De kaart leest de spelers uit je eigen dashboard.
@@ -499,7 +506,7 @@ Stopt de Jam, dan werkt de oude link niet meer. Start dan een nieuwe Jam en plak
 | Spotify: *"geen toegang"* of *"forbidden"* | Zet het account onder **User Management** van je Spotify-app, en controleer of de eigenaar van de app (nog) Premium heeft. |
 | Tv en telefoon vinden de Hub niet | Windows: sta SpotiParty toe op **Privénetwerken** (Windows Defender Firewall). Op de tv: vul het adres van de Hub in via **Menu**. |
 | Gasten komen niet op de gastenpagina | Ze moeten op hetzelfde netwerk zitten als de Hub; een afgeschermd gasten-wifi blokkeert dat. |
-| De Windows-app werkt zich niet bij | Automatisch bijwerken kan pas vanaf 2.7.0. Kom je van 2.6.0 of ouder, installeer [`SpotiParty-Setup-2.10.2.exe`](../../releases/download/v2.10.2/SpotiParty-Setup-2.10.2.exe) dan één keer met de hand. |
+| De Windows-app werkt zich niet bij | Automatisch bijwerken kan pas vanaf 2.7.0. Kom je van 2.6.0 of ouder, installeer [`SpotiParty-Setup-3.0.0.exe`](../../releases/download/v3.0.0/SpotiParty-Setup-3.0.0.exe) dan één keer met de hand. |
 | De Mac-app werkt zich niet bij | Dat kan pas vanaf 2.7.1, en alleen als SpotiParty in **Apps** staat (niet vanaf de `.dmg` of uit Downloads). Sleep [`SpotiParty-macos-apple-silicon.dmg`](../../releases/latest/download/SpotiParty-macos-apple-silicon.dmg) één keer met de hand naar **Apps**. |
 | **Tv:** *"SpotiParty mag nog niet zien wat er speelt"* | Zet **Meldingstoegang** aan (stap 4 van de tv-installatie). |
 | **Tv:** blijft op *De SpotiParty Hub zoeken* | Vul het adres van de Hub in op de tv. Controleer of de Hub draait en of tv en Hub in hetzelfde netwerk zitten. |

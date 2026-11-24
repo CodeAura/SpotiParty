@@ -7,6 +7,7 @@ const FALLBACK = {
   version: "",
   exe: `https://github.com/${REPO}/releases/latest`,
   dmg: `https://github.com/${REPO}/releases/latest/download/SpotiParty-macos-apple-silicon.dmg`,
+  intel: `https://github.com/${REPO}/releases/latest/download/SpotiParty-macos-intel.dmg`,
   page: `https://github.com/${REPO}/releases/latest`,
 };
 
@@ -26,6 +27,7 @@ export function useLatestRelease() {
           version: String(j.tag_name || "").replace(/^v/, ""),
           exe: find(/^SpotiParty-Setup-[\d.]+\.exe$/) || FALLBACK.exe,
           dmg: find(/^SpotiParty-macos-apple-silicon\.dmg$/) || FALLBACK.dmg,
+          intel: find(/^SpotiParty-macos-intel\.dmg$/) || FALLBACK.intel,
           page: j.html_url || FALLBACK.page,
         };
         setRel(cached);

@@ -164,7 +164,31 @@ class Hub:
                 if p and p.get("id"):
                     with self.lock:
                         self.party.on_song(p["id"], p.get("title", ""), p.get("artist", ""))
+            # "Stem het volgende nummer": the winner goes into the queue shortly before this song ends.
+            p = self.spotify.player
+            if p and p.get("id") and p.get("duration"):
+                pos = p.get("progress", 0) + ((time.time() * 1000 - p.get("progress_at", 0)) if p.get("playing") else 0)
+                with self.lock:
+                    won = self.party.next_due((p["duration"] - pos) / 1000)
+                if won:
+                    self._queue(won)
             time.sleep(1)
+
+    def _queue(self, track):
+        """The vote's winner into the account's queue, in the background (never under the lock)."""
+        def run():
+            try:
+                self.spotify.queue(track["uri"])
+                time.sleep(0.5)
+                self.spotify.refresh(with_queue=True)   # Hierna comes back on the screens with the winner in it
+            except sp_spotify.SpotifyError as e:
+                self.spotify.player_err = "Stem het volgende nummer: " + str(e)
+        threading.Thread(target=run, daemon=True, name="hub-queue").start()
+
+    def guest_page_on(self):
+        """Is there anything for guests to do? Then the screens' QR code leads to the guest page."""
+        p = self.party
+        return bool(self.cfg.get("vote_on") or p.quiz_on or self.cfg.get("msg_on") or p.next_on or p.bingo)
 
     def music(self):
         """The linked account's song for the screens, or None (no account, nothing playing, or not fresh)."""
@@ -220,6 +244,19 @@ class Hub:
         if action == "guess":
             with self.lock:
                 return 200, self.party.guess(voter, str(b.get("name", "")), str(b.get("text", ""))[:120])
+        if action == "message":
+            with self.lock:
+                return 200, self.party.message(voter, str(b.get("name", "")), str(b.get("text", ""))[:200])
+        if action == "next":
+            try:
+                i = int(b.get("i", -1))
+            except (TypeError, ValueError):
+                i = -1
+            with self.lock:
+                return 200, self.party.next_vote(voter, str(b.get("name", "")), i)
+        if action == "bingo":
+            with self.lock:
+                return 200, self.party.bingo_claim(voter, str(b.get("name", "")))
         return 404, {"error": "onbekend"}
 
     def _save(self):
@@ -298,10 +335,11 @@ class Hub:
                        spotify=self.spotify.linked(),
                        party=self.party.screen(self.now_ms()),
                        # With skip votes or the quiz on, the screens' QR code leads to the guest page (Jam there too).
-                       guest=self.guest_url() if self.cfg.get("vote_on") or self.party.quiz_on else "",
+                       guest=self.guest_url() if self.guest_page_on() else "",
                        # What the guest page offers, so the screen can say what scanning does.
                        guest_has={"jam": bool(self.cfg.get("jam")), "skip": bool(self.cfg.get("vote_on")),
-                                  "quiz": bool(self.party.quiz_on)})
+                                  "quiz": bool(self.party.quiz_on), "msg": bool(self.cfg.get("msg_on")),
+                                  "next": bool(self.party.next_on), "bingo": bool(self.party.bingo)})
             for k in ("notice", "brk"):
                 if out[k]:
                     out[k] = {x: y for x, y in out[k].items() if x not in ("targets", "paused", "resumed", "music")}
@@ -352,6 +390,15 @@ class Hub:
                     self.spotify.use(str(b.get("key", "")))
                 self.spotify.refresh(with_queue=True)
                 return 200, {}
+            if action == "playlists":
+                return 200, {"playlists": self.spotify.playlists()}
+            if action == "pool":
+                name, tracks = self.spotify.playlist(str(b.get("playlist", "")))
+                if not tracks:
+                    return 400, {"error": "Die afspeellijst heeft geen nummers die de Hub kan gebruiken."}
+                with self.lock:
+                    self.party.set_pool(name, tracks)
+                    return 200, self.party.admin()
             if action == "media":
                 cmd = str(b.get("cmd", ""))
                 if cmd not in MEDIA_CMDS:
@@ -400,8 +447,30 @@ class Hub:
                     p = self.spotify.player
                     self.party.on_song(p["id"], p.get("title", ""), p.get("artist", ""))
                 return 200, self.party.admin()
-            if action == "quiz-reset":
-                self.party.reset_scores()
+            if action == "quiz-reset" or action == "new-party":
+                self.party.new_party()
+                return 200, self.party.admin()
+            if action == "winner":
+                if not self.party.show_winner():
+                    return 400, {"error": "Er zijn nog geen punten: speel eerst een spel."}
+                return 200, self.party.admin()
+            if action == "messages":
+                self.party.set_messages(bool(b.get("on")))
+                self._save()
+                return 200, self.party.admin()
+            if action == "message":
+                if not self.party.approve(str(b.get("id", "")), bool(b.get("ok"))):
+                    return 404, {"error": "Dat bericht is er niet meer."}
+                return 200, self.party.admin()
+            if action == "next":
+                why = self.party.set_next(bool(b.get("on")))
+                if why:
+                    return 400, {"error": why}
+                return 200, self.party.admin()
+            if action == "bingo":
+                why = self.party.set_bingo(bool(b.get("on")))
+                if why:
+                    return 400, {"error": why}
                 return 200, self.party.admin()
             if action == "jam":
                 jam = str(b.get("jam", "")).strip()

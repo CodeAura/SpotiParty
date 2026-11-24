@@ -635,12 +635,18 @@ function jamText() {
   const what = [];
   if (has.skip) what.push("nummers over te slaan");
   if (has.quiz) what.push("het nummer te raden");
+  if (has.next) what.push("op het volgende nummer te stemmen");
+  if (has.bingo) what.push("muziekbingo te spelen");
+  if (has.msg) what.push("een berichtje te sturen");
   if (has.jam) what.push("de Jam te joinen");
   if (!what.length) return ["users", "Doe mee", "Scan met je camera."];
   const text = "Scan om " + (what.length === 1 ? what[0]
     : what.length === 2 ? what.join(" en om ") : what.slice(0, -1).join(", ") + " en om " + what[what.length - 1]) + ".";
-  const title = what.length > 1 ? "Doe mee!" : has.skip ? "Stem mee" : has.quiz ? "Raad mee" : "Doe mee met de Jam";
-  return [what.length > 1 ? "party-popper" : has.skip ? "thumbs-down" : has.quiz ? "mic-vocal" : "users", title, text];
+  if (what.length > 1) return ["party-popper", "Doe mee!", text];
+  const [icon, title] = has.skip ? ["thumbs-down", "Stem mee"] : has.quiz ? ["mic-vocal", "Raad mee"]
+    : has.next ? ["vote", "Kies het volgende nummer"] : has.bingo ? ["grid-3x3", "Speel muziekbingo"]
+    : has.msg ? ["message-square-text", "Stuur een bericht"] : ["users", "Doe mee met de Jam"];
+  return [icon, title, text];
 }
 function showJam() {
   const jam = hubGuest || hubJam || store.get("jam");

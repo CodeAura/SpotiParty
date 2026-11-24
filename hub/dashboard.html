@@ -49,6 +49,21 @@
   .accts .av img { width: 100%; height: 100%; object-fit: cover; }
   .accts .live { display: inline-flex; color: var(--accent); }
   .accts button.add { padding: 5px 14px; color: var(--muted); background: none; border-style: dashed; }
+  /* Party games */
+  .gm { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .live-box { font-size: 14px; color: var(--muted); margin: 6px 0; }
+  .live-box b { color: #fff; }
+  .msgs { display: grid; gap: 8px; margin-top: 8px; }
+  .msgs .m { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; background: #ffffff0a;
+    border: 1px solid var(--line); }
+  .msgs .m div { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
+  .msgs .m small { color: var(--muted); }
+  .msgs .m button { flex: none; padding: 6px 10px; font-size: 13px; }
+  table.board { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 6px; }
+  table.board td, table.board th { padding: 5px 4px; text-align: right; border-bottom: 1px solid var(--line); }
+  table.board td:first-child, table.board th:first-child { text-align: left; }
+  table.board th { color: var(--muted); font-weight: 500; font-size: 12px; }
+  table.board td.tot { font-weight: 700; }
   .msg.err { color: var(--err); }
   .check { display: flex; gap: 10px; align-items: center; color: #fff; font-size: 14px; margin-top: 10px; }
   .check input { width: 20px; height: 20px; flex: none; }
@@ -181,11 +196,55 @@
     </div>
     <h2 style="margin-top:14px"><i data-icon="mic-vocal"></i>Raad het nummer</h2>
     <p>Titel, hoes en songtekst blijven 15 seconden verborgen. Gasten raden op hun telefoon; wie het snelst de titel raadt, krijgt de meeste punten.</p>
-    <div class="row"><button class="go" id="q-toggle">Quiz starten</button><button id="q-reset">Scores wissen</button></div>
+    <div class="row"><button class="go" id="q-toggle">Quiz starten</button></div>
     <div class="msg" id="q-msg"></div>
-    <ol id="q-top" style="margin:8px 0 0;padding-left:22px"></ol>
-    <p>Gasten scannen de QR-code op het scherm (of hiernaast) om te stemmen, te raden en mee te doen met de Jam.
-      Ze moeten op hetzelfde netwerk zitten als de Hub.</p>
+
+    <div class="gm">
+      <h2><i data-icon="list-music"></i>Afspeellijst voor de spellen <small id="pl-now"></small></h2>
+      <p>Stem het volgende nummer en Muziekbingo kiezen hun nummers uit deze afspeellijst. Speel hem in Spotify op
+        shuffle, dan komen de bingo-nummers langs.</p>
+      <div class="row"><select id="pl-list"><option value="">Kies een van je afspeellijsten…</option></select>
+        <button id="pl-load">Ophalen</button></div>
+      <input id="pl-link" autocomplete="off" spellcheck="false" placeholder="Of plak een link: https://open.spotify.com/playlist/...">
+      <div class="row"><button class="go" id="pl-use">Deze afspeellijst gebruiken</button></div>
+      <div class="msg" id="pl-msg"></div>
+    </div>
+
+    <div class="gm">
+      <h2><i data-icon="vote"></i>Stem het volgende nummer</h2>
+      <p>Gasten kiezen uit drie nummers uit de afspeellijst. Vlak voor het einde van het nummer zet de Hub de winnaar in de
+        wachtrij. Wie op de winnaar stemde, krijgt 10 punten.</p>
+      <div class="live-box" id="nx-live"></div>
+      <div class="row"><button class="go" id="nx-toggle">Starten</button></div>
+      <div class="msg" id="nx-msg"></div>
+    </div>
+
+    <div class="gm">
+      <h2><i data-icon="grid-3x3"></i>Muziekbingo</h2>
+      <p>Elke gast krijgt op zijn telefoon een kaart met 16 titels uit de afspeellijst. Wat speelt, wordt afgestreept.
+        Een volle rij, kolom of diagonaal is bingo: 150 punten voor de eerste, 100 voor de tweede, daarna 50.</p>
+      <div class="live-box" id="bg-live"></div>
+      <div class="row"><button class="go" id="bg-toggle">Bingo starten</button></div>
+      <div class="msg" id="bg-msg"></div>
+    </div>
+
+    <div class="gm">
+      <h2><i data-icon="message-square-text"></i>Berichten van gasten</h2>
+      <label class="check"><input type="checkbox" id="ms-on"> Gasten mogen een berichtje sturen</label>
+      <p>Jij keurt ze eerst goed; daarna staan ze even in een balkje boven de songtekst.</p>
+      <div class="msgs" id="ms-list"></div>
+      <div class="msg" id="ms-msg"></div>
+    </div>
+
+    <div class="gm">
+      <h2><i data-icon="trophy"></i>Stand van de avond</h2>
+      <p>De punten van alle spellen bij elkaar. Aan het eind van het feest zet je de winnaar groot op de schermen.</p>
+      <div id="sc-board"></div>
+      <div class="row"><button class="go" id="sc-show">Winnaar tonen</button><button id="q-reset">Nieuw feest</button></div>
+      <div class="msg" id="sc-msg"></div>
+    </div>
+    <p>Gasten scannen de QR-code op het scherm (of hiernaast) om mee te doen. Ze moeten op hetzelfde netwerk zitten als
+      de Hub.</p>
   </section>
 
   <section>
@@ -542,14 +601,87 @@ function renderParty() {
     $("guest-link").href = state.guest;
     $("guest-link").textContent = state.guest;
   }
-  $("p-live").textContent = [pa.vote_on ? `skip ${pa.votes || 0}/${pa.vote_needed}` : "", pa.quiz_on ? "quiz loopt" : ""]
+  $("p-live").textContent = [pa.vote_on ? `skip ${pa.votes || 0}/${pa.vote_needed}` : "", pa.quiz_on ? "quiz" : "",
+    pa.next_on ? "stemmen" : "", pa.bingo ? "bingo" : "", pa.msgs && pa.msgs.length ? `${pa.msgs.length} berichten` : ""]
     .filter(Boolean).join(" · ");
   $("q-toggle").textContent = pa.quiz_on ? "Quiz stoppen" : "Quiz starten";
   $("q-toggle").className = pa.quiz_on ? "bad" : "go";
-  const top = pa.top || [];
-  $("q-top").innerHTML = top.length ? top.map(([n, p]) => `<li>${esc(n)} <b>${p}</b></li>`).join("")
-    : pa.quiz_on ? `<p>Nog geen punten.</p>` : "";
+
+  const pool = pa.pool || {};
+  $("pl-now").textContent = pool.size ? `${pool.name} · ${pool.size} nummers` : "";
+
+  $("nx-toggle").textContent = pa.next_on ? "Stoppen" : "Starten";
+  $("nx-toggle").className = pa.next_on ? "bad" : "go";
+  const nx = pa.next;
+  $("nx-live").innerHTML = !nx ? "" : nx.options.map((t, i) =>
+    `${"ABC"[i]}. <b>${esc(t)}</b> · ${nx.votes[i]} ${nx.votes[i] === 1 ? "stem" : "stemmen"}${i === nx.queued ? " · <b>gaat in de wachtrij</b>" : ""}`).join("<br>");
+
+  $("bg-toggle").textContent = pa.bingo ? "Bingo stoppen" : "Bingo starten";
+  $("bg-toggle").className = pa.bingo ? "bad" : "go";
+  const bg = pa.bingo;
+  $("bg-live").innerHTML = !bg ? "" : `<b>${bg.players}</b> ${bg.players === 1 ? "speler" : "spelers"} · <b>${bg.played}</b> nummers gespeeld` +
+    (bg.winners.length ? ` · bingo: ${bg.winners.map(esc).join(", ")}` : "");
+
+  $("ms-on").checked = !!pa.msg_on;
+  const msgs = pa.msgs || [], mkey = JSON.stringify(msgs.map(m => m.id));
+  if ($("ms-list").dataset.key !== mkey) {
+    $("ms-list").dataset.key = mkey;
+    $("ms-list").innerHTML = msgs.map(m => `<div class="m"><div><b>${esc(m.name)}</b>: ${esc(m.text)}</div>
+      <button class="go" data-ok="1" data-id="${esc(m.id)}">Op het scherm</button><button data-ok="0" data-id="${esc(m.id)}">Weg</button></div>`).join("")
+      || (pa.msg_on ? "<p>Nog geen berichten.</p>" : "");
+  }
+
+  const sc = pa.scores || [];
+  $("sc-board").innerHTML = sc.length ? `<table class="board"><tr><th>Naam</th><th>Quiz</th><th>Bingo</th><th>Stemmen</th><th>Totaal</th></tr>` +
+    sc.map(s => `<tr><td>${esc(s.name)}</td><td>${s.quiz}</td><td>${s.bingo}</td><td>${s.next}</td><td class="tot">${s.pts}</td></tr>`).join("") + "</table>"
+    : "<p>Nog geen punten.</p>";
+  $("sc-show").textContent = pa.winner_showing ? "Staat op het scherm" : "Winnaar tonen";
 }
+$("pl-load").onclick = async () => {
+  msg("pl-msg", "Afspeellijsten ophalen…");
+  try {
+    const r = await api("playlists", {});
+    $("pl-list").innerHTML = `<option value="">Kies een van je afspeellijsten…</option>` +
+      r.playlists.map(p => `<option value="${esc(p.id)}">${esc(p.name)} (${p.count})</option>`).join("");
+    msg("pl-msg", r.playlists.length ? "" : "Geen afspeellijsten gevonden. Plak een link.");
+  } catch (e) { msg("pl-msg", e.message, true); }
+};
+$("pl-use").onclick = async () => {
+  const playlist = $("pl-link").value.trim() || $("pl-list").value;
+  if (!playlist) { msg("pl-msg", "Kies een afspeellijst of plak een link.", true); return; }
+  msg("pl-msg", "Nummers ophalen…");
+  try {
+    const r = await api("pool", { playlist });
+    msg("pl-msg", `${r.pool.name}: ${r.pool.size} nummers. Klaar voor de spellen.`);
+    $("pl-link").value = "";
+    refresh();
+  } catch (e) { msg("pl-msg", e.message, true); }
+};
+$("nx-toggle").onclick = async () => {
+  const on = !(state.party && state.party.next_on);
+  try { await api("next", { on }); msg("nx-msg", on ? "Gasten kunnen stemmen. De QR-code op de schermen leidt naar de gastenpagina." : "Gestopt."); refresh(); }
+  catch (e) { msg("nx-msg", e.message, true); }
+};
+$("bg-toggle").onclick = async () => {
+  const on = !(state.party && state.party.bingo);
+  if (!on && !confirm("Bingo stoppen? De kaarten van de gasten verdwijnen.")) return;
+  try { await api("bingo", { on }); msg("bg-msg", on ? "Bingo loopt: elke gast krijgt een kaart op de gastenpagina." : "Bingo gestopt."); refresh(); }
+  catch (e) { msg("bg-msg", e.message, true); }
+};
+$("ms-on").onchange = async e => {
+  try { await api("messages", { on: e.target.checked }); msg("ms-msg", e.target.checked ? "Gasten kunnen nu berichten sturen." : ""); refresh(); }
+  catch (err) { msg("ms-msg", err.message, true); }
+};
+$("ms-list").onclick = async e => {
+  const b = e.target.closest("button[data-id]");
+  if (!b) return;
+  try { await api("message", { id: b.dataset.id, ok: b.dataset.ok === "1" }); msg("ms-msg", b.dataset.ok === "1" ? "Komt zo op het scherm." : ""); refresh(); }
+  catch (err) { msg("ms-msg", err.message, true); }
+};
+$("sc-show").onclick = async () => {
+  try { await api("winner", {}); msg("sc-msg", "De winnaar staat 30 seconden op alle schermen."); refresh(); }
+  catch (e) { msg("sc-msg", e.message, true); }
+};
 $("p-save").onclick = async () => {
   try {
     await api("party", { upnext: +$("p-upnext").value, vote_on: $("p-vote").checked, vote_needed: +$("p-need").value });
@@ -566,9 +698,9 @@ $("q-toggle").onclick = async () => {
   } catch (e) { msg("q-msg", e.message, true); }
 };
 $("q-reset").onclick = async () => {
-  if (!confirm("Alle scores wissen?")) return;
-  try { await api("quiz-reset", {}); msg("q-msg", "Scores gewist."); refresh(); }
-  catch (e) { msg("q-msg", e.message, true); }
+  if (!confirm("Nieuw feest? Alle punten van de avond gaan terug naar nul.")) return;
+  try { await api("new-party", {}); msg("sc-msg", "Alle punten staan weer op nul."); refresh(); }
+  catch (e) { msg("sc-msg", e.message, true); }
 };
 
 function renderBreak() {

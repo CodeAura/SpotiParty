@@ -8,16 +8,16 @@ import ShinyText from "../components/reactbits/ShinyText/ShinyText.jsx";
 import SplitText from "../components/reactbits/SplitText/SplitText.jsx";
 import Magnet from "../components/reactbits/Magnet/Magnet.jsx";
 import Pic from "../components/Pic.jsx";
-import { Tv, Laptop, Apple, Cpu, Server, House, ListMusic, MicVocal, ThumbsDown, Plus, Download } from "lucide-react";
+import { Tv, Laptop, Apple, Cpu, Server, House, MicVocal, Plus, Download, Vote, Crown } from "lucide-react";
 import { useLatestRelease } from "../lib/latestRelease.js";
 
 const PANELS = [
-  { img: "screen", tag: [ListMusic, "Komende nummers"], title: "Iedereen weet wat er komt",
-    text: "De schermen tonen de volgende één, drie of vijf nummers uit de wachtrij. Kies het aantal in het dashboard." },
-  { img: "quiz", tag: [MicVocal, "Raad het nummer"], title: "Wie raadt hem het snelst?", phone: true,
+  { img: "games", tag: [Vote, "Stem het volgende nummer"], title: "De gasten kiezen wat er komt", phone: true,
+    text: "Drie nummers uit je afspeellijst: wie scant, stemt. De winnaar gaat vanzelf in de wachtrij. Op de telefoon ook een eigen kaart voor muziekbingo." },
+  { img: "quiz", tag: [MicVocal, "Raad het nummer"], title: "Wie raadt hem het snelst?",
     text: "Bij elk nieuw nummer blijven titel en hoes 15 seconden geheim. Gasten raden op hun telefoon: hoe sneller, hoe meer punten." },
-  { img: "reveal", tag: [ThumbsDown, "Skip en de top 5"], title: "En de winnaar is…",
-    text: "Daarna het antwoord en de top 5. Met genoeg Skip-stemmen slaat de Hub het nummer over: het feest beslist mee." },
+  { img: "winner", tag: [Crown, "Stand van de avond"], title: "En de winnaar is…",
+    text: "Quiz, bingo en stemmen tellen samen op. Aan het eind van het feest staat de winnaar groot op elk scherm." },
 ];
 
 export function Party() {
@@ -56,7 +56,7 @@ export function Party() {
             <article key={p.img} className="panel">
               <div className="panel-media">
                 <Pic name={p.img} width="1600" height="900" alt={p.title} />
-                {p.phone && <Pic name="guest" eager className="phone" width="780" height="2200" alt="De gastenpagina op een telefoon: Jam, Skip en het raadvak" />}
+                {p.phone && <Pic name="guest" eager className="phone" width="780" height="2200" alt="De gastenpagina op een telefoon: je naam en punten, stemmen op het volgende nummer en je bingokaart" />}
               </div>
               <div className="panel-text">
                 <span className="panel-tag">{(([Icon, text]) => <><Icon size={15} strokeWidth={2.25} aria-hidden="true" />{text}</>)(p.tag)}</span>
@@ -74,7 +74,7 @@ export function Party() {
 const PLATFORMS = [
   [Tv, "Android TV & Google TV", "Hetzelfde scherm als op de pc, rechtstreeks van je Hub: elke update van de Hub staat meteen op de tv."],
   [Laptop, "Windows", "Installeren, dubbelklikken, klaar. Werkt zichzelf bij."],
-  [Apple, "macOS", <>Voor Macs met Apple silicon, werkt zichzelf bij. <a href="https://github.com/CodeAura/SpotiParty/releases/latest">Download de .dmg</a>; Intel volgt.</>],
+  [Apple, "macOS", <>Voor Macs met Apple silicon en Intel, werkt zichzelf bij. <a href="https://github.com/CodeAura/SpotiParty/releases/latest">Download de .dmg</a>.</>],
   [Cpu, "Raspberry Pi", "Een vast feestscherm aan je tv of beamer, en als je wilt ook de Hub."],
   [Server, "Linux-server", "De Hub zonder scherm, op je NAS of thuisserver: met systemd of Docker."],
   [House, "Home Assistant", "Als kaart via HACS, ook op je wandtablet. Werkt met Sonos, Cast en Music Assistant."],
@@ -163,9 +163,10 @@ export function Steps() {
 const HACS = "https://my.home-assistant.io/redirect/hacs_repository/?owner=CodeAura&repository=SpotiParty&category=plugin";
 
 const FREE = ["Windows- en Mac-app, werkt zichzelf bij", "Hub met dashboard op je telefoon", "Songteksten, Jam-QR en Hierna",
-  "Meldingen, pauze en gasten-wifi", "Android TV, Raspberry Pi, Home Assistant en Linux-server", "Open source, op GitHub"];
-const PARTY = ["Alles uit Gratis", "Raad het nummer, met scorebord op het scherm", "Gasten spelen mee op hun telefoon",
-  "Nieuwe feestspellen als ze uitkomen", "Eén keer betalen, geen abonnement"];
+  "Meldingen, pauze, gasten-wifi en berichten van gasten", "Android TV, Raspberry Pi, Home Assistant en Linux-server",
+  "Open source, op GitHub"];
+const PARTY = ["Alles uit Gratis", "Stem het volgende nummer", "Muziekbingo op elke telefoon", "Raad het nummer",
+  "Stand en winnaar van de avond", "Eén keer betalen, geen abonnement"];
 
 export function Pricing() {
   const root = useRef(null);
@@ -200,7 +201,7 @@ export function Pricing() {
                 <House size={18} strokeWidth={2.25} aria-hidden="true" />Home Assistant via HACS</a>
             </div>
             <p className="dl-note">
-              {rel.version ? `Versie ${rel.version}. ` : ""}Mac: Apple silicon. <a href={rel.page}>Alle downloads en de broncode</a>
+              {rel.version ? `Versie ${rel.version}. ` : ""}Mac met Intel? <a href={rel.intel}>Deze .dmg</a>. <a href={rel.page}>Alle downloads en de broncode</a>
             </p>
           </SpotlightCard>
         </div>
@@ -233,7 +234,7 @@ const FAQ = [
   ["Wat is de Hub?", "Een klein programma op je pc, Mac, Raspberry Pi of Linux-server. Daar koppel je één keer Spotify en je Jam-link, en vanuit het dashboard op je telefoon bestuur je alle schermen."],
   ["Hoe krijgt mijn tv updates?", "Vanzelf. De tv-app toont het scherm rechtstreeks van je Hub. Werkt de Hub zichzelf bij, dan heeft de tv de nieuwe versie zodra je SpotiParty opent."],
   ["Is SpotiParty echt gratis?", "Ja. SpotiParty is open source: de apps, de Hub en de broncode staan gratis op GitHub, met updates. De Windows- en Mac-app werken zichzelf bij."],
-  ["Wat zit er in het Feestpakket?", "Feestspellen zoals Raad het nummer, met een scorebord op het scherm. Je gasten spelen mee op hun telefoon. Het kost €11,99, één keer, en komt binnenkort."],
+  ["Wat zit er in het Feestpakket?", "De feestspellen: gasten stemmen op het volgende nummer, spelen muziekbingo en Raad het nummer op hun telefoon, en alle punten tellen op tot de winnaar van de avond. Het kost €11,99, één keer, en komt binnenkort."],
   ["Kunnen mijn vrienden de muziek overnemen?", "Nee. Zet in je Jam de optie Gasten mogen afspelen bedienen uit, dan kunnen ze alleen nummers toevoegen. Overslaan kan alleen als jij de Skip-stemmen aanzet, en dan pas bij genoeg stemmen."],
   ["Werkt het op mijn tv?", "Op tv's en mediaspelers met Android TV of Google TV, Android 8 of nieuwer. Samsung (Tizen) en LG (webOS) worden niet ondersteund; sluit daar een pc, Mac of Raspberry Pi aan met HDMI."],
   ["Werkt het ook zonder Spotify, met Sonos bijvoorbeeld?", "Via Home Assistant werkt SpotiParty met elke media player: Sonos, Cast, Music Assistant, Plex en meer."],

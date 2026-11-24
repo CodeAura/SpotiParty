@@ -128,8 +128,9 @@
   body.idle #idle { display: flex; }
   body.idle #song, body.idle #lyrics { visibility: hidden; }
 
+  /* Never under the song column (cover, bar, Hierna): from the right edge up to just right of it. */
   #corner { position: absolute; right: 3.5cqw; bottom: 4cqh; display: flex; gap: 1.6cqh; align-items: flex-end;
-    max-width: 70cqw; }
+    max-width: calc(100cqw - 12cqw - min(42cqh, 34cqw)); }
   .qrcard { display: flex; align-items: center; gap: 1.8cqh; padding: 1.4cqh 2.6cqh 1.4cqh 1.4cqh; border-radius: 2.8cqh; min-width: 0; }
   .qrcard canvas { width: clamp(64px, 15cqh, 170px); height: auto; aspect-ratio: 1; display: block; flex: none; border-radius: 1.2cqh; }
   .qrcard b { display: flex; align-items: center; gap: .45em; font-size: clamp(12px, 2.4cqh, 24px); }
@@ -181,6 +182,47 @@
     background: var(--accent); color: #000; font-weight: 800; font-size: clamp(28px, 14cqh, 180px); text-align: center; padding: 5cqw; }
   #ident[hidden] { display: none; }
 
+  /* A guest's message (approved by the host): a pill above the lyrics. */
+  #shout { align-self: flex-start; display: inline-flex; align-items: center; gap: .6em; max-width: 100%;
+    margin-bottom: 3cqh; padding: .6em 1.2em .6em .9em; border-radius: 99px; font-size: clamp(12px, 2.6cqh, 28px);
+    text-shadow: none; animation: rise-in .6s cubic-bezier(.2, .9, .25, 1); }
+  #shout[hidden] { display: none; }
+  #shout .ic { color: var(--accent); }
+  #shout b { flex: none; }
+  #shout span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fffe; }
+
+  /* Party games: bingo next to the QR code; "Stem het volgende nummer" under Hierna, as wide as the song column.
+     While it shows, the cover is a little smaller so everything still fits on the screen. */
+  #nextvote { margin-top: 1.6cqh; max-width: none; font-size: clamp(10px, 1.8cqh, 18px); }
+  #song.voting #cover { width: 78%; }
+  #song.voting #next { display: none; }   /* Hierna steps aside while the vote runs */
+  #nextvote ol { list-style: none; margin: 0; padding: 0; display: grid; gap: .45em; }
+  #nextvote li { position: relative; display: flex; align-items: center; gap: .6em; padding: .35em .6em; border-radius: .7em;
+    overflow: hidden; min-width: 0; isolation: isolate; background: rgb(255 255 255 / .06); }
+  #nextvote li .fill { position: absolute; inset: 0 auto 0 0; background: color-mix(in srgb, var(--accent) 26%, transparent);
+    transition: width .5s; z-index: -1; }
+  #nextvote li .l { flex: none; width: 1.6em; height: 1.6em; border-radius: 50%; display: grid; place-items: center;
+    font-weight: 700; font-size: .8em; background: rgb(255 255 255 / .14); }
+  #nextvote li .t { min-width: 0; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #nextvote li .t i { font-style: normal; color: #fff9; }
+  #nextvote li .n { flex: none; font-weight: 700; font-variant-numeric: tabular-nums; }
+  #nextvote li.win { outline: 2px solid var(--accent); }
+  #nextvote li.win .l { background: var(--accent); color: #000; }
+  #nextvote.done ol li:not(.win) { opacity: .45; }
+  /* Where to vote: a clear line pointing down at the QR code. */
+  #nextvote .how { display: flex; align-items: center; gap: .5em; margin-top: .8em; padding: .5em .7em; border-radius: .7em;
+    background: color-mix(in srgb, var(--accent) 22%, transparent); font-weight: 700; }
+  #nextvote .how span { flex: 1; min-width: 0; }
+  #nextvote .how .ic:last-child { animation: nudge 1.4s ease-in-out infinite; }
+  #nextvote.done .how { display: none; }
+  @keyframes nudge { 50% { transform: translateX(.3em); } }
+  .game { align-self: flex-end; padding: 1.8cqh 2.2cqh; border-radius: 2.8cqh; min-width: 0; max-width: 26cqw; flex: 0 1 auto;
+    font-size: clamp(10px, 1.9cqh, 19px); }
+  .game[hidden] { display: none; }
+  .game > b { display: flex; align-items: center; gap: .45em; font-size: 1.2em; margin-bottom: .6em; }
+  .game > b .ic { color: var(--accent); }
+  .game .stat { color: #fffc; }
+
   /* Narrow (a small dashboard card, a phone): stacked, lyrics below. */
   @container (max-aspect-ratio: 1/1) {
     /* Room at the bottom for the QR code; a smaller cover; Hierna only the next song. */
@@ -200,6 +242,8 @@
     .qrcard { padding: 1cqh; }
     .qrcard canvas { width: clamp(56px, 14cqh, 150px); }
     .qrcard > div { display: none; }
+    .game { display: none; }
+    #shout { align-self: center; margin-bottom: 1.5cqh; }
   }
   @container (max-height: 260px) {
     #lyrics .l0, #lyrics .l2, #lyrics .l3 { display: none; }
@@ -253,8 +297,14 @@
     <div id="artist"></div>
     <div id="bar"><div></div></div>
     <div id="next" hidden></div>
+    <aside id="nextvote" class="game glass" hidden>
+      <b><i data-icon="vote"></i><em>Stem het volgende nummer</em></b>
+      <ol></ol>
+      <div class="how"><i data-icon="smartphone"></i><span>Stem op je telefoon: scan de QR-code</span><i data-icon="arrow-right"></i></div>
+    </aside>
   </section>
   <section id="lyrics">
+    <div id="shout" class="glass" hidden><i data-icon="message-square-text"></i><b></b><span></span></div>
     <p class="l0"></p><p class="l1"></p><p class="l2"></p><p class="l3"></p>
   </section>
 </main>
@@ -264,6 +314,10 @@
 <div id="votes" class="pilltop glass" hidden><i data-icon="thumbs-down"></i><span></span><div class="meter"><i></i></div></div>
 
 <div id="corner">
+  <aside id="bingo" class="game glass" hidden>
+    <b><i data-icon="grid-3x3"></i>Muziekbingo</b>
+    <span class="stat"></span>
+  </aside>
   <aside id="wifi" class="qrcard glass" hidden>
     <canvas width="340" height="340"></canvas>
     <div><b><i data-icon="wifi"></i>Gasten-wifi</b><span>Scan met je camera, of typ:<br><code class="ssid"></code><br><code class="pass"></code></span></div>

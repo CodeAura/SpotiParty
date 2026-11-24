@@ -73,7 +73,7 @@ export function Hero() {
           <span className="grad-word grad-text">feestscherm.</span>
         </h1>
         <BlurText className="lead" animateBy="words" delay={35} stepDuration={0.3} direction="bottom" threshold={0}
-          text="Het nummer dat speelt groot op je tv, pc, Mac of Home Assistant-dashboard. De songtekst loopt in de maat mee, je vrienden zetten met één QR-code hun nummers in de wachtrij, en vanuit één dashboard bestuur je alle schermen in huis." />
+          text="Het nummer dat speelt groot op je tv, pc, Mac of Home Assistant-dashboard. De songtekst loopt in de maat mee, je vrienden zetten met één QR-code hun nummers in de wachtrij, kiezen het volgende nummer en spelen muziekbingo, en vanuit één dashboard bestuur je alle schermen in huis." />
         <div className="hero-ctas">
           <Magnet padding={50} magnetStrength={3}><a className="btn btn-primary" href="#prijzen">Download gratis</a></Magnet>
           <Magnet padding={50} magnetStrength={3}><a className="btn btn-ghost" href="#zo-werkt-het">Zo werkt het</a></Magnet>
