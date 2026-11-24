@@ -19,10 +19,10 @@ Voor je **Android TV**, je **PC**, een **Raspberry Pi** en je **Home Assistant**
 ---
 
 > [!TIP]
-> **Nieuw in [2.10.0](../../releases/tag/v2.10.0): wissel tussen Spotify-accounts.** Koppel tot vijf accounts aan de
-> Hub en wissel met één tik, of laat de Hub vanzelf wisselen naar het account dat speelt. De Windows- en Mac-app werken
+> **Nieuw in [2.10.1](../../releases/tag/v2.10.1): wissel tussen Spotify-accounts.** Koppel tot vijf accounts aan de
+> Hub en kies zelf met één tik welk account de muziek levert. De Windows- en Mac-app werken
 > zichzelf bij; kom je van 2.6.0 of ouder, installeer dan
-> [`SpotiParty-Setup-2.10.0.exe`](../../releases/download/v2.10.0/SpotiParty-Setup-2.10.0.exe) één keer met de hand.
+> [`SpotiParty-Setup-2.10.1.exe`](../../releases/download/v2.10.1/SpotiParty-Setup-2.10.1.exe) één keer met de hand.
 > Zie [Wat is er nieuw](#-wat-is-er-nieuw).
 
 **Home Assistant?** 
@@ -70,7 +70,8 @@ al je schermen tegelijk.
 
 | Versie | Wat er veranderde |
 |---|---|
-| **[2.10.0](../../releases/tag/v2.10.0)** (nieuwste) | **Account-wisselaar:** koppel tot vijf Spotify-accounts aan de Hub en wissel in het dashboard met één tik, of automatisch naar het account dat speelt. |
+| **[2.10.1](../../releases/tag/v2.10.1)** (nieuwste) | De Hub wisselt nooit meer zelf van Spotify-account: alleen jij kiest het actieve account. |
+| [2.10.0](../../releases/tag/v2.10.0) | **Account-wisselaar:** koppel tot vijf Spotify-accounts aan de Hub en kies in het dashboard met één tik welk account actief is. |
 | [2.9.0](../../releases/tag/v2.9.0) | **Hub op een server werkt zichzelf bij**, elke nacht, en je kiest de PIN bij de eerste start. **Mac-installer:** de `.dmg` opent als venster om SpotiParty naar Apps te slepen. **Smalle schermen** (Home Assistant-kaart, tablet, telefoon) passen beter. |
 | [2.8.0](../../releases/tag/v2.8.0) | **Nieuwe look:** meldingen, de pauze, de quiz en *Hierna* zijn glas over de wazige hoes; iconen in plaats van emoji; een animatie bij elk nieuw nummer. **Hub op een Linux-server** met systemd of Docker, en het scherm op `http://<hub>:8770/scherm/`. **De tv-app toont hetzelfde scherm als de webapp**, rechtstreeks van de Hub. |
 | [2.7.1](../../releases/tag/v2.7.1) | **Ook de Mac-app werkt zichzelf bij**, net als op Windows: downloaden op de achtergrond, installeren bij de volgende start of met **Nu bijwerken**. De Mac-app (Apple silicon) staat vanaf nu bij elke release. |
@@ -127,7 +128,7 @@ PIN in. Er draait één Hub per netwerk: start je de app op een tweede pc, dan w
 | Onderdeel in het dashboard | Wat het doet |
 |---|---|
 | **📺 Schermen** | Alle SpotiParty-schermen in huis, met wat er speelt. Groen is online. **Aanwijzen** zet de naam groot op dat scherm; **Naam** geeft het een eigen naam. |
-| **🎵 Muziek bedienen** | Spotify koppelen, en daarna vorige, afspelen/pauze, volgende en het volume, op welk apparaat je account ook speelt. Koppel tot vijf accounts en wissel met één tik, of laat de Hub vanzelf wisselen naar het account dat speelt. |
+| **🎵 Muziek bedienen** | Spotify koppelen, en daarna vorige, afspelen/pauze, volgende en het volume, op welk apparaat je account ook speelt. Koppel tot vijf accounts en kies zelf met één tik welk account actief is. |
 | **🎶 Spotify Jam** | Eén Jam-link voor alle schermen, met een voorbeeld van de QR-code. |
 | **🎉 Feest** | Hoeveel komende nummers de schermen tonen, de Skip-stemmen en *Raad het nummer*. Zie [Feestspellen](#-feestspellen). |
 | **💬 Melding** | Een bericht ("De pizza's zijn er! 🍕") groot op de schermen die je kiest, in de stijl Gewoon, Feest of Belangrijk. |
@@ -201,11 +202,11 @@ of de quiz aan, dan leidt de QR-code op de schermen daarheen.
 
 ### Windows-app (aanbevolen)
 
-Download bij de nieuwste [**Release (2.10.0)**](../../releases/latest):
+Download bij de nieuwste [**Release (2.10.1)**](../../releases/latest):
 
 | Bestand | Installeren |
 |---|---|
-| [`SpotiParty-Setup-2.10.0.exe`](../../releases/download/v2.10.0/SpotiParty-Setup-2.10.0.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
+| [`SpotiParty-Setup-2.10.1.exe`](../../releases/download/v2.10.1/SpotiParty-Setup-2.10.1.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
 
 SpotiParty opent het feestscherm in een eigen venster, zonder tabbladen, en start de Hub. Er verschijnt ook een klein
 venster met het adres en de **PIN** van het dashboard, en de knoppen **Scherm openen**, **Dashboard** en **Stoppen**.
@@ -497,7 +498,7 @@ Stopt de Jam, dan werkt de oude link niet meer. Start dan een nieuwe Jam en plak
 | Spotify: *"geen toegang"* of *"forbidden"* | Zet het account onder **User Management** van je Spotify-app, en controleer of de eigenaar van de app (nog) Premium heeft. |
 | Tv en telefoon vinden de Hub niet | Windows: sta SpotiParty toe op **Privénetwerken** (Windows Defender Firewall). Op de tv: vul het adres van de Hub in via **Menu**. |
 | Gasten komen niet op de gastenpagina | Ze moeten op hetzelfde netwerk zitten als de Hub; een afgeschermd gasten-wifi blokkeert dat. |
-| De Windows-app werkt zich niet bij | Automatisch bijwerken kan pas vanaf 2.7.0. Kom je van 2.6.0 of ouder, installeer [`SpotiParty-Setup-2.10.0.exe`](../../releases/download/v2.10.0/SpotiParty-Setup-2.10.0.exe) dan één keer met de hand. |
+| De Windows-app werkt zich niet bij | Automatisch bijwerken kan pas vanaf 2.7.0. Kom je van 2.6.0 of ouder, installeer [`SpotiParty-Setup-2.10.1.exe`](../../releases/download/v2.10.1/SpotiParty-Setup-2.10.1.exe) dan één keer met de hand. |
 | De Mac-app werkt zich niet bij | Dat kan pas vanaf 2.7.1, en alleen als SpotiParty in **Apps** staat (niet vanaf de `.dmg` of uit Downloads). Sleep [`SpotiParty-macos-apple-silicon.dmg`](../../releases/latest/download/SpotiParty-macos-apple-silicon.dmg) één keer met de hand naar **Apps**. |
 | **Tv:** *"SpotiParty mag nog niet zien wat er speelt"* | Zet **Meldingstoegang** aan (stap 4 van de tv-installatie). |
 | **Tv:** blijft op *De SpotiParty Hub zoeken* | Vul het adres van de Hub in op de tv. Controleer of de Hub draait en of tv en Hub in hetzelfde netwerk zitten. |
