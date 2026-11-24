@@ -16,7 +16,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - uses: android-actions/setup-android@v3
+      # The ubuntu runner has the Android SDK already (ANDROID_HOME); android-actions/setup-android broke on it.
       - name: Build SpotiParty
         working-directory: android/party-mode
         run: ./gradlew --no-daemon assembleRelease
