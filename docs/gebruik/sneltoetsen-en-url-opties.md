@@ -34,6 +34,7 @@ Op de PC kun je SpotiParty sturen met toevoegingen achter het adres. De eerste b
 | `&hub=192.168.1.20:8770` | Het adres van de Hub (de app op de Hub-pc vindt hem zelf)           |
 | `&kiosk=1`               | Geen knoppen in beeld (**S** werkt nog wel)                         |
 | `&jam=0`                 | De Jam-QR-code niet tonen                                           |
+| `&splash=0`                 | Geen opstartscherm (logo, naam en maker) bij het openen |
 
 ### Voorbeeld
 

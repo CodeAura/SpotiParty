@@ -807,6 +807,10 @@ addEventListener("storage", e => {
 // ---------- start ----------
 (async () => {
   if (params.get("kiosk") === "1") document.body.classList.add("kiosk");
+  // The startup screen stays about 2.5 seconds (the screen connects meanwhile), then fades away.
+  const splash = $("splash");
+  if (params.get("splash") === "0") splash.remove();
+  else setTimeout(() => { splash.classList.add("gone"); setTimeout(() => splash.remove(), 1000); }, 2500);
   Icon.fill(document.body);
   const login = await Spotify.finishLogin();
   if (login === true) return;   // the login window closes itself
