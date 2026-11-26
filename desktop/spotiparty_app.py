@@ -69,6 +69,7 @@ sys.path.insert(0, str(bundle_dir("hub")))
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import spotiparty_hub  # noqa: E402
 import sp_tray  # noqa: E402
+import sp_window  # noqa: E402
 import sp_update  # noqa: E402
 from sp_version import VERSION  # noqa: E402
 
@@ -180,6 +181,7 @@ def open_window():
 # ---------- the small window ----------
 MAC = platform.system() == "Darwin"
 FONT = "Segoe UI" if platform.system() == "Windows" else "Helvetica Neue" if MAC else "DejaVu Sans"
+MONO = "Consolas" if platform.system() == "Windows" else "Menlo" if MAC else "DejaVu Sans Mono"
 THIS = "deze Mac" if MAC else "deze pc"
 
 
@@ -291,7 +293,6 @@ def port_owner(port: int) -> str:
 def main():
     global SCREEN_URL
     updated = "--updated" in sys.argv   # started again by the updater
-    reopen = "--open" in sys.argv       # ... after an update at start: no screen window is open yet
     if already_running():
         if not updated:
             open_window()   # a second start: just another window on the running SpotiParty
@@ -301,7 +302,7 @@ def main():
     if upd and not updated:
         p = upd.pending()
         if p:
-            installing_window(p[0], lambda: upd.install(p[1], reopen=True))
+            installing_window(p[0], lambda: upd.install(p[1]))
             return
     handler = functools.partial(Handler, directory=str(web_root()))
     server = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), handler)
@@ -333,59 +334,19 @@ def main():
                 time.sleep(0.5)
         if hub is None:
             hub_busy = port_owner(spotiparty_hub.PORT)   # the screen still works; the window says why there's no Hub
-    if not updated or reopen:
-        open_window()
+    # The screen does not open by itself: Scherm openen in the window (or the tray menu, or the Dock icon) does.
 
     root = tk.Tk()
     root.title(f"{APP} {VERSION}")
     root.resizable(False, False)
-    root.configure(bg="#0a110b", padx=22, pady=18)
-    head = brand(root)
-    tk.Label(head, text="draait", fg="#a1cca5", bg="#0a110b", font=font(13, "bold")).pack(side="left", padx=(10, 0), pady=(6, 0))
-    tk.Label(root, text="Sluit dit venster om SpotiParty te stoppen.\nToetsen in het scherm: S instellingen, F volledig scherm.",
-             fg="#b4c4b5", bg="#0a110b", justify="left", font=font(10)).pack(anchor="w", pady=(4, 12))
-    if hub:
-        hub_url = hub.admin_state()["urls"][0]
-        tk.Label(root, text=f"{THIS[0].upper() + THIS[1:]} is de Hub. Admin-dashboard (ook op je telefoon):\n{hub_url}    PIN: {hub.cfg['pin']}",
-                 fg="#ffffff", bg="#0a110b", justify="left", font=font(10)).pack(anchor="w", pady=(0, 12))
-    elif hub_busy is not None:
-        who = f" door {hub_busy}" if hub_busy else ""
-        tk.Label(root, text=(f"De Hub kon niet starten: poort {spotiparty_hub.PORT} is bezet{who}.\n"
-                             "Daardoor is er geen dashboard. Sluit dat programma (of herstart je "
-                             f"{'Mac' if MAC else 'pc'}) en start SpotiParty opnieuw."),
-                 fg="#ff9b8f", bg="#0a110b", justify="left", font=font(10)).pack(anchor="w", pady=(0, 12))
-    elif remote:
-        name = hub_name(remote)
-        tk.Label(root, text=(f"Scherm van de Hub {name} ({remote})." if name else
-                             f"Scherm van de Hub op {remote}: die is nu niet bereikbaar, het scherm wacht erop.")
-                 + "\nHet dashboard en de PIN staan op die computer.",
-                 fg="#ffffff", bg="#0a110b", justify="left", font=font(10)).pack(anchor="w", pady=(0, 12))
-    row = tk.Frame(root, bg="#0a110b")
-    row.pack(anchor="w")
-    size = dict(padx=16, pady=7, font=font(10, "bold"))
-    button(row, "Scherm openen", open_window, "#a1cca5", "#000000", "#b8dabb", **size).pack(side="left")
-
-    grey = ("#2f4232", "#ffffff", "#3c5340")
-    if hub or remote:
-        dash = f"http://127.0.0.1:{hub.port}/" if hub else f"http://{remote}/"
-        button(row, "Dashboard", lambda: webbrowser.open(dash), *grey, **size).pack(side="left", padx=(8, 0))
-
-    def switch(role):
-        save_role(role)
-        note.config(text="Opgeslagen. Sluit SpotiParty en start hem opnieuw." if role == "hub" else
-                    "Opgeslagen. Bij de volgende start zoekt SpotiParty de Hub op het netwerk.")
-
-    small = ("#0a110b", "#b4c4b5", "#0a110b")
-    link = dict(padx=0, pady=2, font=font(9, "underline"))
-    if remote:
-        button(root, f"{THIS[0].upper() + THIS[1:]} wordt de Hub", lambda: switch("hub"), *small, **link).pack(anchor="w", pady=(10, 0))
-    elif hub:
-        button(root, f"Geen Hub op {THIS} (de Hub draait op een andere computer)", lambda: switch(""),
-               *small, **link).pack(anchor="w", pady=(10, 0))
-    note = tk.Label(root, text="", fg="#a1cca5", bg="#0a110b", font=font(9))
-    note.pack(anchor="w")
-
+    art = bundle_dir("brand") / "app"
+    try:
+        root.iconphoto(True, tk.PhotoImage(file=str(art / "window-icon.png")),
+                       tk.PhotoImage(file=str(art / "window-icon-32.png")))
+    except tk.TclError:
+        pass
     tray = None
+    win = None
 
     def stop():
         if tray:
@@ -395,7 +356,27 @@ def main():
         server.shutdown()
         root.destroy()
 
-    button(row, "Stoppen", stop, *grey, **size).pack(side="left", padx=(8, 0))
+    def music(cmd):
+        def run():
+            try:
+                hub.spotify.control(cmd)
+            except spotiparty_hub.sp_spotify.SpotifyError as e:
+                root.after(0, lambda: win.note(str(e), error=True))
+        threading.Thread(target=run, daemon=True, name="music").start()
+
+    def switch(role):
+        save_role(role)
+        return ("Opgeslagen. Sluit SpotiParty en start hem opnieuw." if role == "hub" else
+                "Opgeslagen. Bij de volgende start zoekt SpotiParty de Hub op het netwerk.")
+
+    dash = (f"http://127.0.0.1:{hub.port}/" if hub else f"http://{remote}/") if (hub or remote) else ""
+    remote_label = (hub_name(remote) or remote) if remote else ""   # once: hub_name waits for the network
+    ctx = sp_window.Context()
+    ctx.font, ctx.mono, ctx.art_dir, ctx.version, ctx.this = font, MONO, art, VERSION, THIS
+    ctx.hub, ctx.remote, ctx.remote_label, ctx.hub_busy = hub, remote or "", remote_label, hub_busy
+    ctx.hub_port, ctx.open_screen, ctx.stop, ctx.music, ctx.switch_role = spotiparty_hub.PORT, open_window, stop, music, switch
+    ctx.open_dashboard = (lambda: webbrowser.open(dash)) if dash else None
+    win = sp_window.Window(root, ctx)
     root.protocol("WM_DELETE_WINDOW", stop)
 
     # ---------- the icon in the menu bar (Mac) or next to the clock (Windows) ----------
@@ -405,16 +386,6 @@ def main():
         root.attributes("-topmost", True)
         root.after(200, lambda: root.attributes("-topmost", False))
         root.focus_force()
-
-    def music(cmd):
-        def run():
-            try:
-                hub.spotify.control(cmd)
-            except spotiparty_hub.sp_spotify.SpotifyError as e:
-                root.after(0, lambda: note.config(text=str(e)))
-        threading.Thread(target=run, daemon=True, name="tray-music").start()
-
-    remote_label = (hub_name(remote) or remote) if remote else ""   # once: hub_name waits for the network
 
     def tray_items():
         items = []
@@ -437,13 +408,12 @@ def main():
         elif remote:
             items.append((f"Scherm van de Hub {remote_label}", None, False))
         items += [None, ("Scherm openen", open_window, True)]
-        if hub or remote:
-            dash = f"http://127.0.0.1:{hub.port}/" if hub else f"http://{remote}/"
+        if dash:
             items.append(("Dashboard openen", lambda: webbrowser.open(dash), True))
         items += [("Venster van SpotiParty tonen", show_window, True), None, ("SpotiParty stoppen", stop, True)]
         return items
 
-    tray = sp_tray.start(root, bundle_dir("brand") / "app", tray_items(), on_click=show_window)
+    tray = sp_tray.start(root, art, tray_items(), on_click=show_window)
 
     def tray_loop():
         if tray:
@@ -454,28 +424,30 @@ def main():
 
     # ---------- updates ----------
     if updated:
-        note.config(text=f"Bijgewerkt naar versie {VERSION}.")
+        win.note(f"Bijgewerkt naar versie {VERSION}.")
     if upd:
-        bar = tk.Frame(root, bg="#1d3020", padx=12, pady=8)
-        bar_left = tk.Frame(bar, bg="#1d3020")
-        bar_left.pack(side="left")
-        bar_text = tk.Label(bar_left, text="", fg="#ffffff", bg="#1d3020", justify="left", font=font(10))
+        bar = sp_window.Card(win.slot, fill=sp_window.CARD2)
+        box = bar.inner
+        bar_text = tk.Label(box, text="", fg=sp_window.TEXT, bg=sp_window.CARD2, justify="left", font=font(10),
+                            wraplength=sp_window.WIDTH - 60)
         bar_text.pack(anchor="w")
-        bar_prog = Progress(bar_left, width=260, bg="#1d3020")
+        bar_prog = sp_window.Bar(box, sp_window.WIDTH - 32, bg=sp_window.CARD2, track=sp_window.LINE)
         installing = []
+        busy = Progress(box, width=sp_window.WIDTH - 32, height=5, bg=sp_window.CARD2)
 
         def install_now():
             if upd.ready and not installing:
                 installing.append(True)
-                bar_text.config(text=f"Bijwerken naar versie {upd.ready[0]}…\nSpotiParty start zo vanzelf opnieuw.")
+                bar_text.config(text=f"Bijwerken naar versie {upd.ready[0]}… SpotiParty start zo vanzelf opnieuw.")
                 bar_btn.pack_forget()
-                bar_prog.pack(anchor="w", pady=(8, 2))
-                bar_prog.busy()
+                bar_prog.pack_forget()
+                busy.pack(anchor="w", pady=(10, 0))
+                busy.busy()
                 root.after(400, lambda: upd.install(upd.ready[1]))
                 root.after(2400, stop)
 
-        bar_btn = button(bar, "Nu bijwerken", install_now, "#a1cca5", "#000000", "#b8dabb",
-                         padx=12, pady=4, font=font(9, "bold"))
+        bar_btn = sp_window.Button(box, "Nu bijwerken", install_now, font(10, "bold"), bg=sp_window.CARD2,
+                                   padx=14, pady=6)
 
         def check_loop():
             while True:
@@ -492,19 +464,19 @@ def main():
                 pct = f" {done * 100 // total}%" if total else ""
                 bar_text.config(text=(upd.status or "Update wordt gedownload…") + pct)
                 bar_btn.pack_forget()
-                bar_prog.pack(anchor="w", pady=(8, 2))
+                bar_prog.pack(anchor="w", pady=(10, 0))
                 bar_prog.set(done / total if total else 0)
-                bar.pack(anchor="w", fill="x", pady=(12, 0))
+                bar.pack(pady=(12, 0))
             elif upd.ready:
                 bar_prog.pack_forget()
-                bar_text.config(text=f"Versie {upd.ready[0]} staat klaar.\nWordt bij de volgende start vanzelf "
+                bar_text.config(text=f"Versie {upd.ready[0]} staat klaar. Hij wordt bij de volgende start vanzelf "
                                      "geïnstalleerd, of nu (de muziek stopt even).")
-                bar_btn.pack(side="left", padx=(12, 0))
-                bar.pack(anchor="w", fill="x", pady=(12, 0))
+                bar_btn.pack(anchor="w", pady=(10, 0))
+                bar.pack(pady=(12, 0))
             elif upd.status:
                 bar_text.config(text=upd.status)
                 bar_btn.pack_forget()
-                bar.pack(anchor="w", fill="x", pady=(12, 0))
+                bar.pack(pady=(12, 0))
             else:
                 bar.pack_forget()
             root.after(300 if upd.progress else 2000, show)

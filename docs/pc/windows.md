@@ -47,8 +47,8 @@ Laat aan het eind **SpotiParty starten** aangevinkt, of start hem later uit het 
 
 ## Wat je ziet als SpotiParty draait
 
-* Een **eigen venster** zonder tabbladen of adresbalk met het feestscherm. Daarvoor gebruikt SpotiParty Edge, Chrome of Brave, met een eigen profiel dat los staat van je normale browser.
-* Een **klein venster** met het versienummer in de titel, het adres en de **PIN** van het Hub-dashboard, en de knoppen **Scherm openen**, **Dashboard** en **Stoppen**. Sluit je dat kleine venster, dan stopt SpotiParty.
+* Met **Scherm openen** een **eigen venster** zonder tabbladen of adresbalk met het feestscherm (het opent niet vanzelf bij het starten). Daarvoor gebruikt SpotiParty Edge, Chrome of Brave, met een eigen profiel dat los staat van je normale browser.
+* Het **SpotiParty-venster**: wat er speelt, met de hoes en knoppen voor vorige, afspelen/pauzeren, volgende en het volume; het adres en de **PIN** van het Hub-dashboard (met **Kopieer**) en hoeveel schermen online zijn; de knoppen **Scherm openen** en **Dashboard**, en onderaan **Stoppen**. Sluit je dat venster, dan stopt SpotiParty.
 * Een **icoon rechtsonder in de taakbalk**, bij de klok. Klik erop om het kleine venster te tonen; met de rechtermuisknop zie je wat er speelt, bedien je de muziek (vorige, afspelen/pauzeren, volgende, volume) en open je het scherm of het dashboard. Staat het icoon er niet tussen, kijk dan onder het pijltje **^** naast de klok; je kunt het daar naar de taakbalk slepen.
 
 {% hint style="warning" %}
