@@ -1,8 +1,8 @@
 {
-  "version": "3.7.3",
-  "title": "Nieuw in SpotiParty 3.7.3",
+  "version": "3.8.0",
+  "title": "Nieuw in SpotiParty 3.8.0",
   "items": [
-    ["mic-vocal", "Songteksten op tijd", "Songteksten liepen soms een paar seconden voor. Het scherm kiest nu de versie die precies bij het nummer past."],
-    ["tv", "De tv ziet er hetzelfde uit", "Op een Android TV ontbrak de vage cover op de achtergrond. Nu is het scherm op de tv gelijk aan de webapp."]
+    ["mic-vocal", "Songtekst later tonen", "Loopt de songtekst voor op wat je hoort? Zet hem bij Feest 0,5 tot 3 seconden later. Dat geldt voor alle schermen tegelijk."],
+    ["tv", "De tv ziet er hetzelfde uit", "Op een Android TV staat nu ook de vage cover op de achtergrond, en songteksten kiezen de versie die precies bij het nummer past."]
   ]
 }

@@ -15,6 +15,8 @@ De feestspellen werken met het Spotify-account dat je aan de Hub hebt gekoppeld.
 
 Bij **Komende nummers op het scherm** kies je **Geen**, **1** (alleen "Hierna"), **3** of **5**. De schermen tonen dan zoveel nummers uit de wachtrij van je Spotify-account.
 
+Loopt de songtekst voor op wat je hoort? Kies bij **Songtekst later tonen** 0,5 tot 3 seconden. Spotify meldt de plek in het nummer net iets eerder dan je speaker hem laat horen; met deze instelling wachten alle schermen even.
+
 ## 👎 Stemmen om over te slaan
 
 Zet **Gasten mogen stemmen om over te slaan** aan en kies hoeveel stemmen er nodig zijn (standaard 3). Gasten scannen de QR-code op het scherm en tikken op **Skip**. Zijn er genoeg stemmen, dan slaat de Hub het nummer over. Op het scherm zie je hoeveel stemmen er al zijn. Bij elk nieuw nummer begint de telling opnieuw.

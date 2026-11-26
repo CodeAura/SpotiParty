@@ -74,6 +74,7 @@ class Party:
     def __init__(self, cfg: dict):
         self.cfg = cfg
         cfg.setdefault("upnext", 3)          # how many upcoming songs the screens show
+        cfg.setdefault("lyric_delay", 0)     # ms the lyrics wait: what you hear comes later than Spotify reports
         cfg.setdefault("vote_on", False)     # skip votes from the guests' phones
         cfg.setdefault("vote_needed", 3)
         cfg.setdefault("msg_on", False)      # guests may send messages (shown after you approve them)
@@ -419,7 +420,7 @@ class Party:
 
     def admin(self) -> dict:
         b = self.bingo
-        return {"upnext": self.cfg.get("upnext", 3), "vote_on": bool(self.cfg.get("vote_on")),
+        return {"upnext": self.cfg.get("upnext", 3), "lyric_delay": self.cfg.get("lyric_delay", 0), "vote_on": bool(self.cfg.get("vote_on")),
                 "vote_needed": self.cfg.get("vote_needed", 3), "votes": len(self.voters),
                 "quiz_on": self.quiz_on, "top": self.top(20),
                 "scores": [{"name": s["name"], "pts": s["pts"], "quiz": s.get("quiz", 0), "bingo": s.get("bingo", 0),

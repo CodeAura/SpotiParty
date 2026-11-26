@@ -92,6 +92,7 @@ const Hub = (() => {
   function applyMusic(m) {
     if (!m || !m.title) return;
     hubMusicUntil = Date.now() + 8000;
+    lyricDelay = +m.lyric_delay || 0;
     setNow({
       key: m.artist + "\n" + m.title, title: m.title, artist: m.artist || "", album: m.album || "",
       durationMs: m.duration || 0, positionMs: m.progress || 0,

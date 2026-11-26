@@ -256,6 +256,7 @@ class Hub:
                                      "playing", "next", "device", "id")}
         n = max(0, int(self.cfg.get("upnext", 3)))
         out["upnext"] = (p.get("upnext") or [])[:n]
+        out["lyric_delay"] = int(self.cfg.get("lyric_delay", 0))
         if not n:
             out["next"] = ""     # "Geen" in the dashboard: older screens show no "Hierna" either
         return out
@@ -504,6 +505,8 @@ class Hub:
             if action == "party":
                 if "upnext" in b:
                     self.cfg["upnext"] = max(0, min(5, int(b["upnext"])))
+                if "lyric_delay" in b:
+                    self.cfg["lyric_delay"] = max(0, min(5000, int(b["lyric_delay"])))
                 if "vote_on" in b:
                     self.cfg["vote_on"] = bool(b["vote_on"])
                 if "vote_needed" in b:

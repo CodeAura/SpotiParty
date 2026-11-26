@@ -31,6 +31,8 @@ function position() {
 
 /** Until then the Hub's account decides what this screen shows (the account the music comes from). */
 let hubMusicUntil = 0;
+/** The Hub's "Songtekst later tonen", in ms: the speaker plays later than Spotify reports. */
+let lyricDelay = 0;
 /** The song from this screen's own source (its Spotify login, Home Assistant): only when the Hub has none. */
 function setOwn(track) {
   if (Date.now() < hubMusicUntil) return;
@@ -255,7 +257,7 @@ setInterval(() => {
   const p = position();
   if (now.durationMs > 0) $("bar").firstElementChild.style.width = (p / now.durationMs) * 100 + "%";
   if (!lyr.synced || lyr.key !== now.key) return;
-  const ahead = p + 250;
+  const ahead = p + 250 - lyricDelay;
   let index = -1;
   for (let i = 0; i < lyr.times.length && lyr.times[i] <= ahead; i++) index = i;
   if (index !== lyr.shown) { lyr.shown = index; showLines(index); }

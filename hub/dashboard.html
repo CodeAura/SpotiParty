@@ -294,6 +294,12 @@
           <option value="0">Geen</option><option value="1">1 (alleen "Hierna")</option>
           <option value="3">3</option><option value="5">5</option>
         </select>
+        <label for="p-lyric">Songtekst later tonen</label>
+        <select id="p-lyric">
+          <option value="0">Niet</option><option value="500">0,5 seconde</option><option value="1000">1 seconde</option>
+          <option value="1500">1,5 seconde</option><option value="2000">2 seconden</option><option value="3000">3 seconden</option>
+        </select>
+        <p style="color:var(--muted);font-size:13px;margin:4px 0 8px">Loopt de tekst voor op wat je hoort? Spotify meldt de plek in het nummer iets eerder dan je speaker hem laat horen.</p>
         <label class="check"><input type="checkbox" id="p-vote"> Gasten mogen stemmen om over te slaan</label>
         <div class="row"><label>Stemmen nodig<input id="p-need" type="number" min="1" max="50" value="3" inputmode="numeric"></label></div>
         <div class="row"><button class="go" id="p-save">Opslaan</button></div>
@@ -672,6 +678,7 @@ function render() {
     formsFilled = true;
     const pa = s.party || {};
     $("p-upnext").value = String(pa.upnext ?? 3);
+    $("p-lyric").value = String(pa.lyric_delay ?? 0);
     $("p-vote").checked = !!pa.vote_on;
     $("p-need").value = pa.vote_needed || 3;
     const w = s.wifi;
@@ -896,7 +903,7 @@ $("sc-show").onclick = async () => {
 };
 $("p-save").onclick = async () => {
   try {
-    await api("party", { upnext: +$("p-upnext").value, vote_on: $("p-vote").checked, vote_needed: +$("p-need").value });
+    await api("party", { upnext: +$("p-upnext").value, lyric_delay: +$("p-lyric").value, vote_on: $("p-vote").checked, vote_needed: +$("p-need").value });
     msg("p-msg", $("p-vote").checked ? "Opgeslagen. De QR-code op de schermen leidt nu naar de gastenpagina." : "Opgeslagen.");
     refresh();
   } catch (e) { msg("p-msg", e.message, true); }
