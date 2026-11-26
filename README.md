@@ -84,7 +84,8 @@ wat over het scherm heen komt, is van glas over dezelfde wazige hoes.
 
 | Versie | Wat er veranderde |
 |---|---|
-| **[3.6.2](../../releases/tag/v3.6.2)** (nieuwste) | **Rondleiding:** de knop *Volgende* viel buiten het uitlegkaartje. De stappen staan nu op een eigen regel boven de knoppen, en het kaartje past altijd in het venster. |
+| **[3.6.3](../../releases/tag/v3.6.3)** (nieuwste) | **Een nieuwe gastenpagina.** Het logo bovenaan, een welkomstkaart met wat je vanavond kunt doen en een knop *Doe mee*, daarna een kaartje met je naam, punten en plek. *Nu speelt* groter, kopjes met icoontjes, de groene stijl van de rest. |
+| [3.6.2](../../releases/tag/v3.6.2) | **Rondleiding:** de knop *Volgende* viel buiten het uitlegkaartje. De stappen staan nu op een eigen regel boven de knoppen, en het kaartje past altijd in het venster. |
 | [3.6.1](../../releases/tag/v3.6.1) | **Eerst de Hub instellen.** Bij de eerste start van de Windows- of Mac-app is **Hub instellen** de hoofdknop: daar kies je je PIN. Pas daarna kan het feestscherm open, ook via de menubalk, de taakbalk of het Dock. |
 | [3.6.0](../../releases/tag/v3.6.0) | **Een Hub die je wegwijs maakt.** De eerste keer een **rondleiding** door het dashboard (met *Tutorial overslaan*, en *Uitleg* om hem terug te zien), **Aan de slag** met wat er nog moet gebeuren, snelle links in de kop. **Je eigen PIN:** een nieuwe Hub vraagt bij de eerste keer om een PIN, twee keer ingevuld; oudere Hubs vragen één keer om een eigen PIN. **[Hub op Proxmox](docs/hub/proxmox.md)** met één commando. Het speel-icoon bij de accounts staat weer recht. |
 | [3.5.1](../../releases/tag/v3.5.1) | **Het Hub-dashboard op een PC:** geen lege vlakken meer naast de lange kaart Feest. Op een breed scherm staan Muziek, Jam en Melding naast elkaar, daaronder Feest (twee kolommen breed) naast Pauze, Wifi en Hub. Op een tablet twee kolommen, op een telefoon één. |
@@ -243,11 +244,11 @@ spel aan, dan leidt de QR-code op de schermen daarheen. Uitleg per spel: [Feests
 
 ### Windows-app (aanbevolen)
 
-Download bij de nieuwste [**Release (3.6.2)**](../../releases/latest):
+Download bij de nieuwste [**Release (3.6.3)**](../../releases/latest):
 
 | Bestand | Installeren |
 |---|---|
-| [`SpotiParty-Setup-3.6.2.exe`](../../releases/download/v3.6.2/SpotiParty-Setup-3.6.2.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
+| [`SpotiParty-Setup-3.6.3.exe`](../../releases/download/v3.6.3/SpotiParty-Setup-3.6.3.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
 
 SpotiParty start de Hub en opent het SpotiParty-venster: wat er speelt, het adres en de **PIN** van het dashboard, en
 de knoppen **Scherm openen** en **Dashboard**. Met **Scherm openen** komt het feestscherm in een eigen venster, zonder
