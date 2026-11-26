@@ -181,6 +181,13 @@
     #tour .skip { margin-right: auto; }
     #hubname { display: none; }
   }
+  /* No Jam link: the card pulses until there is one (a Jam belongs to one party and one account) */
+  #s-jam.missing { border-color: var(--accent); animation: jam-pulse 1.6s ease-in-out infinite; }
+  @keyframes jam-pulse { 50% { box-shadow: 0 0 0 6px #a1cca540, 0 0 28px #a1cca533; } }
+  @media (prefers-reduced-motion: reduce) { #s-jam.missing { animation: none; box-shadow: 0 0 0 3px #a1cca566; } }
+  .jam-alert { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; margin-bottom: 10px;
+    background: #a1cca51f; color: #e3f1e4; font-size: 14px; }
+  .jam-alert .ic { flex: none; margin-top: 2px; }
   #jam-qr { width: 140px; height: 140px; background: #fff; border-radius: 10px; padding: 6px; display: block; }
 </style>
 </head>
@@ -249,9 +256,10 @@
   </section>
   <section id="s-jam">
     <h2><i data-icon="users"></i>Spotify Jam</h2>
+    <div class="jam-alert" id="j-alert" hidden><i data-icon="circle-help"></i><span id="j-alert-text"></span></div>
     <div class="wifi">
       <div>
-        <p>Plak hier één keer de link van je Jam: alle schermen tonen dan dezelfde QR-code.</p>
+        <p>Plak de link van je Jam: alle schermen tonen dan dezelfde QR-code. Elk feest is een nieuwe Jam: de Hub onthoudt de link niet.</p>
         <label for="j-link">Jam-link</label>
         <input id="j-link" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://spotify.link/...">
         <div class="row"><button class="go" id="j-save">Op alle schermen</button><button id="j-clear">Weghalen</button></div>
@@ -632,6 +640,7 @@ function render() {
   targetsBox("b-targets");
   renderPlayer();
   renderParty();
+  renderJam(s);
 
   if (!formsFilled) {
     formsFilled = true;
@@ -639,8 +648,6 @@ function render() {
     $("p-upnext").value = String(pa.upnext ?? 3);
     $("p-vote").checked = !!pa.vote_on;
     $("p-need").value = pa.vote_needed || 3;
-    $("j-link").value = s.jam || "";
-    paintJam(s.jam);
     const w = s.wifi;
     $("w-ssid").value = w.ssid; $("w-pass").value = w.password; $("w-sec").value = w.security;
     $("w-hidden").checked = w.hidden; $("w-show").checked = w.show;
@@ -733,6 +740,19 @@ $("sp-unlink").onclick = async e => {
   try { await api("spotify-unlink", {}); refresh(); } catch (err) { alert(err.message); }
 };
 
+/** The Jam link comes from the Hub, which takes it away when it no longer works or another account plays. */
+let shownJam = null;
+function renderJam(s) {
+  const jam = s.jam || "";
+  $("s-jam").classList.toggle("missing", !jam);
+  $("j-alert").hidden = !!jam;
+  $("j-alert-text").textContent = s.jam_note || "Nog geen Jam-link. Start een Jam in Spotify, kopieer de uitnodiging en plak die hier.";
+  if (jam !== shownJam && document.activeElement !== $("j-link")) {   // never overwrite what you are typing
+    shownJam = jam;
+    $("j-link").value = jam;
+    paintJam(jam);
+  }
+}
 function paintJam(link) {
   const c = $("jam-qr");
   if (link) { c.style.visibility = ""; Qr.paint(c, link); } else c.style.visibility = "hidden";

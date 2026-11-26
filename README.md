@@ -84,7 +84,8 @@ wat over het scherm heen komt, is van glas over dezelfde wazige hoes.
 
 | Versie | Wat er veranderde |
 |---|---|
-| **[3.6.3](../../releases/tag/v3.6.3)** (nieuwste) | **Een nieuwe gastenpagina.** Het logo bovenaan, een welkomstkaart met wat je vanavond kunt doen en een knop *Doe mee*, daarna een kaartje met je naam, punten en plek. *Nu speelt* groter, kopjes met icoontjes, de groene stijl van de rest. |
+| **[3.6.4](../../releases/tag/v3.6.4)** (nieuwste) | **De Jam-link blijft kloppen.** De Hub onthoudt hem niet meer (elk feest een nieuwe Jam), controleert hem bij het opslaan en elke 10 minuten, en haalt hem weg als hij niet meer werkt of als er een ander Spotify-account gaat spelen. Zonder link knippert de kaart **Spotify Jam** in het dashboard, met de uitleg waarom. |
+| [3.6.3](../../releases/tag/v3.6.3) | **Een nieuwe gastenpagina.** Het logo bovenaan, een welkomstkaart met wat je vanavond kunt doen en een knop *Doe mee*, daarna een kaartje met je naam, punten en plek. *Nu speelt* groter, kopjes met icoontjes, de groene stijl van de rest. |
 | [3.6.2](../../releases/tag/v3.6.2) | **Rondleiding:** de knop *Volgende* viel buiten het uitlegkaartje. De stappen staan nu op een eigen regel boven de knoppen, en het kaartje past altijd in het venster. |
 | [3.6.1](../../releases/tag/v3.6.1) | **Eerst de Hub instellen.** Bij de eerste start van de Windows- of Mac-app is **Hub instellen** de hoofdknop: daar kies je je PIN. Pas daarna kan het feestscherm open, ook via de menubalk, de taakbalk of het Dock. |
 | [3.6.0](../../releases/tag/v3.6.0) | **Een Hub die je wegwijs maakt.** De eerste keer een **rondleiding** door het dashboard (met *Tutorial overslaan*, en *Uitleg* om hem terug te zien), **Aan de slag** met wat er nog moet gebeuren, snelle links in de kop. **Je eigen PIN:** een nieuwe Hub vraagt bij de eerste keer om een PIN, twee keer ingevuld; oudere Hubs vragen één keer om een eigen PIN. **[Hub op Proxmox](docs/hub/proxmox.md)** met één commando. Het speel-icoon bij de accounts staat weer recht. |
@@ -119,7 +120,7 @@ Alle versies en downloads vind je bij [Releases](../../releases).
 <img src="docs/images/overview.svg" alt="De Hub in het midden: hij leest je Spotify-account en stuurt alle schermen aan (Android TV, PC, Raspberry Pi, Home Assistant); jij bedient hem via het dashboard, gasten via de gastenpagina" width="860">
 
 De **Hub** is het hart: een klein programma op je PC of Raspberry Pi met een admin-dashboard op poort **8770**. Daar
-koppel je één keer je Spotify-account en je Jam-link, en alle schermen in huis volgen dat.
+koppel je één keer je Spotify-account, zet je per feest de link van je Jam, en alle schermen in huis volgen dat.
 
 | | 💻 PC (Windows of Mac) | 🍓 Raspberry Pi | 📺 Android TV | 🏠 Home Assistant |
 |---|---|---|---|---|
@@ -244,11 +245,11 @@ spel aan, dan leidt de QR-code op de schermen daarheen. Uitleg per spel: [Feests
 
 ### Windows-app (aanbevolen)
 
-Download bij de nieuwste [**Release (3.6.3)**](../../releases/latest):
+Download bij de nieuwste [**Release (3.6.4)**](../../releases/latest):
 
 | Bestand | Installeren |
 |---|---|
-| [`SpotiParty-Setup-3.6.3.exe`](../../releases/download/v3.6.3/SpotiParty-Setup-3.6.3.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
+| [`SpotiParty-Setup-3.6.4.exe`](../../releases/download/v3.6.4/SpotiParty-Setup-3.6.4.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
 
 SpotiParty start de Hub en opent het SpotiParty-venster: wat er speelt, het adres en de **PIN** van het dashboard, en
 de knoppen **Scherm openen** en **Dashboard**. Met **Scherm openen** komt het feestscherm in een eigen venster, zonder

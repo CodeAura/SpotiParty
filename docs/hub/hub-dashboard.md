@@ -72,6 +72,8 @@ Een scherm dat via **https://** draait (bijvoorbeeld Home Assistant via Nabu Cas
 1. **🎵 Muziek bedienen**: plak de **Client ID** van je [Spotify-app](../aan-de-slag/spotify-app.md) en klik **Inloggen bij Spotify**. In je Spotify-app moet de Redirect URI `http://127.0.0.1:8770/spotify/callback` staan (het dashboard toont hem). Log je in op je telefoon, dan opent `127.0.0.1` daarna niet: kopieer het hele adres uit de adresbalk, plak het in het dashboard en klik **Koppelen**.
 2. **🎶 Spotify Jam**: plak de link van je [Jam](../aan-de-slag/spotify-jam.md) en klik **Op alle schermen**. Met **Weghalen** haal je hem van alle schermen.
 
+   De Hub onthoudt de Jam-link niet: elk feest is een nieuwe Jam. Hij haalt de link ook zelf weg als hij niet meer werkt (dat controleert hij elke 10 minuten) of als er een ander Spotify-account gaat spelen. De kaart **Spotify Jam** knippert dan, met de uitleg waarom. Een link die niet werkt, slaat de Hub niet op.
+
 ## In het dashboard
 
 * **📺 Schermen**: groen = online. **Aanwijzen** zet de naam groot op dat scherm, zodat je weet welke het is. **Naam** geeft het een eigen naam.

@@ -210,7 +210,7 @@ export function Pricing() {
 
 const FAQ = [
   ["Heb ik Spotify Premium nodig?", "Om een Jam te starten wel: zo werkt Spotify. Wat er speelt en de songteksten tonen werkt met elk Spotify-account."],
-  ["Wat is de Hub?", "Een klein programma op je pc, Mac, Raspberry Pi, Linux-server of Proxmox. Daar koppel je één keer Spotify en je Jam-link, en vanuit het dashboard op je telefoon bestuur je alle schermen."],
+  ["Wat is de Hub?", "Een klein programma op je pc, Mac, Raspberry Pi, Linux-server of Proxmox. Daar koppel je één keer Spotify en zet je per feest je Jam-link, en vanuit het dashboard op je telefoon bestuur je alle schermen."],
   ["Hoe krijgt mijn tv updates?", "Vanzelf. De tv-app toont het scherm rechtstreeks van je Hub. Werkt de Hub zichzelf bij, dan heeft de tv de nieuwe versie zodra je SpotiParty opent."],
   ["Is SpotiParty echt gratis?", "Ja. SpotiParty is open source: de apps, de Hub en de broncode staan gratis op GitHub, met updates. De Windows- en Mac-app werken zichzelf bij."],
   ["Kunnen mijn vrienden de muziek overnemen?", "Nee. Zet in je Jam de optie Gasten mogen afspelen bedienen uit, dan kunnen ze alleen nummers toevoegen. Overslaan kan alleen als jij de Skip-stemmen aanzet, en dan pas bij genoeg stemmen."],

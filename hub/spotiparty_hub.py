@@ -27,6 +27,7 @@ import sys
 import threading
 import time
 import urllib.parse
+import urllib.request
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import sp_spotify  # noqa: E402
@@ -52,6 +53,18 @@ def is_spotify_link(s: str) -> bool:
     return (u.scheme == "https" and len(s) <= 300
             and (h in ("spotify.link", "open.spotify.com", "spotify.app.link")
                  or h.endswith(".spotify.link") or h.endswith(".spotify.com")))
+
+
+def jam_valid(url: str):
+    """Does this link still lead to a Jam? True, False, or None when we can't tell (offline).
+    An unknown or expired spotify.link goes to Spotify's front page; a Jam's goes to .../socialsession/<id>.
+    shortcut: a Jam that was stopped keeps its address, so that one still counts as valid (Spotify can't be asked)."""
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (SpotiParty Hub)"})
+        with urllib.request.urlopen(req, timeout=8) as r:
+            return "/socialsession/" in urllib.parse.unquote(r.geturl())
+    except Exception:  # noqa: BLE001
+        return None
 
 
 def default_data_dir() -> pathlib.Path:
@@ -113,6 +126,8 @@ class Hub:
         # Skip votes and the "Raad het nummer" quiz, played from the guests' phones (/gast).
         self.party = sp_party.Party(self.cfg)
         self.guest_hits = {}    # ip -> [count, window start]: a phone can't flood the hub
+        # The Jam link: in memory only, and gone when another Spotify account plays (a Jam belongs to one account).
+        self.jam, self.jam_acct, self.jam_note = "", None, ""
         self.screens = {}       # id -> {name, kind, ip, seen, song}
         self.notice = None      # {id, text, style, until (ms or 0 = until removed), targets}
         self.brk = None         # {id, title, minutes, until (ms), targets}
@@ -136,7 +151,7 @@ class Hub:
         if self.setup_pin and cfg.get("pin") and "pin_chosen" not in cfg:
             cfg["pin_chosen"] = True
         cfg.setdefault("name", platform.node().split(".")[0] or "SpotiParty")
-        cfg.setdefault("jam", "")
+        cfg.pop("jam", None)   # the Jam link lives in memory only (see self.jam): every party starts a new Jam
         cfg.setdefault("wifi", {"ssid": "", "password": "", "security": "WPA", "hidden": False, "show": False})
         cfg.setdefault("names", {})
         self.file.parent.mkdir(parents=True, exist_ok=True)
@@ -156,12 +171,35 @@ class Hub:
                 self.spotify.player_err = "Pauze: " + str(e)
         threading.Thread(target=run, daemon=True, name="hub-spotify").start()
 
+    def _jam_check(self):
+        """Another account plays than the one the Jam link was set with: that Jam is not this music. Take it away."""
+        act = self.spotify.active()
+        key = act["key"] if act else None
+        with self.lock:
+            if self.jam and key != self.jam_acct:
+                self.jam = ""
+                self.jam_note = ("Er speelt nu een ander Spotify-account. De oude Jam-link is weggehaald: start een nieuwe Jam "
+                                 "en plak die link hier.")
+
+    def _jam_test(self):
+        url = self.jam
+        if url and jam_valid(url) is False:
+            with self.lock:
+                if self.jam == url:
+                    self.jam = ""
+                    self.jam_note = "De Jam-link werkt niet meer (de Jam is gestopt of verlopen). Start een nieuwe Jam en plak die link hier."
+
     def _spotify_loop(self):
         # While the dashboard is open, a break runs or a screen is on: what the account plays, every 4 s
         # (the queue every 20 s), so every screen shows the song of the account the music comes from.
         last_queue = 0.0
+        last_jam_test = time.time()
         while self.httpd:
+            self._jam_check()
             t = time.time()
+            if self.jam and t - last_jam_test > 600:   # every 10 minutes: does the Jam link still work?
+                last_jam_test = t
+                threading.Thread(target=self._jam_test, daemon=True, name="hub-jam").start()
             screens_on = any(t - s["seen"] < ONLINE_S for s in list(self.screens.values()))
             busy = t - self.admin_seen < 90 or bool(self.brk) or screens_on
             p = self.spotify.player
@@ -232,7 +270,7 @@ class Hub:
             r = self.party.round
             hidden = bool(r and self.party.quiz_on and time.time() < r["until"])
             out["song"] = None if not m or hidden else {"title": m["title"], "artist": m["artist"]}
-            out["jam"] = self.cfg.get("jam", "")
+            out["jam"] = self.jam
             out["hub"] = self.cfg["name"]
             return out
 
@@ -332,7 +370,7 @@ class Hub:
             # "pro" stays in the answer, always true: older screens only show the hub features when it is.
             out = {"now": self.now_ms(), "hub": self.cfg["name"], "pro": True,
                    "name": self.cfg["names"].get(sid) or self.screens[sid]["name"],
-                   "jam": self.cfg.get("jam", ""), "cmds": [{"id": c["id"], "cmd": c["cmd"]} for c in self.queue.pop(sid, [])]}
+                   "jam": self.jam, "cmds": [{"id": c["id"], "cmd": c["cmd"]} for c in self.queue.pop(sid, [])]}
             w = self.cfg["wifi"]
             out.update(notice=self._for(self.notice, sid), brk=self._for(self.brk, sid),
                        wifi={"ssid": w["ssid"], "password": "" if w["security"] == "nopass" else w["password"],
@@ -347,7 +385,7 @@ class Hub:
                        # With skip votes or the quiz on, the screens' QR code leads to the guest page (Jam there too).
                        guest=self.guest_url() if self.guest_page_on() else "",
                        # What the guest page offers, so the screen can say what scanning does.
-                       guest_has={"jam": bool(self.cfg.get("jam")), "skip": bool(self.cfg.get("vote_on")),
+                       guest_has={"jam": bool(self.jam), "skip": bool(self.cfg.get("vote_on")),
                                   "quiz": bool(self.party.quiz_on), "msg": bool(self.cfg.get("msg_on")),
                                   "next": bool(self.party.next_on), "bingo": bool(self.party.bingo)})
             for k in ("notice", "brk"):
@@ -370,13 +408,18 @@ class Hub:
                        "player": sp.player, "error": sp.player_err, "accounts": sp.accounts()}
             return {"now": self.now_ms(), "name": self.cfg["name"], "spotify": spotify,
                     "pin_chosen": bool(self.cfg.get("pin_chosen")),
-                    "party": self.party.admin(), "guest": self.guest_url(), "jam": self.cfg.get("jam", ""),
+                    "party": self.party.admin(), "guest": self.guest_url(), "jam": self.jam, "jam_note": self.jam_note,
                     "notice": self.notice, "brk": brk, "wifi": self.cfg["wifi"], "screens": screens,
                     "urls": [f"http://{a}:{self.port}/" for a in lan_addresses()]}
 
     def admin(self, action, body):
         b = body if isinstance(body, dict) else {}
         self.admin_seen = time.time()
+        # A new Jam link is tried first (a network call, so outside the lock).
+        if action == "jam":
+            jam = str(b.get("jam", "")).strip()
+            if jam and is_spotify_link(jam) and jam_valid(jam) is False:
+                return 400, {"error": "Die Jam-link werkt niet (meer). Start een nieuwe Jam in Spotify en kopieer de nieuwe link."}
         # The account's music: network calls, so outside the lock.
         try:
             if action == "spotify-login":
@@ -399,6 +442,7 @@ class Hub:
             if action == "spotify-use":
                 with self.lock:
                     self.spotify.use(str(b.get("key", "")))
+                self._jam_check()
                 self.spotify.refresh(with_queue=True)
                 return 200, {}
             if action == "playlists":
@@ -493,8 +537,8 @@ class Hub:
                 jam = str(b.get("jam", "")).strip()
                 if jam and not is_spotify_link(jam):
                     return 400, {"error": "Dat is geen Spotify-link. Kopieer de uitnodiging van je Jam (https://spotify.link/…)."}
-                self.cfg["jam"] = jam
-                self._save()
+                act = self.spotify.active()
+                self.jam, self.jam_acct, self.jam_note = jam, act["key"] if act else None, ""
                 return 200, {"jam": jam}
             if action == "notice":
                 text = str(b.get("text", "")).strip()[:280]
