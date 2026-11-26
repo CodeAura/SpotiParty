@@ -22,11 +22,33 @@ flowchart LR
 
 | Waar | Hoe |
 | --- | --- |
-| **Desktop-app** (Windows, of `desktop/spotiparty_app.py`) | Start vanzelf. Het venster toont het adres en de **PIN**, en heeft een knop **Dashboard**. Er draait één Hub per netwerk: een tweede pc wordt een scherm van de eerste. |
+| **Desktop-app** (Windows, Mac, of `desktop/spotiparty_app.py`) | Start vanzelf. Klik op **Dashboard** in het venster: de eerste keer kies je daar je PIN. Daarna toont het venster het adres en de **PIN**. Er draait één Hub per netwerk: een tweede pc wordt een scherm van de eerste. |
 | **Raspberry Pi** | `sudo ./pi/install.sh` zet hem als dienst neer. Zie [Raspberry Pi](../raspberry-pi/README.md). |
-| **Python** | `python3 hub/spotiparty_hub.py` (adres en PIN staan in de terminal). |
+| **Python** | `python3 hub/spotiparty_hub.py`: het adres staat in de terminal; de eerste keer kies je de PIN op `http://127.0.0.1:8770` op die computer. |
 
 Open daarna het dashboard op `http://<adres-van-die-computer>:8770`, ook op je telefoon, en vul de PIN in.
+
+### De eerste keer: kies je PIN
+
+* **Een nieuwe Hub** heeft nog geen PIN. Open je het dashboard, dan krijg je **Welkom bij je Hub**: kies een PIN van 4 tot 12 cijfers en vul hem nog een keer in. Makkelijk te raden PIN's zoals `0000` of `1234` gaan niet.
+* **Desktop-app:** dat kan alleen op de computer waar SpotiParty draait (via **Dashboard** in het venster). Opent iemand het dashboard eerst op een telefoon, dan staat daar dat de PIN op die computer gekozen moet worden. Zo kan niemand anders op je wifi je voor zijn met een eigen PIN.
+* **Raspberry Pi en server:** die hebben geen eigen scherm, dus daar kies je de PIN vanaf elk apparaat in je netwerk. Doe dat meteen na het installeren.
+* **Een oudere Hub** met een PIN die hij zelf bedacht (de desktop-app of een Raspberry Pi van vóór 3.6.0): na het inloggen vraagt het dashboard één keer om een eigen PIN. Kies er een (twee keer invullen) of klik op **Huidige PIN houden**.
+* **Later wijzigen** doe je bij **Hub**: vul de nieuwe PIN twee keer in en klik op **Opslaan**.
+
+## Hoe het dashboard is ingedeeld
+
+Bovenaan staan de **Schermen**, daaronder **Aan de slag** zolang er nog iets te doen is. Op een PC staan daarna
+**Muziek bedienen**, **Spotify Jam** en **Melding op het scherm** naast elkaar, en daaronder **Feest** (twee kolommen breed)
+met rechts **Korte pauze**, **Gasten-wifi** en **Hub**. Op een tablet zijn het twee kolommen, op een telefoon één.
+
+## De eerste keer: uitleg en "Aan de slag"
+
+* **Rondleiding:** de eerste keer dat je het dashboard opent, loopt een korte uitleg langs alle onderdelen. Het onderdeel waar het over gaat licht op, de rest wordt donker. Klik op **Volgende** (of gebruik de pijltjestoetsen), of op **Tutorial overslaan** om meteen te beginnen. Terugzien kan altijd met **Uitleg** rechtsboven.
+* **Aan de slag:** bovenaan staat wat er nog moet gebeuren voor een werkend feest: Spotify koppelen, een scherm verbinden, de Jam-link en iets voor je gasten aanzetten. Met de knop bij een stap ga je meteen naar de goede plek. Is alles klaar, of klik je op **Verbergen**, dan verdwijnt de lijst.
+* **Snel naar een onderdeel:** met de links in de kop (Schermen, Muziek, Jam, Melding, Feest, Pauze, Wifi, Hub).
+
+Of je de uitleg al hebt gezien, onthoudt elke browser zelf: op je telefoon zie je hem dus ook één keer.
 
 {% hint style="warning" %}
 **Windows** vraagt de eerste keer of SpotiParty op het netwerk mag. Kies **Privénetwerken**, anders kunnen de tv en je telefoon de Hub niet bereiken.

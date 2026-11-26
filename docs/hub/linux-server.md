@@ -19,6 +19,10 @@ feestscherm zelf komen dan allemaal van die server.
 De Hub hoort in je eigen netwerk. Zet poort 8770 **niet** open in je router en draai hem niet op een server op internet.
 {% endhint %}
 
+{% hint style="info" %}
+**Proxmox?** Daar maakt één commando een container met de Hub erin: zie [Hub op Proxmox](proxmox.md).
+{% endhint %}
+
 ## Met het installatiescript (systemd)
 
 Werkt op elke Linux met systemd en Python 3.8 of nieuwer: Debian, Ubuntu, Raspberry Pi OS Lite, Fedora, Arch.

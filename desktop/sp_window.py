@@ -262,19 +262,26 @@ class Window:
         if ctx.hub:
             tk.Label(box, text=f"HUB OP {ctx.this.upper()}", fg=DIM, bg=CARD, font=f(8, "bold")).pack(anchor="w")
             url = ctx.hub.admin_state()["urls"][0]
-            for label, value, big in (("Dashboard", url, False), ("PIN", ctx.hub.cfg.get("pin", ""), True)):
+            self.pin_value = None
+            for label, value, big in (("Dashboard", url, False), ("PIN", None, True)):
                 row = tk.Frame(box, bg=CARD)
                 row.pack(fill="x", pady=(10, 0))
                 tk.Label(row, text=label, fg=MUTED, bg=CARD, font=f(10), width=10, anchor="w").pack(side="left")
-                tk.Label(row, text=value, fg=TEXT, bg=CARD, font=(ctx.mono, 15 if big else 11, "bold" if big else ""),
-                         anchor="w").pack(side="left")
-                link(row, "Kopieer", lambda v=value, n=label: self._copy(v, n), f(9, "bold"), fg=MINT,
-                     bg=CARD).pack(side="right")
+                val = tk.Label(row, text=value or "", fg=TEXT, bg=CARD,
+                               font=(ctx.mono, 15 if big else 11, "bold" if big else ""), anchor="w")
+                val.pack(side="left")
+                copy = (lambda v=value, n=label: self._copy(v, n)) if value else \
+                    (lambda: self._copy(ctx.hub.cfg.get("pin", ""), "PIN") if ctx.hub.cfg.get("pin") else None)
+                link(row, "Kopieer", copy, f(9, "bold"), fg=MINT, bg=CARD).pack(side="right")
+                if big:
+                    self.pin_value = val
+            self.pin_hint = tk.Label(box, text="", fg=MINT, bg=CARD, font=f(9), wraplength=WIDTH - 40, justify="left")
             row = tk.Frame(box, bg=CARD)
             row.pack(fill="x", pady=(10, 0))
             tk.Label(row, text="Schermen", fg=MUTED, bg=CARD, font=f(10), width=10, anchor="w").pack(side="left")
             self.screens = tk.Label(row, text="", fg=TEXT, bg=CARD, font=f(10, "bold"), anchor="w")
             self.screens.pack(side="left")
+            self.pin_hint.pack(anchor="w", pady=(6, 0))
             tk.Label(box, text="Open het dashboard ook op je telefoon: zelfde adres, zelfde PIN.", fg=DIM, bg=CARD,
                      font=f(9), wraplength=WIDTH - 40, justify="left").pack(anchor="w", pady=(10, 0))
         elif ctx.hub_busy is not None:
@@ -308,6 +315,10 @@ class Window:
                        bool(p.get("playing")))
         else:
             self._show("Er speelt nu niets", "Zet muziek aan in Spotify", "", None, 0, 0, False)
+        pin = hub.cfg.get("pin", "")
+        self.pin_value.config(text=pin or "nog niet gekozen", fg=TEXT if pin else MUTED,
+                              font=(self.ctx.mono, 15, "bold") if pin else self.ctx.font(10, "italic"))
+        self.pin_hint.config(text="" if pin else "Klik op Dashboard en kies daar je PIN.")
         online = sum(1 for s in list(hub.screens.values()) if time.time() - s["seen"] < ONLINE_S)
         self.screens.config(text=f"{online} online" if online else "nog geen")
         self.root.after(500, self._tick)

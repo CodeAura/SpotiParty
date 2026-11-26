@@ -146,7 +146,7 @@ def main():
     ap.add_argument("--data", type=pathlib.Path, default=pathlib.Path("/tmp/spotiparty-demo"))
     a = ap.parse_args()
     a.data.mkdir(parents=True, exist_ok=True)
-    (a.data / "hub.json").write_text('{"pin": "1234", "name": "Woonkamer-pc"}', "utf-8")
+    (a.data / "hub.json").write_text('{"pin": "1234", "pin_chosen": true, "name": "Woonkamer-pc"}', "utf-8")
     H.sp_spotify.Spotify = FakeSpotify
     hub = H.Hub(a.data, ROOT / "web", a.port).start()
     scene_file = a.data / "scene"

@@ -76,7 +76,7 @@ python3 desktop/spotiparty_app.py
 Daarvoor heb je **Tkinter** nodig. Voor het icoon in de menubalk (Mac) of de taakbalk (Windows) installeer je ook `pyobjc-framework-Cocoa` (Mac) of `pystray pillow` (Windows) met `pip`; zonder werkt alles behalve dat icoon. Op Windows en macOS zit dat bij Python van python.org. Op Linux installeer je het apart, bijvoorbeeld met `sudo apt install python3-tk` op Debian en Ubuntu. Op Linux zoekt de app naar Chrome, Chromium, Edge of Brave voor het eigen venster; je instellingen komen in `~/.local/share/SpotiParty`.
 
 {% hint style="info" %}
-**Alleen de Hub?** Start `python3 hub/spotiparty_hub.py`. Het adres en de PIN van het dashboard staan dan in de terminal. Met `--port` kies je een andere poort dan 8770; de Redirect URI voor Spotify verandert dan mee (het dashboard toont de juiste).
+**Alleen de Hub?** Start `python3 hub/spotiparty_hub.py`. Het adres van het dashboard staat dan in de terminal; de eerste keer kies je de PIN op `http://127.0.0.1:8770` op die computer. Met `--port` kies je een andere poort dan 8770; de Redirect URI voor Spotify verandert dan mee (het dashboard toont de juiste).
 
 De schermen bewaren hun eigen instellingen (Hub-adres, naam) per browser. Spotify en de Jam-link staan in de Hub, dus die stel je maar één keer in.
 {% endhint %}

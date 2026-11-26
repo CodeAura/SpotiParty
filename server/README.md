@@ -9,6 +9,12 @@ De Hub zonder scherm, op een server die altijd aan staat. Dashboard: `http://<se
 sudo ./server/install.sh            # installeren; werkt zich elke nacht bij (--no-auto-update, --port, --firewall, --uninstall)
 ```
 
+**Proxmox VE** (in de shell van de host; maakt een Debian-container met de Hub erin):
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/CodeAura/SpotiParty/main/server/proxmox.sh)"
+```
+
 **Docker (Linux):**
 
 ```bash

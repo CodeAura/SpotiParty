@@ -84,7 +84,7 @@ Wants=network-online.target
 
 [Service]
 User=$USER_NAME
-ExecStart=/usr/bin/python3 $DEST/hub/spotiparty_hub.py --data /var/lib/spotiparty --web $DEST/web
+ExecStart=/usr/bin/python3 $DEST/hub/spotiparty_hub.py --data /var/lib/spotiparty --web $DEST/web --setup-remote
 Restart=always
 RestartSec=3
 
@@ -120,7 +120,11 @@ if [ "$HUB" = 1 ]; then
   sleep 2
   IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
   PIN="$(python3 -c 'import json;print(json.load(open("/var/lib/spotiparty/hub.json"))["pin"])' 2>/dev/null || echo '?')"
-  echo "   Dashboard: http://${IP:-<ip-van-de-pi>}:8770   PIN: $PIN"
+  if [ -n "$PIN" ] && [ "$PIN" != "?" ]; then
+    echo "   Dashboard: http://${IP:-<ip-van-de-pi>}:8770   PIN: $PIN"
+  else
+    echo "   Dashboard: http://${IP:-<ip-van-de-pi>}:8770   (kies daar de eerste keer je PIN)"
+  fi
 fi
 if [ "$SCREEN" = 1 ]; then
   echo "   Herstart de Pi (sudo reboot): daarna opent SpotiParty vanzelf. Toets S voor de instellingen."

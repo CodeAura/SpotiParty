@@ -130,8 +130,9 @@ koppel je één keer je Spotify-account en je Jam-link, en alle schermen in huis
 ## 🚀 Snel aan de slag
 
 1. **Installeer de Hub.** Het makkelijkst met de Windows- of Mac-app (zie [Webapp op de PC](#-webapp-op-de-pc)) of op een
-   [Raspberry Pi](#-raspberry-pi). Het venster toont het adres van het dashboard en de **PIN**.
-2. **Open het dashboard** op `http://<adres-van-die-pc>:8770`, ook op je telefoon, en vul de PIN in.
+   [Raspberry Pi](#-raspberry-pi).
+2. **Kies je PIN.** Klik in het SpotiParty-venster op **Dashboard**: de eerste keer kies je daar een PIN en vul je
+   hem nog een keer in. Daarna open je het dashboard ook op je telefoon, op `http://<adres-van-die-pc>:8770`.
 3. **Koppel Spotify** bij **🎵 Muziek bedienen** (zie [Spotify koppelen aan de Hub](#-spotify-koppelen-aan-de-hub)).
 4. **Plak je Jam-link** bij **🎶 Spotify Jam** en kies **Op alle schermen**.
 5. **Zet er schermen bij:** een [tv](#-installeren-op-de-tv), een [Home Assistant-kaart](#-home-assistant) of een tweede
@@ -141,12 +142,20 @@ koppel je één keer je Spotify-account en je Jam-link, en alle schermen in huis
 
 ## 🎛️ De SpotiParty Hub
 
-De desktop-app en de Raspberry Pi starten de Hub vanzelf. Open daarna `http://<adres-van-die-computer>:8770` en vul de
-PIN in. Er draait één Hub per netwerk: start je de app op een tweede pc, dan wordt die een scherm van de eerste Hub.
+De desktop-app en de Raspberry Pi starten de Hub vanzelf. Open daarna `http://<adres-van-die-computer>:8770`. De eerste
+keer kies je daar een PIN (twee keer invullen); bij de desktop-app doe je dat op de computer zelf, via **Dashboard** in
+het SpotiParty-venster. Er draait één Hub per netwerk: start je de app op een tweede pc, dan wordt die een scherm van de eerste Hub.
 
 **Op een server die altijd aan staat?** De Hub draait ook zonder scherm op Linux, met systemd of Docker:
 `sudo ./server/install.sh` of `cd server && docker compose up -d --build`. Het feestscherm staat dan op
 `http://<server>:8770/scherm/`, voor elke browser of smart-tv. Zie [Hub op een Linux-server](docs/hub/linux-server.md).
+
+**Proxmox?** Plak dit in de shell van je Proxmox-host: het maakt een container met de Hub erin. Zie
+[Hub op Proxmox](docs/hub/proxmox.md).
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/CodeAura/SpotiParty/main/server/proxmox.sh)"
+```
 
 <img src="docs/images/hub-dashboard.png" alt="Het Hub-dashboard: vier schermen online, Muziek bedienen met de account-wisselaar (Mike en Sanne), en de Spotify Jam met QR-code" width="860">
 
@@ -563,7 +572,7 @@ Meer oplossingen in [docs/hulp](docs/hulp/problemen-oplossen.md).
 
 | Map | Wat erin zit |
 |---|---|
-| `server/` | De Hub op een Linux-server: `install.sh` (systemd), `Dockerfile` en `docker-compose.yml` |
+| `server/` | De Hub op een Linux-server: `install.sh` (systemd), `proxmox.sh` (een container op Proxmox), `Dockerfile` en `docker-compose.yml` |
 | `web/` | Het feestscherm (HTML/JS), plus `serve.py` |
 | `hub/` | De Hub: `spotiparty_hub.py`, het dashboard, de gastenpagina, Spotify en de feestspellen |
 | `desktop/` | De desktop-app, de auto-updater, de Windows-installer en de Mac-buildscript |

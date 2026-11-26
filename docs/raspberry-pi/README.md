@@ -21,7 +21,7 @@ sudo ./pi/install.sh
 sudo reboot
 ```
 
-Na de herstart opent SpotiParty vanzelf. Het script toont het adres en de PIN van het dashboard.
+Na de herstart opent SpotiParty vanzelf. Het script toont het adres van het dashboard: open het en kies daar de eerste keer je PIN.
 
 | Wat je wilt | Commando |
 | --- | --- |
@@ -33,7 +33,7 @@ Na de herstart opent SpotiParty vanzelf. Het script toont het adres en de PIN va
 
 ## Instellen
 
-Is de Pi de Hub, open dan het dashboard op `http://<adres-van-de-pi>:8770` (het adres en de PIN toont het script) en koppel daar je Spotify-account en je Jam-link, zie [Hub en admin-dashboard](../hub/hub-dashboard.md).
+Is de Pi de Hub, open dan het dashboard op `http://<adres-van-de-pi>:8770` (het adres toont het script; de eerste keer kies je daar je PIN) en koppel daar je Spotify-account en je Jam-link, zie [Hub en admin-dashboard](../hub/hub-dashboard.md).
 
 {% hint style="info" %}
 Spotify inloggen gaat via `http://127.0.0.1:8770/spotify/callback`. Log je in vanaf je telefoon of een andere computer, dan opent dat adres daarna niet: kopieer het hele adres uit de adresbalk en plak het in het dashboard. Zie [Je eigen Spotify-app maken](../aan-de-slag/spotify-app.md).

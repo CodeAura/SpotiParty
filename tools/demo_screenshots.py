@@ -3,9 +3,14 @@
     python3 tools/demo_hub.py &            # the Hub with made-up music, on :8770
     python3 tools/demo_screenshots.py      # needs Playwright: pip install playwright && playwright install chromium
 
+Your own SpotiParty on 8770? Run the demo elsewhere:
+    python3 tools/demo_hub.py --port 8790 --data /tmp/spotiparty-demo2 &
+    SPOTIPARTY_DEMO_PORT=8790 SPOTIPARTY_DEMO_DATA=/tmp/spotiparty-demo2 python3 tools/demo_screenshots.py
+
 Writes docs/images/*.png, docs/.gitbook/assets/*.jpg and site/public/assets/*.jpg + .webp.
 """
 import io
+import os
 import pathlib
 import time
 
@@ -14,9 +19,10 @@ from playwright.sync_api import sync_playwright
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DOCS, SITE, GITBOOK = ROOT / "docs/images", ROOT / "site/public/assets", ROOT / "docs/.gitbook/assets"
-HUB = "http://localhost:8770"
-SCREEN = f"{HUB}/scherm/?hub=localhost:8770&name=Woonkamer-pc&splash=0&kiosk=1"
-SCENE = pathlib.Path("/tmp/spotiparty-demo/scene")
+PORT = int(os.environ.get("SPOTIPARTY_DEMO_PORT", "8770"))   # another port when your own SpotiParty runs on 8770
+HUB = f"http://localhost:{PORT}"
+SCREEN = f"{HUB}/scherm/?hub=localhost:{PORT}&name=Woonkamer-pc&splash=0&kiosk=1"
+SCENE = pathlib.Path(os.environ.get("SPOTIPARTY_DEMO_DATA", "/tmp/spotiparty-demo")) / "scene"
 MINT, NIGHT = (161, 204, 165), (17, 29, 19)
 LYRICS = ("S[00:41.00]De zon zakt weg achter de daken\n[00:48.50]We hebben nergens meer haast\n"
           "[00:55.00]Dit is onze zomeravond\n[01:08.00]Zet hem harder, nog één keer\n"
@@ -24,6 +30,7 @@ LYRICS = ("S[00:41.00]De zon zakt weg achter de daken\n[00:48.50]We hebben nerge
 SEED = f"""
 localStorage.setItem("party.lyr.de voorbeelden\\nzomeravond", {LYRICS!r});
 localStorage.setItem("hub.pin", "1234");
+localStorage.setItem("hub.tour", "done");
 localStorage.setItem("gast.voter", "g-demo-sanne-0001");
 localStorage.setItem("gast.name", "Sanne");
 """

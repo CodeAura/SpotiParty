@@ -90,9 +90,15 @@ def wifi_qr(w) -> str:
 
 class Hub:
     def __init__(self, data_dir: pathlib.Path, web_dir: pathlib.Path, port: int = PORT, static_dir=HERE,
-                 setup_pin: bool = False):
-        # setup_pin (a server): on the very first start there is no PIN yet; the dashboard asks you to choose one.
+                 setup_pin: bool = False, setup_remote: bool = False):
+        # On the very first start there is no PIN yet: the dashboard asks you to choose one (and type it twice).
+        # setup_pin (a server, a Raspberry Pi): any device on the network may choose it, as there is no screen on
+        # the Hub itself. Otherwise (the desktop app) only this computer may: someone else on the Wi-Fi can't get in
+        # first with a PIN of their own.
+        # setup_remote (a Raspberry Pi): the first PIN from any device too, but an older Pi made up its PIN itself, so
+        # that one still counts as not chosen (the dashboard asks once for your own).
         self.setup_pin = setup_pin
+        self.setup_remote = setup_remote
         self.data_dir = pathlib.Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.web_dir = pathlib.Path(web_dir)
@@ -122,9 +128,13 @@ class Hub:
             cfg = json.loads(self.file.read_text("utf-8"))
         except (OSError, ValueError):
             cfg = {}
-        if "pin" not in cfg and self.setup_pin:
+        if "pin" not in cfg:
             cfg["pin"] = ""            # no PIN until you choose one in the dashboard (POST /api/setup)
-        cfg.setdefault("pin", f"{secrets.randbelow(10 ** 6):06d}")
+            cfg["pin_chosen"] = True   # ... and then it is your own
+        # Older Hubs made up a PIN themselves: pin_chosen is missing, so the dashboard asks once for a PIN of your own.
+        # A server (setup_pin) never did: since 2.9.0 you chose its first PIN in the dashboard, so that one is yours.
+        if self.setup_pin and cfg.get("pin") and "pin_chosen" not in cfg:
+            cfg["pin_chosen"] = True
         cfg.setdefault("name", platform.node().split(".")[0] or "SpotiParty")
         cfg.setdefault("jam", "")
         cfg.setdefault("wifi", {"ssid": "", "password": "", "security": "WPA", "hidden": False, "show": False})
@@ -359,6 +369,7 @@ class Hub:
             spotify = {"linked": sp.linked(), "client": self.cfg.get("sp_client", ""), "redirect": sp.redirect,
                        "player": sp.player, "error": sp.player_err, "accounts": sp.accounts()}
             return {"now": self.now_ms(), "name": self.cfg["name"], "spotify": spotify,
+                    "pin_chosen": bool(self.cfg.get("pin_chosen")),
                     "party": self.party.admin(), "guest": self.guest_url(), "jam": self.cfg.get("jam", ""),
                     "notice": self.notice, "brk": brk, "wifi": self.cfg["wifi"], "screens": screens,
                     "urls": [f"http://{a}:{self.port}/" for a in lan_addresses()]}
@@ -411,9 +422,15 @@ class Hub:
         with self.lock:
             if action == "pin":
                 pin = str(b.get("pin", ""))
-                if not (pin.isdigit() and 4 <= len(pin) <= 12):
-                    return 400, {"error": "Een PIN is 4 tot 12 cijfers."}
+                problem = self.pin_problem(pin)
+                if problem:
+                    return 400, {"error": problem}
                 self.cfg["pin"] = pin
+                self.cfg["pin_chosen"] = True
+                self._save()
+                return 200, {}
+            if action == "pin-keep":   # "Huidige PIN houden": don't ask again
+                self.cfg["pin_chosen"] = True
                 self._save()
                 return 200, {}
             if action == "name":
@@ -541,17 +558,32 @@ class Hub:
         """First start of a server: no PIN chosen yet."""
         return not self.cfg.get("pin")
 
-    def setup(self, pin):
-        """Choose the first PIN. Only while there is none: after that it changes in the dashboard, with the PIN."""
-        pin = str(pin or "")
+    @staticmethod
+    def pin_problem(pin):
+        """Why a PIN can't be used, or "" when it can."""
         if not (pin.isdigit() and 4 <= len(pin) <= 12):
-            return 400, {"error": "Een PIN is 4 tot 12 cijfers."}
+            return "Een PIN is 4 tot 12 cijfers."
         if len(set(pin)) == 1 or pin in "01234567890123456789" or pin in "98765432109876543210":
-            return 400, {"error": "Kies een PIN die niet makkelijk te raden is (niet 0000 of 1234)."}
+            return "Kies een PIN die niet makkelijk te raden is (niet 0000 of 1234)."
+        return ""
+
+    def setup_allowed(self, ip):
+        return self.setup_pin or self.setup_remote or ip in ("127.0.0.1", "::1") or ip.startswith("127.") or ip == "::ffff:127.0.0.1"
+
+    def setup(self, pin, ip="127.0.0.1"):
+        """Choose the first PIN. Only while there is none: after that it changes in the dashboard, with the PIN."""
+        if not self.setup_allowed(ip):
+            return 403, {"error": "Kies de PIN op de computer waar SpotiParty draait: klik daar op Dashboard in het "
+                                  "SpotiParty-venster. Daarna kun je hier inloggen."}
+        pin = str(pin or "")
+        problem = self.pin_problem(pin)
+        if problem:
+            return 400, {"error": problem}
         with self.lock:
             if not self.needs_pin():
                 return 409, {"error": "Er is al een PIN. Log in met die PIN."}
             self.cfg["pin"] = pin
+            self.cfg["pin_chosen"] = True
             self._save()
         return 200, {}
 
@@ -696,7 +728,8 @@ class HubHandler(http.server.BaseHTTPRequestHandler):
         if url.path == "/api/ping":
             return self._send(200, {"hub": self.hub.cfg["name"], "port": self.hub.port}, cors=True)
         if url.path == "/api/setup":
-            return self._send(200, {"needed": self.hub.needs_pin(), "hub": self.hub.cfg["name"]})
+            return self._send(200, {"needed": self.hub.needs_pin(), "hub": self.hub.cfg["name"],
+                                    "here": self.hub.setup_allowed(self.client_address[0])})
         if url.path == "/api/admin/state":
             if self.hub.needs_pin():
                 return self._send(401, {"error": "Kies eerst een PIN.", "setup": True})
@@ -737,7 +770,7 @@ class HubHandler(http.server.BaseHTTPRequestHandler):
                 body = json.loads(self.rfile.read(min(int(self.headers.get("Content-Length", 0)), 1024)) or b"{}")
             except (ValueError, OSError):
                 return self._send(400, {"error": "json"})
-            return self._send(*self.hub.setup(body.get("pin")))
+            return self._send(*self.hub.setup(body.get("pin"), self.client_address[0]))
         if self.hub.needs_pin():
             return self._send(401, {"error": "Kies eerst een PIN.", "setup": True})
         if not self.hub.pin_ok(self.headers.get("X-SpotiParty-Pin", ""), self.client_address[0]):
@@ -759,14 +792,18 @@ def main():
     ap.add_argument("--port", type=int, default=PORT)
     ap.add_argument("--data", type=pathlib.Path, default=default_data_dir())
     ap.add_argument("--web", type=pathlib.Path, default=HERE.parent / "web")
+    ap.add_argument("--setup-remote", action="store_true",
+                    help="the first PIN may be chosen from any device on the network (a Raspberry Pi); a PIN the Hub "
+                         "made up earlier is still offered to be replaced")
     ap.add_argument("--setup-pin", action="store_true",
-                    help="first start without a PIN: choose it in the dashboard (for a server)")
+                    help="the first PIN may be chosen from any device on the network (a server, a Raspberry Pi); without it only on this computer")
     a = ap.parse_args()
-    hub = Hub(a.data, a.web, a.port, setup_pin=a.setup_pin).start()
+    hub = Hub(a.data, a.web, a.port, setup_pin=a.setup_pin, setup_remote=a.setup_remote).start()
     for u in hub.admin_state()["urls"]:
         print(f"SpotiParty Hub: {u}")
     if hub.needs_pin():
-        print("Nog geen PIN: open het dashboard hierboven en kies er een.   (Ctrl+C stopt)")
+        where = "hierboven" if hub.setup_pin or hub.setup_remote else f"op deze computer (http://127.0.0.1:{hub.port}/)"
+        print(f"Nog geen PIN: open het dashboard {where} en kies er een.   (Ctrl+C stopt)")
     else:
         print(f"Dashboard-PIN: {hub.cfg['pin']}   (Ctrl+C stopt)")
     try:

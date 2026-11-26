@@ -19,6 +19,7 @@
   /* Schermen over the full width. On a PC: Muziek, Jam and Melding side by side, then Feest (two columns wide) next to
      Pauze, Wifi and Hub. Two columns on a tablet, one on a phone. */
   main { max-width: 1440px; margin: 0 auto; padding: 16px; }
+  section.wide { margin-bottom: 16px; }
   .cards { display: grid; gap: 16px; align-items: start; grid-template-columns: minmax(0, 1fr); }
   .side { display: contents; }   /* on a PC: one column of its own (see below) */
   @media (min-width: 760px) {
@@ -36,7 +37,6 @@
     .side { display: flex; flex-direction: column; gap: 16px; grid-area: side; }
   }
   section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; min-width: 0; }
-  section.wide { margin-bottom: 16px; }
   h2 { font-size: 16px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
   h2 small { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: auto; }
   p { color: var(--muted); margin: 6px 0; font-size: 14px; }
@@ -64,7 +64,9 @@
   .accts .av { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; flex: none;
     background: #2f4232; font-weight: 700; font-size: 13px; }
   .accts .av img { width: 100%; height: 100%; object-fit: cover; }
-  .accts .live { display: inline-flex; color: var(--accent); }
+  /* "Speelt nu" next to the account that plays (its own class: .live is the bordered box of a running game) */
+  .accts .playing { display: inline-flex; align-items: center; color: var(--accent); line-height: 0; }
+  .accts .playing .ic { width: 16px; height: 16px; vertical-align: 0; }
   .accts button.add { padding: 5px 14px; color: var(--muted); background: none; border-style: dashed; }
   /* Party games */
   .gm { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line); }
@@ -123,22 +125,87 @@
   .screen .err { font-size: 12px; color: var(--err); }
   #guest-qr { width: 140px; height: 140px; background: #fff; border-radius: 10px; padding: 6px; display: block; }
   #q-top li { padding: 2px 0; } #q-top li b { float: right; }
+  /* Header: quick links to the cards, and Uitleg (the tour) */
+  header nav { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin-left: auto; }
+  header nav::-webkit-scrollbar { display: none; }
+  header nav a { color: var(--muted); text-decoration: none; font-size: 13px; padding: 6px 10px; border-radius: 99px;
+    white-space: nowrap; }
+  header nav a:hover { color: #fff; background: #ffffff10; }
+  header .help { flex: 0 0 auto !important; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px;
+    border-radius: 99px; background: #ffffff10; font-size: 13px; }
+  header .help:hover { background: #ffffff1c; }
+  @media (max-width: 899px) {
+    header { flex-wrap: wrap; row-gap: 6px; }
+    header nav { order: 3; width: 100%; margin: 0 -6px; }
+  }
+  section[id] { scroll-margin-top: 120px; }
+
+  /* Aan de slag: what still needs doing, with a button to each card */
+  #start { background: linear-gradient(135deg, #a1cca51f, transparent 60%), var(--card); }
+  #start .steps { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-top: 10px; }
+  #start .step { display: flex; gap: 10px; align-items: flex-start; padding: 12px; border-radius: 12px;
+    border: 1px solid var(--line); background: #0000001a; }
+  #start .step .ic { width: 22px; height: 22px; margin-top: 1px; color: var(--muted); }
+  #start .step.done .ic { color: var(--accent); }
+  #start .step b { display: block; font-size: 14px; }
+  #start .step.done b { color: var(--muted); text-decoration: line-through; text-decoration-color: #ffffff40; }
+  #start .step span { display: block; font-size: 13px; color: var(--muted); margin-top: 2px; }
+  #start .step button { margin-top: 8px; padding: 6px 10px; font-size: 13px; }
+  #start .bar { height: 6px; border-radius: 99px; background: #ffffff14; overflow: hidden; margin-top: 4px; }
+  #start .bar div { height: 100%; background: var(--accent); border-radius: 99px; transition: width .4s; }
+  #start .x { margin-left: auto; background: none; color: var(--muted); padding: 4px 8px; font-size: 13px; }
+
+  /* The tour: the card it explains lights up, the rest goes dark; a card with the explanation next to it */
+  #tour { position: fixed; inset: 0; z-index: 20; display: none; }
+  #tour.open { display: block; }
+  #tour .hole { position: absolute; border-radius: 18px; box-shadow: 0 0 0 9999px #000000b8, 0 0 0 3px var(--accent);
+    transition: all .35s cubic-bezier(.2, .8, .2, 1); pointer-events: none; }
+  #tour.center .hole { box-shadow: 0 0 0 9999px #000000b8; }   /* no card to show: just the dark backdrop */
+  #tour .tip { position: absolute; width: min(380px, calc(100vw - 24px)); background: #162418; border: 1px solid #a1cca555;
+    border-radius: 16px; padding: 18px 18px 14px; box-shadow: 0 20px 60px #000c; transition: top .35s, left .35s; }
+  #tour .tip h3 { margin: 0 0 6px; font-size: 18px; display: flex; gap: 8px; align-items: center; }
+  #tour .tip p { color: #d7e3d8; font-size: 14px; margin: 0; }
+  #tour .tip ul { margin: 8px 0 0; padding-left: 18px; color: #d7e3d8; font-size: 14px; }
+  #tour .tip li { margin: 3px 0; }
+  #tour .foot { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
+  #tour .dots { display: flex; gap: 5px; margin-right: auto; }
+  #tour .dots i { width: 7px; height: 7px; border-radius: 50%; background: #ffffff30; }
+  #tour .dots i.on { background: var(--accent); width: 18px; border-radius: 99px; }
+  #tour .skip { background: none; color: var(--muted); padding: 8px 4px; text-decoration: underline; }
+  #tour .skip:hover { color: #fff; }
+  @media (max-width: 599px) {   /* a phone: the explanation sits at the bottom of the screen */
+    #tour .tip { left: 12px !important; right: 12px; bottom: 12px; top: auto !important; width: auto; }
+    #tour .dots { display: none; }
+    #tour .skip { margin-right: auto; }
+    #hubname { display: none; }
+  }
   #jam-qr { width: 140px; height: 140px; background: #fff; border-radius: 10px; padding: 6px; display: block; }
 </style>
 </head>
 <body>
 <header>
   <h1><i data-icon="sliders-horizontal"></i>SpotiParty Hub <span id="hubname" style="color:var(--muted);font-weight:400"></span></h1>
+  <nav aria-label="Naar een onderdeel">
+    <a href="#s-screens">Schermen</a><a href="#s-music">Muziek</a><a href="#s-jam">Jam</a><a href="#s-notice">Melding</a>
+    <a href="#s-party">Feest</a><a href="#s-break">Pauze</a><a href="#s-wifi">Wifi</a><a href="#s-hub">Hub</a>
+  </nav>
+  <button class="help" id="tour-open" title="Laat zien hoe alles werkt"><i data-icon="circle-help"></i>Uitleg</button>
 </header>
 
 <main>
-  <section class="wide">
+  <section class="wide" id="s-screens">
     <h2><i data-icon="monitor"></i>Schermen <small id="count"></small></h2>
     <div id="screens"><p class="empty">Nog geen schermen. Open SpotiParty op je tv, PC of Raspberry Pi: ze melden zich hier vanzelf.</p></div>
   </section>
 
-  <div class="cards">
+  <section class="wide" id="start" hidden>
+    <h2><i data-icon="rocket"></i>Aan de slag <small id="start-count"></small>
+      <button class="x" id="start-hide" title="Verbergen">Verbergen</button></h2>
+    <div class="bar"><div id="start-bar" style="width:0"></div></div>
+    <div class="steps" id="start-steps"></div>
+  </section>
 
+  <div class="cards">
   <section id="s-music">
     <h2><i data-icon="music"></i>Muziek bedienen <small id="m-acct"></small></h2>
     <div id="m-linked" hidden>
@@ -178,7 +245,6 @@
       <div class="msg" id="sp-msg"></div>
     </div>
   </section>
-
   <section id="s-jam">
     <h2><i data-icon="users"></i>Spotify Jam</h2>
     <div class="wifi">
@@ -193,7 +259,6 @@
     </div>
     <p>In Spotify: Jam starten, <b>Gasten mogen afspelen bedienen</b> uit, dan <b>Uitnodigen → Link kopiëren</b>.</p>
   </section>
-
   <section id="s-party">
     <h2><i data-icon="party-popper"></i>Feest <small id="p-live"></small></h2>
     <div class="party-body">
@@ -272,7 +337,6 @@
     <p>Gasten scannen de QR-code op het scherm (of hiernaast) om mee te doen. Ze moeten op hetzelfde netwerk zitten als
       de Hub.</p>
   </section>
-
   <section id="s-notice">
     <h2><i data-icon="message-square-text"></i>Melding op het scherm</h2>
     <div id="notice-live"></div>
@@ -292,7 +356,6 @@
     <div class="row"><button class="go" id="n-send">Op het scherm zetten</button></div>
     <div class="msg" id="n-msg"></div>
   </section>
-
   <div class="side">
   <section id="s-break">
     <h2><i data-icon="coffee"></i>Korte pauze</h2>
@@ -313,7 +376,6 @@
     <div class="row"><button class="go" id="b-start">Pauze starten</button></div>
     <div class="msg" id="b-msg"></div>
   </section>
-
   <section id="s-wifi">
     <h2><i data-icon="wifi"></i>Gasten-wifi</h2>
     <div class="wifi">
@@ -333,7 +395,6 @@
     </div>
     <p>Gebruik een apart <b>gastennetwerk</b>: iedereen die het scherm ziet, kan dit wachtwoord lezen.</p>
   </section>
-
   <section id="s-hub">
     <h2><i data-icon="settings"></i>Hub</h2>
     <p>Open dit dashboard op je telefoon:</p>
@@ -341,7 +402,9 @@
     <label for="h-name">Naam van deze hub</label>
     <input id="h-name" maxlength="40">
     <label for="h-pin">Nieuwe PIN (4–12 cijfers)</label>
-    <input id="h-pin" inputmode="numeric" maxlength="12" autocomplete="new-password">
+    <input id="h-pin" inputmode="numeric" maxlength="12" autocomplete="new-password" type="password">
+    <label for="h-pin2">Nieuwe PIN nog een keer</label>
+    <input id="h-pin2" inputmode="numeric" maxlength="12" autocomplete="new-password" type="password">
     <div class="row"><button id="h-save">Opslaan</button><button id="h-logout">Uitloggen</button></div>
     <div class="msg" id="h-msg"></div>
   </section>
@@ -354,12 +417,28 @@
     <h2><i data-icon="sliders-horizontal"></i>Welkom bij je Hub</h2>
     <p>Deze Hub is net geïnstalleerd. Kies een PIN (4 tot 12 cijfers): daarmee open je dit dashboard, ook op je
       telefoon. Alleen wie de PIN kent, kan de muziek en de schermen bedienen.</p>
+    <p id="setup-away" hidden><b>Kies de PIN op de computer waar SpotiParty draait:</b> klik daar op <b>Dashboard</b>
+      in het SpotiParty-venster. Zo kan niemand anders op je wifi je voor zijn. Daarna log je hier in met die PIN.</p>
+    <div id="setup-fields">
     <label for="new-pin">Nieuwe PIN</label>
     <input id="new-pin" inputmode="numeric" autocomplete="new-password" maxlength="12" type="password">
     <label for="new-pin2">Nog een keer</label>
     <input id="new-pin2" inputmode="numeric" autocomplete="new-password" maxlength="12" type="password">
     <div class="row"><button class="go" id="setup-go">PIN instellen</button></div>
+    </div>
+    <div class="row" id="setup-retry-row" style="display:none"><button id="setup-retry">Opnieuw proberen</button></div>
     <div class="msg" id="setup-msg"></div>
+  </form>
+  <form id="choose-form" onsubmit="return false" hidden>
+    <h2><i data-icon="sliders-horizontal"></i>Kies je eigen PIN</h2>
+    <p>Deze Hub heeft zelf een PIN bedacht. Kies er een die je makkelijk onthoudt (4 tot 12 cijfers): daarmee open je
+      dit dashboard, ook op je telefoon.</p>
+    <label for="ch-pin">Nieuwe PIN</label>
+    <input id="ch-pin" inputmode="numeric" autocomplete="new-password" maxlength="12" type="password">
+    <label for="ch-pin2">Nog een keer</label>
+    <input id="ch-pin2" inputmode="numeric" autocomplete="new-password" maxlength="12" type="password">
+    <div class="row"><button class="go" id="ch-go">PIN opslaan</button><button id="ch-keep">Huidige PIN houden</button></div>
+    <div class="msg" id="ch-msg"></div>
   </form>
   <form id="login-form" onsubmit="return false">
     <h2><i data-icon="sliders-horizontal"></i>SpotiParty Hub</h2>
@@ -368,6 +447,20 @@
     <div class="row"><button class="go" id="pin-go">Inloggen</button></div>
     <div class="msg" id="pin-msg"></div>
   </form>
+</div>
+
+<div id="tour" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+  <div class="hole" id="tour-hole"></div>
+  <div class="tip" id="tour-tip">
+    <h3 id="tour-title"></h3>
+    <div id="tour-text"></div>
+    <div class="foot">
+      <div class="dots" id="tour-dots"></div>
+      <button class="skip" id="tour-skip">Tutorial overslaan</button>
+      <button id="tour-back" title="Vorige"><i data-icon="arrow-left"></i></button>
+      <button class="go" id="tour-next">Volgende</button>
+    </div>
+  </div>
 </div>
 
 <script src="icons.js"></script>
@@ -391,19 +484,27 @@ async function api(path, body) {
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   const data = await r.json().catch(() => ({}));
-  if (r.status === 401 && data.setup) { showSetup(); throw new Error(data.error); }
+  if (r.status === 401 && data.setup) {
+    const s = await fetch("/api/setup").then(x => x.json()).catch(() => ({}));
+    showSetup(s.here !== false); throw new Error(data.error);
+  }
   if (r.status === 401) { showLogin(data.error); throw new Error(data.error || "PIN"); }
   if (!r.ok) throw new Error(data.error || "Er ging iets mis (" + r.status + ").");
   return data;
 }
 
-/** First start of a server Hub: no PIN yet, so you choose one here. */
-function showSetup() {
+/** First start: no PIN yet, so you choose one here (on the Hub's own computer, or anywhere for a server). */
+function showSetup(here = true) {
   $("login").classList.add("open");
   $("setup-form").hidden = false;
   $("login-form").hidden = true;
-  setTimeout(() => $("new-pin").focus(), 50);
+  $("choose-form").hidden = true;
+  $("setup-fields").hidden = !here;
+  $("setup-away").hidden = here;
+  $("setup-retry-row").style.display = here ? "none" : "";   // .row is a flex box: hidden alone would not hide it
+  if (here) setTimeout(() => $("new-pin").focus(), 50);
 }
+$("setup-retry").onclick = () => location.reload();
 $("setup-go").onclick = async () => {
   const a = $("new-pin").value.trim(), b = $("new-pin2").value.trim();
   if (!/^\d{4,12}$/.test(a)) return msg("setup-msg", "Een PIN is 4 tot 12 cijfers.", true);
@@ -413,6 +514,7 @@ $("setup-go").onclick = async () => {
       body: JSON.stringify({ pin: a }) });
     const d = await r.json().catch(() => ({}));
     if (r.status === 409) { $("setup-form").hidden = true; $("login-form").hidden = false; return showLogin(d.error); }
+    if (r.status === 403) return showSetup(false);
     if (!r.ok) throw new Error(d.error || "Er ging iets mis.");
     pin = a;
     localStorage.setItem("hub.pin", pin);
@@ -424,8 +526,39 @@ $("setup-go").onclick = async () => {
 };
 $("new-pin2").addEventListener("keydown", e => { if (e.key === "Enter") $("setup-go").click(); });
 
+/** An older Hub made up its PIN: once, after logging in, the chance to choose your own. */
+function showChoose() {
+  $("login").classList.add("open");
+  $("setup-form").hidden = true;
+  $("login-form").hidden = true;
+  $("choose-form").hidden = false;
+  setTimeout(() => $("ch-pin").focus(), 50);
+}
+function closeChoose() {
+  $("choose-form").hidden = true;
+  $("login-form").hidden = false;
+  $("login").classList.remove("open");
+  refresh().catch(() => {});
+}
+$("ch-go").onclick = async () => {
+  const a = $("ch-pin").value.trim(), b = $("ch-pin2").value.trim();
+  if (!/^\d{4,12}$/.test(a)) return msg("ch-msg", "Een PIN is 4 tot 12 cijfers.", true);
+  if (a !== b) return msg("ch-msg", "De twee PIN's zijn niet gelijk.", true);
+  try {
+    await api("pin", { pin: a });
+    pin = a;
+    localStorage.setItem("hub.pin", pin);
+    closeChoose();
+  } catch (e) { msg("ch-msg", e.message, true); }
+};
+$("ch-keep").onclick = async () => {
+  try { await api("pin-keep", {}); closeChoose(); } catch (e) { msg("ch-msg", e.message, true); }
+};
+$("ch-pin2").addEventListener("keydown", e => { if (e.key === "Enter") $("ch-go").click(); });
+
 function showLogin(err) {
   $("login").classList.add("open");
+  $("choose-form").hidden = true;
   $("setup-form").hidden = true;
   $("login-form").hidden = false;
   msg("pin-msg", err && pin ? err : "", !!err);
@@ -434,9 +567,9 @@ function showLogin(err) {
 $("pin-go").onclick = async () => {
   pin = $("pin").value.trim();
   try {
-    await refresh();
-    localStorage.setItem("hub.pin", pin);
     $("login").classList.remove("open");
+    await refresh();   // after closing the login: refresh may open "Kies je eigen PIN" in the same place
+    localStorage.setItem("hub.pin", pin);   // only a PIN that worked (a wrong one opens the login again)
   } catch (e) { msg("pin-msg", e.message, true); }
 };
 $("h-logout").onclick = () => { pin = ""; localStorage.removeItem("hub.pin"); showLogin(); };
@@ -532,7 +665,7 @@ function renderAccounts(sp) {
     <button class="acct${a.active ? " on" : ""}" data-key="${esc(a.key)}" title="${a.active ? "Actief" : "Wissel naar " + esc(a.name)}"
       aria-pressed="${a.active}">
       <span class="av">${a.image ? `<img src="${esc(a.image)}" alt="">` : esc((a.name || "?").trim().charAt(0).toUpperCase())}</span>
-      <span>${esc(a.name)}</span>${a.playing ? `<span class="live" title="Speelt nu">${Icon.svg("volume-2")}</span>` : ""}
+      <span>${esc(a.name)}</span>${a.playing ? `<span class="playing" title="Speelt nu">${Icon.svg("volume-2")}</span>` : ""}
     </button>`).join("") +
     `<button class="acct add" id="m-add" title="Nog een Spotify-account koppelen">${Icon.svg("plus")} Account</button>`;
 }
@@ -746,11 +879,151 @@ function renderBreak() {
 }
 setInterval(renderBreak, 250);
 
+let tourAsked = false, chooseAsked = false;
 async function refresh() {
   state = await api("state");
   offset = state.now - Date.now();
   render();
+  renderStart();
+  if (state.pin_chosen === false && !chooseAsked) { chooseAsked = true; showChoose(); return; }
+  if (!tourAsked && !Tour.seen() && $("choose-form").hidden) { tourAsked = true; Tour.start(); }   // once, the first time
 }
+
+// ---------- Aan de slag: the steps to a working party, with what is done ----------
+const store = {
+  get: k => { try { return localStorage.getItem("hub." + k); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem("hub." + k, v); } catch {} },
+};
+function renderStart() {
+  const s = state, sp = s.spotify || {}, pa = s.party || {};
+  const steps = [
+    { done: !!sp.linked, title: "Koppel je Spotify", text: "Dan zien de schermen wat er speelt en bedien je de muziek hier.",
+      go: "s-music", btn: "Naar Muziek" },
+    { done: s.screens.some(x => x.online), title: "Verbind een scherm",
+      text: "Open SpotiParty op je tv, pc of Raspberry Pi: hij meldt zich vanzelf.", go: "s-screens", btn: "Naar Schermen" },
+    { done: !!s.jam, title: "Zet je Spotify Jam klaar", text: "Plak de Jam-link: alle schermen tonen dan de QR-code.",
+      go: "s-jam", btn: "Naar Jam" },
+    { done: !!(pa.vote_on || pa.quiz_on || pa.msg_on || pa.next_on || pa.bingo),
+      title: "Laat je gasten meedoen", text: "Zet een spel of berichten aan: gasten doen mee met hun telefoon.",
+      go: "s-party", btn: "Naar Feest" },
+  ];
+  const n = steps.filter(x => x.done).length;
+  const box = $("start");
+  box.hidden = n === steps.length || store.get("start-hidden") === "1";
+  if (box.hidden) return;
+  $("start-count").textContent = `${n} van ${steps.length} klaar`;
+  $("start-bar").style.width = (n / steps.length * 100) + "%";
+  const html = steps.map(x => `<div class="step${x.done ? " done" : ""}">${Icon.svg(x.done ? "circle-check" : "circle")}
+    <div><b>${x.title}</b><span>${x.text}</span>${x.done ? "" : `<button data-go="${x.go}">${x.btn}</button>`}</div></div>`).join("");
+  if ($("start-steps").innerHTML !== html) $("start-steps").innerHTML = html;
+}
+$("start-steps").onclick = e => {
+  const b = e.target.closest("button[data-go]");
+  if (b) $(b.dataset.go).scrollIntoView({ behavior: "smooth", block: "start" });
+};
+$("start-hide").onclick = () => { store.set("start-hidden", "1"); $("start").hidden = true; };
+
+// ---------- the tour: every card explained, one step at a time ----------
+const Tour = (() => {
+  const STEPS = [
+    { title: "Welkom bij je SpotiParty Hub", icon: "sparkles",
+      text: `<p>Vanaf hier bedien je alle schermen, de muziek en de feestspellen. In een minuut laten we zien waar alles staat.</p>
+        <p style="margin-top:8px">Je kunt deze uitleg altijd terugzien met <b>Uitleg</b> rechtsboven.</p>` },
+    { el: "s-screens", title: "Schermen", icon: "monitor",
+      text: `<p>Alle schermen die met deze Hub verbonden zijn: je tv, pc, Raspberry Pi of Home Assistant.</p>
+        <ul><li><b>Aanwijzen</b> laat het scherm even oplichten, zodat je ziet welke het is.</li>
+        <li><b>Naam</b> geeft het een herkenbare naam.</li><li><b>Vergeten</b> haalt een oud scherm weg.</li></ul>` },
+    { el: "start", title: "Aan de slag", icon: "rocket",
+      text: `<p>Wat er nog moet gebeuren voor een werkend feest. Klik op een stap en je gaat meteen naar de goede plek.</p>` },
+    { el: "s-music", title: "Muziek bedienen", icon: "music",
+      text: `<p>Koppel hier je Spotify-account. Daarna zie je wat er speelt en bedien je de muziek: vorige, pauze, volgende en het volume.</p>
+        <p style="margin-top:8px">Meerdere accounts? Wissel met de knoppen bovenaan.</p>` },
+    { el: "s-jam", title: "Spotify Jam", icon: "users",
+      text: `<p>Start een Jam in Spotify, kopieer de link en plak hem hier. Alle schermen tonen dan dezelfde QR-code: gasten scannen hem en zetten hun eigen nummers in de wachtrij.</p>` },
+    { el: "s-notice", title: "Melding op het scherm", icon: "message-square-text",
+      text: `<p>Zet een bericht groot op de schermen, zoals <i>"De pizza's zijn er!"</i>. Kies een stijl, hoe lang en op welke schermen.</p>` },
+    { el: "s-party", title: "Feest", icon: "party-popper",
+      text: `<p>De spellen voor je gasten. Ze doen mee op hun telefoon via de QR-code op het scherm.</p>
+        <ul><li><b>Raad het nummer</b>: een muziekquiz.</li><li><b>Stem het volgende nummer</b> en <b>Muziekbingo</b>: kies eerst een afspeellijst.</li>
+        <li><b>Berichten</b>: jij keurt ze goed voor ze op het scherm komen.</li><li><b>Stand van de avond</b>: zet aan het eind de winnaar groot in beeld.</li></ul>` },
+    { el: "s-break", title: "Korte pauze", icon: "coffee",
+      text: `<p>Een aftelklok op de schermen, bijvoorbeeld voor een speech of het eten. De muziek kan vanzelf pauzeren en daarna weer verder gaan.</p>` },
+    { el: "s-wifi", title: "Gasten-wifi", icon: "wifi",
+      text: `<p>Vul je wifi in en zet <b>QR-code op de schermen tonen</b> aan: gasten verbinden dan met één scan. Gebruik liefst een apart gastennetwerk.</p>` },
+    { el: "s-hub", title: "De Hub", icon: "settings",
+      text: `<p>Het adres van dit dashboard: open het ook op je telefoon met dezelfde PIN. Hier verander je de naam van de Hub en de PIN.</p>` },
+    { el: "tour-open", title: "Klaar!", icon: "circle-check",
+      text: `<p>Dat was alles. Wil je de uitleg later nog eens zien? Klik dan op <b>Uitleg</b>.</p>` },
+  ];
+  let i = 0, list = [];
+  const seen = () => store.get("tour") === "done";
+  const visible = s => !s.el || ($(s.el) && !$(s.el).hidden && $(s.el).offsetParent !== null);
+
+  function start() {
+    list = STEPS.filter(visible);
+    i = 0;
+    $("tour").classList.add("open");
+    show();
+  }
+  function close() {
+    $("tour").classList.remove("open");
+    store.set("tour", "done");
+  }
+  function show() {
+    const s = list[i];
+    $("tour-title").innerHTML = Icon.svg(s.icon) + s.title;
+    $("tour-text").innerHTML = s.text;
+    $("tour-dots").innerHTML = list.map((_, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("");
+    $("tour-back").style.visibility = i ? "" : "hidden";
+    $("tour-next").textContent = i === list.length - 1 ? "Klaar" : i === 0 ? "Laat zien" : "Volgende";
+    $("tour-skip").style.visibility = i === list.length - 1 ? "hidden" : "";
+    $("tour").classList.toggle("center", !s.el);
+    if (s.el) {
+      const el = $(s.el);
+      const tall = el.getBoundingClientRect().height > innerHeight * .7;
+      el.scrollIntoView({ behavior: "smooth", block: tall ? "start" : "center" });
+    }
+    place();
+    setTimeout(place, 450);   // again when the smooth scroll has settled
+    $("tour-next").focus();
+  }
+  function place() {
+    if (!$("tour").classList.contains("open")) return;
+    const s = list[i], tip = $("tour-tip"), hole = $("tour-hole"), pad = 8;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    if (!s.el) {
+      hole.style.cssText = `left:${innerWidth / 2}px;top:${innerHeight / 2}px;width:0;height:0`;
+      tip.style.left = (innerWidth - tw) / 2 + "px";
+      tip.style.top = Math.max(12, (innerHeight - th) / 2) + "px";
+      return;
+    }
+    const r = $(s.el).getBoundingClientRect();
+    const top = Math.max(r.top - pad, 4), bottom = Math.min(r.bottom + pad, innerHeight - 4);
+    hole.style.cssText = `left:${r.left - pad}px;top:${top}px;width:${r.width + 2 * pad}px;height:${Math.max(0, bottom - top)}px`;
+    // Next to the card when there is room, else below or above it, else over its lower part.
+    let x, y;
+    if (innerWidth - r.right > tw + 24) { x = r.right + 16; y = Math.min(Math.max(12, top), innerHeight - th - 12); }
+    else if (r.left > tw + 24) { x = r.left - tw - 16; y = Math.min(Math.max(12, top), innerHeight - th - 12); }
+    else if (innerHeight - bottom > th + 16) { x = r.left; y = bottom + 12; }
+    else if (top > th + 16) { x = r.left; y = top - th - 12; }
+    else { x = r.left; y = innerHeight - th - 16; }
+    tip.style.left = Math.min(Math.max(12, x), innerWidth - tw - 12) + "px";
+    tip.style.top = y + "px";
+  }
+  $("tour-next").onclick = () => { if (i < list.length - 1) { i++; show(); } else close(); };
+  $("tour-back").onclick = () => { if (i > 0) { i--; show(); } };
+  $("tour-skip").onclick = close;
+  $("tour-open").onclick = start;
+  addEventListener("resize", place);
+  addEventListener("scroll", place, { passive: true });
+  addEventListener("keydown", e => {
+    if (!$("tour").classList.contains("open")) return;
+    if (e.key === "Escape") close();
+    else if (e.key === "ArrowRight") $("tour-next").click();
+    else if (e.key === "ArrowLeft") $("tour-back").click();
+  });
+  return { start, seen };
+})();
 
 $("screens").onclick = async e => {
   const b = e.target.closest("button[data-act]");
@@ -822,7 +1095,11 @@ $("h-save").onclick = async () => {
   try {
     if ($("h-name").value.trim() !== state.name) await api("name", { name: $("h-name").value });
     const np = $("h-pin").value.trim();
-    if (np) { await api("pin", { pin: np }); pin = np; localStorage.setItem("hub.pin", pin); $("h-pin").value = ""; }
+    if (np && np !== $("h-pin2").value.trim()) return msg("h-msg", "De twee PIN's zijn niet gelijk.", true);
+    if (np) {
+      await api("pin", { pin: np }); pin = np; localStorage.setItem("hub.pin", pin);
+      $("h-pin").value = ""; $("h-pin2").value = "";
+    }
     msg("h-msg", "Opgeslagen.");
     refresh();
   } catch (e) { msg("h-msg", e.message, true); }
@@ -830,7 +1107,7 @@ $("h-save").onclick = async () => {
 
 setInterval(() => { if (pin && !$("login").classList.contains("open")) refresh().catch(() => {}); }, 2000);
 fetch("/api/setup").then(r => r.json()).catch(() => ({})).then(s => {
-  if (s.needed) showSetup();
+  if (s.needed) showSetup(s.here !== false);
   else if (!pin) showLogin();
   else refresh().catch(() => {});
 });
