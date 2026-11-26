@@ -21,7 +21,7 @@ export function Nav() {
       <div className="concept"><span className="tag">Nieuw</span>SpotiParty is nu open source en gratis, feestspellen inbegrepen.</div>
       <nav ref={ref} className="nav">
         <div className="wrap">
-          <a className="brand" href="#top"><img src="/assets/icon.png" alt="" width="34" height="34" />SpotiParty</a>
+          <a className="brand" href="#top" aria-label="SpotiParty"><img src="/assets/logo.svg" alt="SpotiParty" width="137" height="36" /></a>
           <div className="nav-links">
             <a href="#functies">Functies</a>
             <a href="#hub">Hub</a>
@@ -63,7 +63,7 @@ export function Hero() {
   return (
     <header ref={root} id="top" className="hero">
       <div className="hero-bg" aria-hidden="true">
-        <Aurora colorStops={["#241245", "#b8346b", "#241245"]} amplitude={0.7} blend={0.4} speed={0.4} height={0.4} />
+        <Aurora colorStops={["#111d13", "#415d43", "#111d13"]} amplitude={0.7} blend={0.4} speed={0.4} height={0.4} />
       </div>
       <div className="wrap">
         <span className="eyebrow">Voor feestjes, borrels en zondagmiddagen</span>

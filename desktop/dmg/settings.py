@@ -25,7 +25,7 @@ symlinks = {"Apps": "/Applications"}
 # The picture behind the icons: a TIFF with the 1x and 2x versions (sharp on Retina). See make_background.py.
 background = defines.get("bg", "desktop/dmg/background.png")  # noqa: F821
 
-window_rect = ((200, 140), (640, 330))   # position, then size in points; matches make_background.py
+window_rect = ((200, 140), (640, 400))   # position, then size in points; matches make_background.py
 default_view = "icon-view"
 show_toolbar = False
 show_tab_view = False
@@ -39,7 +39,7 @@ icon_size = 112
 text_size = 13
 label_pos = "bottom"
 icon_locations = {
-    appname: (160, 112),
-    "Apps": (480, 112),
+    appname: (160, 178),
+    "Apps": (480, 178),
 }
 hide_extension = [appname]

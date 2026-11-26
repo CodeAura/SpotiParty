@@ -1,8 +1,10 @@
-"""The picture behind the SpotiParty .dmg window: the app on the left, Apps on the right, an arrow between them.
+"""The picture behind the SpotiParty .dmg window: the logo on top, the app on the left, Apps on the right, an arrow
+between them.
 
     python desktop/dmg/make_background.py            # writes background.png (1x) and background@2x.png next to it
 
-The window is 640 x 330 points (settings.py). Finder puts the icons on top; this only draws the arrow and the words.
+The window is 640 x 400 points (settings.py). The logo is logo.png / logo@2x.png here, rendered from
+brand/spotiparty-horizontal.svg. Finder puts the icons on top; this only draws the arrow and the words.
 The font is Plus Jakarta Sans from the website (site/node_modules), else the Mac's system font. The PNGs are in git,
 so building the .dmg does not need this script.
 """
@@ -13,13 +15,13 @@ from PIL import Image, ImageDraw, ImageFont
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent.parent
-W, H = 640, 330                 # points; settings.py uses the same
-APP_X, APPS_X, ICON_Y = 160, 480, 112   # icon centres, as in settings.py
+W, H = 640, 400                 # points; settings.py uses the same
+APP_X, APPS_X, ICON_Y = 160, 480, 178   # icon centres, as in settings.py
 
-BG = (247, 245, 251)            # light: Finder writes the icon names in black on it, in light and dark mode
-TEXT = (27, 21, 50)             # the site's --card, as ink
-MUTED = (110, 103, 135)
-PINK = (255, 78, 138)           # the site's --pink
+BG = (244, 248, 244)            # light: Finder writes the icon names in black on it, in light and dark mode
+TEXT = (17, 29, 19)             # the brand's night green, as ink
+MUTED = (92, 112, 95)
+PINK = (112, 151, 117)          # the brand's fern green (brand/LOGO-GEBRUIK.md)
 
 JAKARTA = ROOT / "site/node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2"
 SYSTEM = pathlib.Path("/System/Library/Fonts/SFNS.ttf")
@@ -44,7 +46,7 @@ def draw(scale):
     img = Image.new("RGB", (W * s, H * s), BG)
     d = ImageDraw.Draw(img)
 
-    # The arrow: a rounded shaft and head in the site's pink, between the two icons.
+    # The arrow: a rounded shaft and head in the brand's fern green, between the two icons.
     x0, x1, y = (APP_X + 92) * s, (APPS_X - 92) * s, ICON_Y * s
     w = 7 * s
     d.line([(x0, y), (x1 - 10 * s, y)], fill=PINK, width=w)
@@ -55,11 +57,15 @@ def draw(scale):
         d.ellipse([x1 - head - w / 2, y + dy * head - w / 2, x1 - head + w / 2, y + dy * head + w / 2], fill=PINK)
     d.ellipse([x1 - w / 2, y - w / 2, x1 + w / 2, y + w / 2], fill=PINK)
 
+    # The logo, centred at the top.
+    logo = Image.open(HERE / ("logo@2x.png" if s == 2 else "logo.png")).convert("RGBA")
+    img.paste(logo, (int((W * s - logo.width) / 2), int(30 * s)), logo)
+
     title = "Sleep SpotiParty naar Apps"
     sub = "Daarna start je SpotiParty vanuit Apps. Updates gaan vanzelf."
     ft, fs = font(19 * s, 700), font(13 * s, 500)
-    d.text((W * s / 2, 244 * s), title, font=ft, fill=TEXT, anchor="mm")
-    d.text((W * s / 2, 272 * s), sub, font=fs, fill=MUTED, anchor="mm")
+    d.text((W * s / 2, 312 * s), title, font=ft, fill=TEXT, anchor="mm")
+    d.text((W * s / 2, 340 * s), sub, font=fs, fill=MUTED, anchor="mm")
     return img
 
 

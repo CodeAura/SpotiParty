@@ -4,8 +4,36 @@
     {
       "name": "website",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "site", "run", "dev", "--", "--port", "5173", "--strictPort"],
+      "runtimeArgs": [
+        "--prefix",
+        "site",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5173",
+        "--strictPort"
+      ],
       "port": 5173
+    },
+    {
+      "name": "party-screen",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "web/serve.py",
+        "--port",
+        "8769",
+        "--no-browser"
+      ],
+      "port": 8769
+    },
+    {
+      "name": "demo-hub",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "tools/demo_hub.py"
+      ],
+      "port": 8770
     }
   ]
 }

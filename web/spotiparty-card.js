@@ -50,16 +50,16 @@ class SpotiPartyCard extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>
         :host { display: block; }
-        ha-card { overflow: hidden; height: ${full ? "0" : c.height}; position: relative; background: #0b0b10; }
-        iframe { border: 0; width: 100%; height: 100%; display: block; background: #0b0b10; }
-        .full { position: fixed; inset: 0; z-index: 9999; background: #0b0b10; }
+        ha-card { overflow: hidden; height: ${full ? "0" : c.height}; position: relative; background: #0a110b; }
+        iframe { border: 0; width: 100%; height: 100%; display: block; background: #0a110b; }
+        .full { position: fixed; inset: 0; z-index: 9999; background: #0a110b; }
         .exit { position: absolute; top: 12px; left: 12px; z-index: 2; width: 40px; height: 40px; border-radius: 50%;
           border: 1px solid #fff3; background: #0008; color: #fff; font-size: 18px; cursor: pointer; opacity: 0;
           transition: opacity .3s; }
         .full:hover .exit, .exit:focus { opacity: 1; }
         .badge { position: absolute; left: 10px; bottom: 10px; z-index: 2; font: 12px system-ui, sans-serif;
           color: #fff; background: #000a; padding: 4px 10px; border-radius: 99px; }
-        .badge a { color: #1ed760; }
+        .badge a { color: #a1cca5; }
       </style>
       ${full
         ? `<ha-card></ha-card><div class="full"><button class="exit" title="Terug naar het dashboard">✕</button>

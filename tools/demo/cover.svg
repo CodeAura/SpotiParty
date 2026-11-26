@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640">
+  <!-- "Zomeravond" by De Voorbeelden: the made-up song of the demo Hub (tools/demo_hub.py). Own art, brand greens. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8fb996"/><stop offset=".55" stop-color="#5f8565"/><stop offset="1" stop-color="#415d43"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="640" fill="url(#sky)"/>
+  <circle cx="420" cy="300" r="120" fill="#e6f3e7"/>
+  <circle cx="132" cy="120" r="9" fill="#f4faf4" opacity=".8"/>
+  <circle cx="214" cy="78" r="6" fill="#f4faf4" opacity=".7"/>
+  <circle cx="560" cy="110" r="7" fill="#f4faf4" opacity=".7"/>
+  <path d="M0 380 C120 330 220 350 330 395 C440 440 540 400 640 360 V640 H0Z" fill="#2c4530"/>
+  <path d="M0 450 C140 410 250 440 360 480 C470 520 560 500 640 470 V640 H0Z" fill="#1b2d1d"/>
+  <path d="M0 540 C150 505 290 530 400 560 C500 588 580 575 640 560 V640 H0Z" fill="#0b130c"/>
+</svg>

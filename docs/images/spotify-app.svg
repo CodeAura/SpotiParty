@@ -1,20 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 470" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif">
-  <rect width="900" height="470" rx="18" fill="#0f1016"/>
+  <rect width="900" height="470" rx="18" fill="#0a110b"/>
   <text x="30" y="42" fill="#fff" font-size="22" font-weight="700">Je eigen Spotify-app maken (eenmalig, gratis)</text>
   <text x="30" y="66" fill="#b9bcc6" font-size="14">developer.spotify.com/dashboard → Create app. Schematisch: de echte pagina kan er iets anders uitzien.</text>
-  <rect x="30" y="86" width="560" height="360" rx="14" fill="#1c1d26" stroke="#3a3c4a"/>
+  <rect x="30" y="86" width="560" height="360" rx="14" fill="#142016" stroke="#2f4232"/>
   <g font-size="14" fill="#b9bcc6">
     <text x="55" y="120">App name</text>
-    <rect x="55" y="128" width="510" height="34" rx="8" fill="#0b0b10" stroke="#3a3c4a"/>
+    <rect x="55" y="128" width="510" height="34" rx="8" fill="#0a110b" stroke="#2f4232"/>
     <text x="68" y="150" fill="#fff">SpotiParty</text>
     <text x="55" y="186">App description</text>
-    <rect x="55" y="194" width="510" height="34" rx="8" fill="#0b0b10" stroke="#3a3c4a"/>
+    <rect x="55" y="194" width="510" height="34" rx="8" fill="#0a110b" stroke="#2f4232"/>
     <text x="68" y="216" fill="#fff">Wat er speelt op mijn scherm</text>
     <text x="55" y="252">Redirect URIs</text>
-    <rect x="55" y="260" width="510" height="34" rx="8" fill="#0b0b10" stroke="#ff3b6b" stroke-width="3"/>
+    <rect x="55" y="260" width="510" height="34" rx="8" fill="#0a110b" stroke="#ff3b6b" stroke-width="3"/>
     <text x="68" y="282" fill="#fff" font-family="Consolas, monospace">http://127.0.0.1:8770/spotify/callback</text>
     <text x="55" y="318">Which API/SDKs are you planning to use?</text>
-    <rect x="55" y="330" width="20" height="20" rx="4" fill="#1ed760" stroke="#ff3b6b" stroke-width="3"/>
+    <rect x="55" y="330" width="20" height="20" rx="4" fill="#a1cca5" stroke="#ff3b6b" stroke-width="3"/>
     <path d="M59 340l5 5 8-10" stroke="#000" stroke-width="2.5" fill="none"/>
     <text x="85" y="346" fill="#fff">Web API</text>
     <rect x="55" y="376" width="90" height="36" rx="18" fill="#fff"/>
@@ -30,8 +30,8 @@
     <text x="645" y="310" fill="#b9bcc6">het juiste adres)</text>
     <text x="645" y="345" font-weight="700">Web API aanvinken</text>
   </g>
-  <rect x="610" y="370" width="265" height="76" rx="12" fill="#13261a" stroke="#1ed760"/>
-  <circle cx="634" cy="396" r="14" fill="#1ed760"/><text x="634" y="401" text-anchor="middle" font-size="14" font-weight="700" fill="#000">3</text>
+  <rect x="610" y="370" width="265" height="76" rx="12" fill="#13261a" stroke="#a1cca5"/>
+  <circle cx="634" cy="396" r="14" fill="#a1cca5"/><text x="634" y="401" text-anchor="middle" font-size="14" font-weight="700" fill="#000">3</text>
   <text x="656" y="400" fill="#fff" font-size="14" font-weight="700">Kopieer de Client ID</text>
   <text x="625" y="428" fill="#b9bcc6" font-size="13" font-family="Consolas, monospace">Client ID: 1a2b3c…  (32 tekens)</text>
 </svg>

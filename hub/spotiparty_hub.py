@@ -689,7 +689,7 @@ class HubHandler(http.server.BaseHTTPRequestHandler):
             except sp_spotify.SpotifyError as e:
                 text, ok = str(e), False
             page = (f"<!doctype html><meta charset=utf-8><title>SpotiParty Hub</title><body style='font:18px system-ui;"
-                    f"background:#0b0b10;color:#fff;display:grid;place-items:center;height:90vh;text-align:center'>"
+                    f"background:#0a110b;color:#fff;display:grid;place-items:center;height:90vh;text-align:center'>"
                     f"<div><div style='font-size:60px'>{'✅' if ok else '⚠️'}</div><p>{text}</p></div>"
                     + ("<script>setTimeout(()=>window.close(),1500)</script>" if ok else ""))
             return self._send(200, raw=page.encode(), ctype="text/html; charset=utf-8")

@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Green sound bars inside the adaptive icon's safe zone. Own art. -->
+<!-- SpotiParty logo ("De Spot", brand/): the white S and the mint dot inside the adaptive icon's safe zone. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#1ED760" android:pathData="M34,56h7v16h-7z M45,44h7v28h-7z M56,50h7v22h-7z M67,38h7v34h-7z" />
+    <group android:translateX="22.00" android:translateY="22.00" android:scaleX="0.25" android:scaleY="0.25">
+        <path android:fillColor="#FFFFFFFF" android:pathData="M120 25A57 57 0 0 0 120 139A29 29 0 0 1 120 197A17 17 0 0 0 120 231A63 63 0 0 0 120 105A23 23 0 0 1 120 59A17 17 0 0 0 120 25Z" />
+        <path android:fillColor="#FFA1CCA5" android:pathData="M158,44.0a20,20 0 1,0 40,0a20,20 0 1,0 -40,0z" />
+    </group>
 </vector>

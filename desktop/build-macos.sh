@@ -46,7 +46,7 @@ echo "→ SpotiParty.app ($ARCH)"
 # Absolute paths: PyInstaller resolves --add-data and --icon relative to the spec folder.
 "$WORK/venv/bin/pyinstaller" --noconfirm --clean --windowed --name SpotiParty \
   --icon "$ROOT/desktop/icon.png" \
-  --add-data "$ROOT/web:web" --add-data "$ROOT/hub:hub" --paths "$ROOT/hub" \
+  --add-data "$ROOT/web:web" --add-data "$ROOT/hub:hub" --add-data "$ROOT/brand/app:brand/app" --paths "$ROOT/hub" \
   --osx-bundle-identifier io.github.codeaura.spotiparty \
   --distpath "$OUT" --workpath "$WORK/work" --specpath "$WORK/spec" \
   "$ROOT/desktop/spotiparty_app.py" > "$WORK/pyinstaller.log" 2>&1 \

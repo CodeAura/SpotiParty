@@ -200,6 +200,73 @@ def button(parent, text, command, bg, fg, active, **kw):
     return b
 
 
+BG, MINT, TRACK = "#0a110b", "#a1cca5", "#1d3020"
+
+
+class Progress(tk.Canvas):
+    """A thin bar in the brand colours (ttk's bar ignores colours on macOS). set(0..1) fills it; busy() lets a
+    piece slide back and forth when there is nothing to count (installing)."""
+
+    def __init__(self, parent, width=300, height=6, bg=BG):
+        super().__init__(parent, width=width, height=height, bg=bg, highlightthickness=0, bd=0)
+        self.w, self.h = width, height
+        self.create_rectangle(0, 0, width, height, fill=TRACK, width=0)
+        self.fill = self.create_rectangle(0, 0, 0, height, fill=MINT, width=0)
+        self.anim = None
+
+    def set(self, fraction):
+        self._stop()
+        self.coords(self.fill, 0, 0, max(0.0, min(1.0, fraction)) * self.w, self.h)
+
+    def busy(self, step=0):
+        piece = self.w * 0.3
+        x = (step % 120) / 120 * (self.w + piece) - piece
+        self.coords(self.fill, max(0, x), 0, min(self.w, x + piece), self.h)
+        self.anim = self.after(16, self.busy, step + 1)
+
+    def _stop(self):
+        if self.anim:
+            self.after_cancel(self.anim)
+            self.anim = None
+
+
+def brand(root):
+    """The window icon and the logo at the top (brand/app, from brand/spotiparty-horizontal-reversed.svg)."""
+    art = bundle_dir("brand") / "app"
+    try:
+        root.iconphoto(True, tk.PhotoImage(file=str(art / "window-icon.png")),
+                       tk.PhotoImage(file=str(art / "window-icon-32.png")))
+    except tk.TclError:
+        pass
+    head = tk.Frame(root, bg=BG)
+    head.pack(anchor="w")
+    try:
+        root.logo = tk.PhotoImage(file=str(art / "window-logo.png"))   # kept on root: Tk forgets unreferenced images
+        tk.Label(head, image=root.logo, bg=BG, bd=0).pack(side="left")
+    except tk.TclError:
+        tk.Label(head, text="SpotiParty", fg="#ffffff", bg=BG, font=font(15, "bold")).pack(side="left")
+    return head
+
+
+def installing_window(version, install):
+    """At start, with an update waiting: a small window while the update takes over, then this one quits so
+    the installer can replace it. The new version opens by itself (and says it was updated)."""
+    root = tk.Tk()
+    root.title(APP)
+    root.resizable(False, False)
+    root.configure(bg=BG, padx=22, pady=18)
+    brand(root)
+    tk.Label(root, text=f"SpotiParty wordt bijgewerkt naar versie {version}", fg="#ffffff", bg=BG,
+             font=font(11, "bold")).pack(anchor="w", pady=(12, 2))
+    tk.Label(root, text="Hij start zo vanzelf opnieuw.", fg="#b4c4b5", bg=BG, font=font(10)).pack(anchor="w")
+    bar = Progress(root, width=340)
+    bar.pack(anchor="w", pady=(12, 0))
+    bar.busy()
+    root.after(400, install)
+    root.after(2400, root.destroy)
+    root.mainloop()
+
+
 def port_owner(port: int) -> str:
     """Which program listens on this TCP port ("" when unknown), for a clear message instead of a missing Hub."""
     try:
@@ -233,7 +300,7 @@ def main():
     if upd and not updated:
         p = upd.pending()
         if p:
-            upd.install(p[1], reopen=True)
+            installing_window(p[0], lambda: upd.install(p[1], reopen=True))
             return
     handler = functools.partial(Handler, directory=str(web_root()))
     server = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), handler)
@@ -271,33 +338,33 @@ def main():
     root = tk.Tk()
     root.title(f"{APP} {VERSION}")
     root.resizable(False, False)
-    root.configure(bg="#0f1016", padx=22, pady=18)
-    tk.Label(root, text="🎉 SpotiParty draait", fg="#ffffff", bg="#0f1016",
-             font=font(15, "bold")).pack(anchor="w")
+    root.configure(bg="#0a110b", padx=22, pady=18)
+    head = brand(root)
+    tk.Label(head, text="draait", fg="#a1cca5", bg="#0a110b", font=font(13, "bold")).pack(side="left", padx=(10, 0), pady=(6, 0))
     tk.Label(root, text="Sluit dit venster om SpotiParty te stoppen.\nToetsen in het scherm: S instellingen, F volledig scherm.",
-             fg="#b9bcc6", bg="#0f1016", justify="left", font=font(10)).pack(anchor="w", pady=(4, 12))
+             fg="#b4c4b5", bg="#0a110b", justify="left", font=font(10)).pack(anchor="w", pady=(4, 12))
     if hub:
         hub_url = hub.admin_state()["urls"][0]
         tk.Label(root, text=f"{THIS[0].upper() + THIS[1:]} is de Hub. Admin-dashboard (ook op je telefoon):\n{hub_url}    PIN: {hub.cfg['pin']}",
-                 fg="#ffffff", bg="#0f1016", justify="left", font=font(10)).pack(anchor="w", pady=(0, 12))
+                 fg="#ffffff", bg="#0a110b", justify="left", font=font(10)).pack(anchor="w", pady=(0, 12))
     elif hub_busy is not None:
         who = f" door {hub_busy}" if hub_busy else ""
         tk.Label(root, text=(f"De Hub kon niet starten: poort {spotiparty_hub.PORT} is bezet{who}.\n"
                              "Daardoor is er geen dashboard. Sluit dat programma (of herstart je "
                              f"{'Mac' if MAC else 'pc'}) en start SpotiParty opnieuw."),
-                 fg="#ff9b8f", bg="#0f1016", justify="left", font=font(10)).pack(anchor="w", pady=(0, 12))
+                 fg="#ff9b8f", bg="#0a110b", justify="left", font=font(10)).pack(anchor="w", pady=(0, 12))
     elif remote:
         name = hub_name(remote)
         tk.Label(root, text=(f"Scherm van de Hub {name} ({remote})." if name else
                              f"Scherm van de Hub op {remote}: die is nu niet bereikbaar, het scherm wacht erop.")
                  + "\nHet dashboard en de PIN staan op die computer.",
-                 fg="#ffffff", bg="#0f1016", justify="left", font=font(10)).pack(anchor="w", pady=(0, 12))
-    row = tk.Frame(root, bg="#0f1016")
+                 fg="#ffffff", bg="#0a110b", justify="left", font=font(10)).pack(anchor="w", pady=(0, 12))
+    row = tk.Frame(root, bg="#0a110b")
     row.pack(anchor="w")
     size = dict(padx=16, pady=7, font=font(10, "bold"))
-    button(row, "Scherm openen", open_window, "#1ed760", "#000000", "#3be477", **size).pack(side="left")
+    button(row, "Scherm openen", open_window, "#a1cca5", "#000000", "#b8dabb", **size).pack(side="left")
 
-    grey = ("#3a3e4a", "#ffffff", "#4a4e5a")
+    grey = ("#2f4232", "#ffffff", "#3c5340")
     if hub or remote:
         dash = f"http://127.0.0.1:{hub.port}/" if hub else f"http://{remote}/"
         button(row, "Dashboard", lambda: webbrowser.open(dash), *grey, **size).pack(side="left", padx=(8, 0))
@@ -307,14 +374,14 @@ def main():
         note.config(text="Opgeslagen. Sluit SpotiParty en start hem opnieuw." if role == "hub" else
                     "Opgeslagen. Bij de volgende start zoekt SpotiParty de Hub op het netwerk.")
 
-    small = ("#0f1016", "#b9bcc6", "#0f1016")
+    small = ("#0a110b", "#b4c4b5", "#0a110b")
     link = dict(padx=0, pady=2, font=font(9, "underline"))
     if remote:
         button(root, f"{THIS[0].upper() + THIS[1:]} wordt de Hub", lambda: switch("hub"), *small, **link).pack(anchor="w", pady=(10, 0))
     elif hub:
         button(root, f"Geen Hub op {THIS} (de Hub draait op een andere computer)", lambda: switch(""),
                *small, **link).pack(anchor="w", pady=(10, 0))
-    note = tk.Label(root, text="", fg="#1ed760", bg="#0f1016", font=font(9))
+    note = tk.Label(root, text="", fg="#a1cca5", bg="#0a110b", font=font(9))
     note.pack(anchor="w")
 
     def stop():
@@ -330,16 +397,25 @@ def main():
     if updated:
         note.config(text=f"Bijgewerkt naar versie {VERSION}.")
     if upd:
-        bar = tk.Frame(root, bg="#16341f", padx=12, pady=8)
-        bar_text = tk.Label(bar, text="", fg="#ffffff", bg="#16341f", justify="left", font=font(10))
-        bar_text.pack(side="left")
+        bar = tk.Frame(root, bg="#1d3020", padx=12, pady=8)
+        bar_left = tk.Frame(bar, bg="#1d3020")
+        bar_left.pack(side="left")
+        bar_text = tk.Label(bar_left, text="", fg="#ffffff", bg="#1d3020", justify="left", font=font(10))
+        bar_text.pack(anchor="w")
+        bar_prog = Progress(bar_left, width=260, bg="#1d3020")
+        installing = []
 
         def install_now():
-            if upd.ready:
-                upd.install(upd.ready[1])
-                stop()
+            if upd.ready and not installing:
+                installing.append(True)
+                bar_text.config(text=f"Bijwerken naar versie {upd.ready[0]}…\nSpotiParty start zo vanzelf opnieuw.")
+                bar_btn.pack_forget()
+                bar_prog.pack(anchor="w", pady=(8, 2))
+                bar_prog.busy()
+                root.after(400, lambda: upd.install(upd.ready[1]))
+                root.after(2400, stop)
 
-        bar_btn = button(bar, "Nu bijwerken", install_now, "#1ed760", "#000000", "#3be477",
+        bar_btn = button(bar, "Nu bijwerken", install_now, "#a1cca5", "#000000", "#b8dabb",
                          padx=12, pady=4, font=font(9, "bold"))
 
         def check_loop():
@@ -350,7 +426,18 @@ def main():
         threading.Thread(target=check_loop, daemon=True, name="updater").start()
 
         def show():
-            if upd.ready:
+            if installing:
+                pass
+            elif upd.progress:
+                done, total = upd.progress
+                pct = f" {done * 100 // total}%" if total else ""
+                bar_text.config(text=(upd.status or "Update wordt gedownload…") + pct)
+                bar_btn.pack_forget()
+                bar_prog.pack(anchor="w", pady=(8, 2))
+                bar_prog.set(done / total if total else 0)
+                bar.pack(anchor="w", fill="x", pady=(12, 0))
+            elif upd.ready:
+                bar_prog.pack_forget()
                 bar_text.config(text=f"Versie {upd.ready[0]} staat klaar.\nWordt bij de volgende start vanzelf "
                                      "geïnstalleerd, of nu (de muziek stopt even).")
                 bar_btn.pack(side="left", padx=(12, 0))
@@ -361,7 +448,7 @@ def main():
                 bar.pack(anchor="w", fill="x", pady=(12, 0))
             else:
                 bar.pack_forget()
-            root.after(2000, show)
+            root.after(300 if upd.progress else 2000, show)
 
         show()
     if MAC:

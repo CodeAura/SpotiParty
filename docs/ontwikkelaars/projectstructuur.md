@@ -37,8 +37,11 @@ SpotiParty/
 │   └── icon.ico / icon.png
 ├── dist/spotiparty-card.js   De Home Assistant-kaart in één bestand (tools/build_ha.py)
 ├── tools/build_ha.py  Bouwt de kaart
+├── tools/demo_hub.py  Een Hub met verzonnen muziek en gasten, voor screenshots
+├── tools/demo_screenshots.py  Maakt alle screenshots opnieuw (met Playwright)
 ├── site/             De website (spotiparty.netlify.app)
 ├── docs/             Deze documentatie (Git Sync met GitBook)
+├── brand/            Het logo: SVG's, favicon en app-iconen, kleuren en regels (LOGO-GEBRUIK.md)
 └── .github/workflows/  desktop.yml (desktop-apps) en android.yml (tv-apps)
 ```
 

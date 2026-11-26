@@ -42,7 +42,7 @@ if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw "Geef een versie mee, zoals -V
 Write-Host "-> SpotiParty.exe"
 # Absolute paths: PyInstaller resolves --icon and --add-data relative to the spec folder.
 & (Join-Path $Venv "Scripts\pyinstaller.exe") --noconfirm --clean --onefile --windowed --name SpotiParty `
-  --icon "$Root\desktop\icon.ico" --add-data "$Root\web;web" --add-data "$Root\hub;hub" --paths "$Root\hub" --hidden-import sp_party `
+  --icon "$Root\desktop\icon.ico" --add-data "$Root\web;web" --add-data "$Root\hub;hub" --add-data "$Root\brand\app;brand\app" --paths "$Root\hub" --hidden-import sp_party `
   --distpath $Out --workpath "$Work\work" --specpath "$Work\spec" "$Root\desktop\spotiparty_app.py"
 if ($LASTEXITCODE) { throw "PyInstaller failed" }
 

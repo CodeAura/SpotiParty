@@ -165,7 +165,7 @@ export function Hub() {
   return (
     <section ref={root} id="hub" className="hub">
       <div className="wrap">
-        <div className="center"><span className="eyebrow"><ShinyText text="De SpotiParty Hub" color="#b3abd1" shineColor="#ffffff" speed={3} /></span></div>
+        <div className="center"><span className="eyebrow"><ShinyText text="De SpotiParty Hub" color="#a9bfab" shineColor="#ffffff" speed={3} /></span></div>
         <ScrollReveal baseOpacity={0.12} enableBlur blurStrength={6} baseRotation={2}>
           Eén dashboard op je telefoon voor alle schermen in huis: de muziek, de Jam, meldingen, een pauze en de gasten-wifi.
         </ScrollReveal>

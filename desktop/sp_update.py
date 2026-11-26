@@ -82,6 +82,7 @@ class Updater:
         self.folder = folder / "update"
         self.status = ""          # what the window shows
         self.ready = None         # (version, path of the downloaded update)
+        self.progress = None      # (bytes so far, total bytes or 0) while an update downloads
 
     # ---------- what is already here ----------
     def pending(self):
@@ -141,11 +142,17 @@ class Updater:
             self.status = f"Update {latest} wordt gedownload…"
             req = urllib.request.Request(url, headers={"User-Agent": "SpotiParty-Updater"})
             with urllib.request.urlopen(req, timeout=60) as r, open(part, "wb") as out:
+                total = int(asset.get("size") or r.headers.get("Content-Length") or 0)
+                done = 0
+                self.progress = (0, total)
                 while True:
                     chunk = r.read(1 << 16)
                     if not chunk:
                         break
                     out.write(chunk)
+                    done += len(chunk)
+                    self.progress = (done, total)
+            self.progress = None
             if part.stat().st_size < MIN_SIZE or (asset.get("size") and part.stat().st_size != asset["size"]):
                 part.unlink()
                 self.status = ""
@@ -154,6 +161,7 @@ class Updater:
             self.ready = (latest, dest)
             return self.ready
         except Exception:   # offline, GitHub rate limit, disk full: try again later
+            self.progress = None
             if self.status.startswith("Update"):
                 self.status = ""
             return self.pending()
@@ -175,14 +183,15 @@ class Updater:
         # 1. Wait until this SpotiParty.exe has quit (the program and its unpacker, and any other copy of it);
         #    after 30 s stop it: the setup can't replace a running .exe, and the Restart Manager the setup asks
         #    for can't always close it (on Windows on ARM it gives up on the emulator's cache).
-        # 2. Install silently. A setup that fails is removed, so the next start doesn't try it again.
+        # 2. Install with only the setup's progress window (no questions). A setup that fails is removed, so the
+        #    next start doesn't try it again.
         # 3. Start the new version (the old one again if the setup failed), always.
         script = f"""$ErrorActionPreference = 'SilentlyContinue'
 $old = {{ Get-Process -Name SpotiParty | Where-Object {{ $_.Path -eq {ps(exe)} }} }}
 & $old | Wait-Process -Timeout 30
 & $old | Stop-Process -Force
 Start-Sleep -Seconds 1
-$p = Start-Process -FilePath {ps(update)} -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/CLOSEAPPLICATIONS' -Wait -PassThru
+$p = Start-Process -FilePath {ps(update)} -ArgumentList '/SILENT','/SUPPRESSMSGBOXES','/NORESTART','/CLOSEAPPLICATIONS' -Wait -PassThru
 if (-not $p -or $p.ExitCode -ne 0) {{ Remove-Item -LiteralPath {ps(update)} -Force }}
 Start-Process -FilePath {ps(exe)} -ArgumentList {"'--updated','--open'" if reopen else "'--updated'"}
 """
