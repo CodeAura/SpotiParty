@@ -1,0 +1,9 @@
+{
+  "version": "3.7.0",
+  "title": "Nieuw in SpotiParty 3.7.0",
+  "items": [
+    ["sparkles", "Wat is er nieuw", "Na een update zie je hier in het kort wat er veranderd is. Liever niet? Zet het hieronder uit, of later bij Hub."],
+    ["users", "Je Jam-link blijft staan", "De Hub onthoudt een werkende Jam-link, ook na een herstart. Werkt hij niet meer of speelt er een ander account, dan haalt hij hem weg en knippert de kaart Spotify Jam."],
+    ["monitor", "Gastenpagina in een nieuw jasje", "Gasten zien eerst wat ze vanavond kunnen doen en tikken op Doe mee."]
+  ]
+}

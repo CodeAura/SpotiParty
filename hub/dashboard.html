@@ -189,6 +189,19 @@
     background: #a1cca51f; color: #e3f1e4; font-size: 14px; }
   .jam-alert .ic { flex: none; margin-top: 2px; }
   .jam-alert[hidden] { display: none; }   /* display: flex above would otherwise win over the hidden attribute */
+  /* Wat is er nieuw: once after an update, in this browser */
+  #news { position: fixed; inset: 0; z-index: 21; display: none; place-items: center; padding: 16px; background: #000000b8; }
+  #news.open { display: grid; }
+  #news .card { width: min(440px, 100%); max-height: calc(100vh - 32px); overflow: auto; background: #162418;
+    border: 1px solid #a1cca555; border-radius: 18px; padding: 20px; box-shadow: 0 20px 60px #000c; }
+  #news h3 { margin: 0 0 12px; font-size: 19px; display: flex; gap: 8px; align-items: center; }
+  #news .item { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+  #news .item .ic { width: 30px; height: 30px; padding: 7px; border-radius: 50%; background: #a1cca51f; flex: none; }
+  #news .item b { display: block; font-size: 15px; }
+  #news .item span { color: #d7e3d8; font-size: 14px; }
+  #news .foot { display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  #news .foot label { margin: 0 auto 0 0; display: flex; gap: 8px; align-items: center; color: var(--muted); }
+  #news .foot input { width: auto; }
   #jam-qr { width: 140px; height: 140px; background: #fff; border-radius: 10px; padding: 6px; display: block; }
 </style>
 </head>
@@ -418,6 +431,7 @@
     <input id="h-pin2" inputmode="numeric" maxlength="12" autocomplete="new-password" type="password">
     <div class="row"><button id="h-save">Opslaan</button><button id="h-logout">Uitloggen</button></div>
     <div class="msg" id="h-msg"></div>
+    <label class="check"><input type="checkbox" id="h-news"> Laat na een update zien wat er nieuw is</label>
   </section>
   </div>
   </div>
@@ -470,6 +484,17 @@
       <button class="skip" id="tour-skip">Tutorial overslaan</button>
       <button id="tour-back" title="Vorige"><i data-icon="arrow-left"></i></button>
       <button class="go" id="tour-next">Volgende</button>
+    </div>
+  </div>
+</div>
+
+<div id="news" role="dialog" aria-modal="true" aria-labelledby="news-title">
+  <div class="card">
+    <h3 id="news-title"></h3>
+    <div id="news-items"></div>
+    <div class="foot">
+      <label><input type="checkbox" id="news-show" checked> Laat dit zien na een update</label>
+      <button class="go" id="news-ok">Top!</button>
     </div>
   </div>
 </div>
@@ -911,7 +936,9 @@ async function refresh() {
   render();
   renderStart();
   if (state.pin_chosen === false && !chooseAsked) { chooseAsked = true; showChoose(); return; }
-  if (!tourAsked && !Tour.seen() && $("choose-form").hidden) { tourAsked = true; Tour.start(); }   // once, the first time
+  if (!tourAsked && !Tour.seen() && $("choose-form").hidden) {   // once, the first time: the tour, and no "new" yet
+    tourAsked = true; Tour.start(); News.skip();
+  } else if ($("choose-form").hidden && !$("tour").classList.contains("open")) News.maybe();
 }
 
 // ---------- Aan de slag: the steps to a working party, with what is done ----------
@@ -947,6 +974,38 @@ $("start-steps").onclick = e => {
   if (b) $(b.dataset.go).scrollIntoView({ behavior: "smooth", block: "start" });
 };
 $("start-hide").onclick = () => { store.set("start-hidden", "1"); $("start").hidden = true; };
+
+// ---------- Wat is er nieuw: once after an update (hub/whats_new.json), unless turned off ----------
+const News = (() => {
+  let asked = false, news = null;
+  const load = async () => news || (news = await fetch("/whats_new.json", { cache: "no-store" }).then(r => r.json()).catch(() => null));
+  const off = () => store.get("news-off") === "1";
+  async function skip() { const n = await load(); if (n) store.set("news", n.version); }   // first use: nothing is new
+  async function maybe() {
+    if (asked) return;
+    asked = true;
+    const n = await load();
+    if (!n || store.get("news") === n.version) return;
+    if (off()) { store.set("news", n.version); return; }
+    $("news-title").innerHTML = Icon.svg("sparkles") + esc(n.title || "Nieuw in SpotiParty " + n.version);
+    $("news-items").innerHTML = (n.items || []).map(([icon, title, text]) =>
+      `<div class="item">${Icon.svg(icon)}<div><b>${esc(title)}</b><span>${esc(text)}</span></div></div>`).join("");
+    $("news-show").checked = true;
+    $("news").classList.add("open");
+    $("news-ok").focus();
+  }
+  function close() {
+    store.set("news", news.version);
+    store.set("news-off", $("news-show").checked ? "0" : "1");
+    $("h-news").checked = !off();
+    $("news").classList.remove("open");
+  }
+  $("news-ok").onclick = close;
+  addEventListener("keydown", e => { if (e.key === "Escape" && $("news").classList.contains("open")) close(); });
+  $("h-news").checked = !off();
+  $("h-news").onchange = () => store.set("news-off", $("h-news").checked ? "0" : "1");
+  return { maybe, skip };
+})();
 
 // ---------- the tour: every card explained, one step at a time ----------
 const Tour = (() => {

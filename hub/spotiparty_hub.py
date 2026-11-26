@@ -699,7 +699,8 @@ class HubHandler(http.server.BaseHTTPRequestHandler):
     server_version = "SpotiPartyHub/1"
     STATIC = {"/": ("dashboard.html", "text/html; charset=utf-8"),
               "/qr.js": ("qr.js", "text/javascript; charset=utf-8"),
-              "/icons.js": ("icons.js", "text/javascript; charset=utf-8")}
+              "/icons.js": ("icons.js", "text/javascript; charset=utf-8"),
+              "/whats_new.json": ("whats_new.json", "application/json; charset=utf-8")}   # the dashboard's "Wat is er nieuw"
     SCREEN_FILES = {"index.html": "text/html; charset=utf-8", "party.js": "text/javascript; charset=utf-8",
                     "hub.js": "text/javascript; charset=utf-8", "qr.js": "text/javascript; charset=utf-8",
                     "icons.js": "text/javascript; charset=utf-8"}

@@ -14,7 +14,7 @@ Een release op GitHub is voor drie dingen tegelijk de bron:
 | De **auto-updater** (Mac, vanaf 2.7.1) | `SpotiParty-macos-apple-silicon.dmg` en `SpotiParty-macos-intel.dmg`, met precies die naam |
 | **HACS** (Home Assistant)   | `spotiparty-card.js` als bijlage           |
 
-De nieuwste release is nu [**v3.6.9**](https://github.com/CodeAura/SpotiParty/releases/tag/v3.6.9), met `SpotiParty-Setup-3.6.9.exe`, `SpotiParty-macos-apple-silicon.dmg` en `spotiparty-card.js`.
+De nieuwste release is nu [**v3.7.0**](https://github.com/CodeAura/SpotiParty/releases/tag/v3.7.0), met `SpotiParty-Setup-3.7.0.exe`, `SpotiParty-macos-apple-silicon.dmg` en `spotiparty-card.js`.
 
 ## Stap voor stap
 
@@ -23,6 +23,12 @@ De nieuwste release is nu [**v3.6.9**](https://github.com/CodeAura/SpotiParty/re
 ### Kies het versienummer
 
 Altijd drie getallen, zoals `2.7.1`. De auto-updater vergelijkt het met de versie in de app (`desktop/sp_version.py`) en installeert alleen een **hogere** versie.
+{% endstep %}
+
+{% step %}
+### Schrijf wat er nieuw is
+
+Zet het nieuwe versienummer en twee of drie korte punten in `hub/whats_new.json`. Het Hub-dashboard toont dat één keer na de update ("Wat is er nieuw"), behalve bij wie het heeft uitgezet of het dashboard voor het eerst gebruikt.
 {% endstep %}
 
 {% step %}
