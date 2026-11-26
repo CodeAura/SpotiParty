@@ -10,7 +10,10 @@
 **Het nummer dat speelt, groot in beeld: met meelopende songtekst, de komende nummers en een QR-code waarmee je
 vrienden meedoen met je Spotify Jam, het volgende nummer kiezen, muziekbingo spelen en meedoen met de muziekquiz.**
 
-## [Website SpotiParty](https://spotiparty.netlify.app/#)
+## [Website](https://spotiparty.netlify.app/#) · [📖 Handleiding](https://spotiparty.gitbook.io/spotiparty/)
+
+Alles over installeren, de Hub, de feestspellen en problemen oplossen staat in de
+**[handleiding op GitBook](https://spotiparty.gitbook.io/spotiparty/)**.
 
 Voor je **Android TV**, je **PC**, een **Raspberry Pi** en je **Home Assistant**-dashboard, allemaal bestuurd vanuit
 één **Hub**.
@@ -566,7 +569,7 @@ Meer oplossingen in [docs/hulp](docs/hulp/problemen-oplossen.md).
 | `android/` | De Android TV-app `party-mode` (een WebView met het scherm van de Hub); `lyrics` is niet meer nodig |
 | `pi/` | Het installatiescript voor de Raspberry Pi |
 | `tools/build_ha.py` | Maakt `dist/spotiparty-card.js` voor Home Assistant |
-| `docs/` | De volledige handleiding (GitBook) |
+| `docs/` | De volledige [handleiding](https://spotiparty.gitbook.io/spotiparty/), gesynchroniseerd met GitBook |
 
 Een release maak je door een tag als `v2.7.1` te pushen: de workflow **Desktop apps** bouwt dan de Windows-setup en
 de Mac-`.dmg`'s en zet die bij de release. Lokaal kan het ook, met `desktop/build-windows.ps1` en
