@@ -1,7 +1,7 @@
 {
-  "version": "3.7.1",
-  "title": "Nieuw in SpotiParty 3.7.1",
+  "version": "3.7.2",
+  "title": "Nieuw in SpotiParty 3.7.2",
   "items": [
-    ["mic-vocal", "Songteksten op de tv", "Kon een tv een songtekst een keer niet vinden, dan bleef dat nummer zonder tekst. Nu probeert het scherm het later opnieuw, net als de webapp."]
+    ["tv", "De tv ziet er hetzelfde uit", "Op een Android TV ontbrak de vage cover op de achtergrond, waardoor de kleuren anders waren dan in de webapp. Nu is het scherm op de tv gelijk."]
   ]
 }
