@@ -28,7 +28,7 @@ LYRICS = ("S[00:41.00]De zon zakt weg achter de daken\n[00:48.50]We hebben nerge
           "[00:55.00]Dit is onze zomeravond\n[01:08.00]Zet hem harder, nog één keer\n"
           "[01:15.00]We dansen tot de lampen aangaan\n[01:22.00]En niemand gaat nog naar huis")
 SEED = f"""
-localStorage.setItem("party.lyr.de voorbeelden\\nzomeravond", {LYRICS!r});
+localStorage.setItem("party.lyr.v2.de voorbeelden\\nzomeravond", {LYRICS!r});
 localStorage.setItem("hub.pin", "1234");
 localStorage.setItem("hub.tour", "done");
 localStorage.setItem("gast.voter", "g-demo-sanne-0001");

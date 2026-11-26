@@ -6,7 +6,7 @@
 The real Hub (hub/spotiparty_hub.py) runs with a fake Spotify account: it "plays" Zomeravond by De Voorbeelden
 (cover: tools/demo/cover.jpg) and the party games have five guests. Nothing talks to Spotify. Open the screen at
 http://127.0.0.1:8770/scherm/?hub=127.0.0.1:8770&name=Woonkamer-pc and seed the lyrics first (see LYRICS below:
-the screen reads them from localStorage "party.lyr.de voorbeelden\\nzomeravond").
+the screen reads them from localStorage "party.lyr.v2.de voorbeelden\\nzomeravond").
 
 Scenes: screen, games, notice, quiz, reveal, winner.
 """

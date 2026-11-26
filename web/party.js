@@ -161,14 +161,15 @@ async function loadLyrics(t) {
   lyr = { key, times: [], lines: [], synced: false, shown: -2 };
   showLines(-1, "");
   if (store.get("lyrics", "on") !== "on") return;
-  const cacheKey = "lyr." + key.toLowerCase();
+  const cacheKey = "lyr.v2." + key.toLowerCase();   // v2: picked by length; v1 entries could be another version
   // Only lyrics that were found are kept. "Not found" is remembered for 10 minutes in this page only: on a TV the
   // song can arrive first with half its details, and a miss kept for good would never show these lyrics again.
   // (An empty entry stored by an older version counts as not stored.)
   let found = store.get(cacheKey, null) || null;
   if (found === null && !(Date.now() - (lyricMiss.get(cacheKey) || 0) < 600000)) {
     try { found = await fetchLyrics(t.artist, t.title, t.album, Math.round(t.durationMs / 1000)); } catch { found = ""; }
-    if (found) { cacheLyrics(cacheKey, found); lyricMiss.delete(cacheKey); } else lyricMiss.set(cacheKey, Date.now());
+    // Kept only when the length was known: without it, lrclib may give another version with other timing.
+    if (found) { if (t.durationMs > 0) cacheLyrics(cacheKey, found); lyricMiss.delete(cacheKey); } else lyricMiss.set(cacheKey, Date.now());
   }
   if (lyr.key !== key) return;
   if (!found) { showLines(-1, "Geen songtekst voor dit nummer"); return; }
@@ -192,8 +193,10 @@ async function fetchLyrics(artist, title, album, seconds) {
   r = await fetch(api + "search?" + new URLSearchParams({ track_name: title, artist_name: first }));
   if (!r.ok) throw new Error("lrclib " + r.status);
   let plain = "";
-  for (const item of await r.json()) {
-    if (seconds > 0 && item.duration > 0 && Math.abs(item.duration - seconds) > 4) continue;
+  // Versions of one song differ by seconds in timing: the one closest in length goes first.
+  const gap = i => seconds > 0 && i.duration > 0 ? Math.abs(i.duration - seconds) : 0;
+  for (const item of (await r.json()).sort((x, y) => gap(x) - gap(y))) {
+    if (gap(item) > 4) continue;
     const p = pick(item);
     if (!p) continue;
     if (p[0] === "S") return p;
