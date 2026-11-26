@@ -161,14 +161,16 @@
   #tour .hole { position: absolute; border-radius: 18px; box-shadow: 0 0 0 9999px #000000b8, 0 0 0 3px var(--accent);
     transition: all .35s cubic-bezier(.2, .8, .2, 1); pointer-events: none; }
   #tour.center .hole { box-shadow: 0 0 0 9999px #000000b8; }   /* no card to show: just the dark backdrop */
-  #tour .tip { position: absolute; width: min(380px, calc(100vw - 24px)); background: #162418; border: 1px solid #a1cca555;
+  #tour .tip { position: absolute; width: min(380px, calc(100vw - 24px)); max-height: calc(100vh - 24px); overflow: auto; background: #162418; border: 1px solid #a1cca555;
     border-radius: 16px; padding: 18px 18px 14px; box-shadow: 0 20px 60px #000c; transition: top .35s, left .35s; }
   #tour .tip h3 { margin: 0 0 6px; font-size: 18px; display: flex; gap: 8px; align-items: center; }
   #tour .tip p { color: #d7e3d8; font-size: 14px; margin: 0; }
   #tour .tip ul { margin: 8px 0 0; padding-left: 18px; color: #d7e3d8; font-size: 14px; }
   #tour .tip li { margin: 3px 0; }
-  #tour .foot { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
-  #tour .dots { display: flex; gap: 5px; margin-right: auto; }
+  /* The dots on a line of their own, the buttons below them: with 11 steps one row was wider than the card. */
+  #tour .foot { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  #tour .dots { display: flex; gap: 5px; flex: 1 0 100%; margin-bottom: 4px; }
+  #tour .skip { margin-right: auto; }
   #tour .dots i { width: 7px; height: 7px; border-radius: 50%; background: #ffffff30; }
   #tour .dots i.on { background: var(--accent); width: 18px; border-radius: 99px; }
   #tour .skip { background: none; color: var(--muted); padding: 8px 4px; text-decoration: underline; }
