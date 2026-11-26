@@ -4,7 +4,6 @@ import { gsap, ScrollTrigger, useGSAP } from "../lib/motion.js";
 import SpotlightCard from "../components/reactbits/SpotlightCard/SpotlightCard.jsx";
 import TiltedCard from "../components/reactbits/TiltedCard/TiltedCard.jsx";
 import CountUp from "../components/reactbits/CountUp/CountUp.jsx";
-import ShinyText from "../components/reactbits/ShinyText/ShinyText.jsx";
 import SplitText from "../components/reactbits/SplitText/SplitText.jsx";
 import Magnet from "../components/reactbits/Magnet/Magnet.jsx";
 import Pic from "../components/Pic.jsx";
@@ -49,7 +48,7 @@ export function Party() {
         <div className="wrap party-head">
           <span className="eyebrow">Feestspellen</span>
           <h2>Meer dan meezingen</h2>
-          <p className="lead">Raad het nummer en de andere feestspellen komen straks in het <a href="#prijzen">Feestpakket</a>.</p>
+          <p className="lead">Gasten spelen mee op hun telefoon: Raad het nummer, Muziekbingo en stemmen op het volgende nummer. Gratis, gewoon in de Hub.</p>
         </div>
         <div className="party-track">
           {PANELS.map((p) => (
@@ -164,13 +163,11 @@ const HACS = "https://my.home-assistant.io/redirect/hacs_repository/?owner=CodeA
 
 const FREE = ["Windows- en Mac-app, werkt zichzelf bij", "Hub met dashboard op je telefoon", "Songteksten, Jam-QR en Hierna",
   "Meldingen, pauze, gasten-wifi en berichten van gasten", "Android TV, Raspberry Pi, Home Assistant en Linux-server",
+  "Feestspellen: Raad het nummer, Muziekbingo, stemmen en de winnaar van de avond",
   "Open source, op GitHub"];
-const PARTY = ["Alles uit Gratis", "Stem het volgende nummer", "Muziekbingo op elke telefoon", "Raad het nummer",
-  "Stand en winnaar van de avond", "Eén keer betalen, geen abonnement"];
 
 export function Pricing() {
   const root = useRef(null);
-  const dialog = useRef(null);
   const rel = useLatestRelease();
   useGSAP(() => {
     const mm = gsap.matchMedia();
@@ -184,10 +181,10 @@ export function Pricing() {
     <section ref={root} id="prijzen">
       <div className="wrap center sec-head">
         <span className="eyebrow">Prijzen</span>
-        <h2>Gratis feest. Met spellen nog leuker.</h2>
-        <p className="lead">SpotiParty is open source en gratis. Wil je feestspellen spelen, dan is er straks het Feestpakket.</p>
+        <h2>Gratis feest, spellen inbegrepen.</h2>
+        <p className="lead">SpotiParty is open source en gratis: de apps, de Hub en de feestspellen.</p>
       </div>
-      <div className="wrap prices">
+      <div className="wrap prices single">
         <div className="price-wrap">
           <SpotlightCard className="price" spotlightColor="rgba(30, 215, 96, 0.16)" theme="dark">
             <h3>Gratis</h3>
@@ -205,26 +202,8 @@ export function Pricing() {
             </p>
           </SpotlightCard>
         </div>
-        <div className="price-wrap">
-          <SpotlightCard className="price hot" spotlightColor="rgba(255, 78, 138, 0.2)" theme="dark">
-            <span className="badge"><ShinyText text="Binnenkort" color="#ff9fbf" shineColor="#ffffff" speed={2.5} /></span>
-            <h3>Feestpakket</h3>
-            <p className="for">Feestspellen voor jou en je gasten</p>
-            <div className="amount">€11,99 <small>eenmalig</small></div>
-            <ul>{PARTY.map((t) => <li key={t}>{t}</li>)}</ul>
-            <button className="btn btn-ghost" onClick={() => dialog.current?.showModal()}>Binnenkort beschikbaar</button>
-          </SpotlightCard>
-        </div>
       </div>
-      <p className="note">Prijs inclusief btw. Spotify Premium is nodig om een Jam te starten.</p>
-
-      <dialog ref={dialog} className="checkout" aria-labelledby="co-title" onClick={(e) => e.target === dialog.current && dialog.current.close()}>
-        <h3 id="co-title">Het Feestpakket komt eraan</h3>
-        <p>Raad het nummer en de andere feestspellen komen binnenkort in het Feestpakket. Er wordt nu nog niets afgerekend;
-          SpotiParty zelf kun je al gratis downloaden.</p>
-        <div className="summary"><span>SpotiParty Feestpakket</span><span>€11,99</span></div>
-        <button className="btn btn-primary" onClick={() => dialog.current.close()}>Oké</button>
-      </dialog>
+      <p className="note">Spotify Premium is nodig om een Jam te starten.</p>
     </section>
   );
 }
@@ -234,7 +213,6 @@ const FAQ = [
   ["Wat is de Hub?", "Een klein programma op je pc, Mac, Raspberry Pi of Linux-server. Daar koppel je één keer Spotify en je Jam-link, en vanuit het dashboard op je telefoon bestuur je alle schermen."],
   ["Hoe krijgt mijn tv updates?", "Vanzelf. De tv-app toont het scherm rechtstreeks van je Hub. Werkt de Hub zichzelf bij, dan heeft de tv de nieuwe versie zodra je SpotiParty opent."],
   ["Is SpotiParty echt gratis?", "Ja. SpotiParty is open source: de apps, de Hub en de broncode staan gratis op GitHub, met updates. De Windows- en Mac-app werken zichzelf bij."],
-  ["Wat zit er in het Feestpakket?", "De feestspellen: gasten stemmen op het volgende nummer, spelen muziekbingo en Raad het nummer op hun telefoon, en alle punten tellen op tot de winnaar van de avond. Het kost €11,99, één keer, en komt binnenkort."],
   ["Kunnen mijn vrienden de muziek overnemen?", "Nee. Zet in je Jam de optie Gasten mogen afspelen bedienen uit, dan kunnen ze alleen nummers toevoegen. Overslaan kan alleen als jij de Skip-stemmen aanzet, en dan pas bij genoeg stemmen."],
   ["Werkt het op mijn tv?", "Op tv's en mediaspelers met Android TV of Google TV, Android 8 of nieuwer. Samsung (Tizen) en LG (webOS) worden niet ondersteund; sluit daar een pc, Mac of Raspberry Pi aan met HDMI."],
   ["Werkt het ook zonder Spotify, met Sonos bijvoorbeeld?", "Via Home Assistant werkt SpotiParty met elke media player: Sonos, Cast, Music Assistant, Plex en meer."],

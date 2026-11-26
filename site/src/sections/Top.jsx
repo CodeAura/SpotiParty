@@ -18,7 +18,7 @@ export function Nav() {
   }, { scope: ref });
   return (
     <>
-      <div className="concept"><span className="tag">Nieuw</span>SpotiParty is nu open source en gratis. Het Feestpakket met feestspellen komt binnenkort.</div>
+      <div className="concept"><span className="tag">Nieuw</span>SpotiParty is nu open source en gratis, feestspellen inbegrepen.</div>
       <nav ref={ref} className="nav">
         <div className="wrap">
           <a className="brand" href="#top"><img src="/assets/icon.png" alt="" width="34" height="34" />SpotiParty</a>

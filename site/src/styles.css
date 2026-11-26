@@ -181,6 +181,7 @@ section { position: relative; padding: 120px 0; }
 
 /* pricing */
 .prices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; align-items: stretch; max-width: 900px; }
+.prices.single { grid-template-columns: 1fr; max-width: 520px; }
 .price .downloads { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .price .downloads .hacs { grid-column: 1 / -1; }
 /* Home Assistant's own blue; dark text keeps it readable (white on this blue is too faint). */
