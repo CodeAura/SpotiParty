@@ -155,18 +155,20 @@ function accentFrom(url) {
 }
 
 // ---------- lyrics (lrclib.net) ----------
+const lyricMiss = new Map();   // cache key -> when the lyrics were last not found (this page only)
 async function loadLyrics(t) {
   const key = t.key;
   lyr = { key, times: [], lines: [], synced: false, shown: -2 };
   showLines(-1, "");
   if (store.get("lyrics", "on") !== "on") return;
   const cacheKey = "lyr." + key.toLowerCase();
-  let found = store.get(cacheKey, null);
-  if (found === null) {
-    try {
-      found = await fetchLyrics(t.artist, t.title, t.album, Math.round(t.durationMs / 1000));
-      cacheLyrics(cacheKey, found);
-    } catch { found = ""; }
+  // Only lyrics that were found are kept. "Not found" is remembered for 10 minutes in this page only: on a TV the
+  // song can arrive first with half its details, and a miss kept for good would never show these lyrics again.
+  // (An empty entry stored by an older version counts as not stored.)
+  let found = store.get(cacheKey, null) || null;
+  if (found === null && !(Date.now() - (lyricMiss.get(cacheKey) || 0) < 600000)) {
+    try { found = await fetchLyrics(t.artist, t.title, t.album, Math.round(t.durationMs / 1000)); } catch { found = ""; }
+    if (found) { cacheLyrics(cacheKey, found); lyricMiss.delete(cacheKey); } else lyricMiss.set(cacheKey, Date.now());
   }
   if (lyr.key !== key) return;
   if (!found) { showLines(-1, "Geen songtekst voor dit nummer"); return; }
