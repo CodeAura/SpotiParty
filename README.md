@@ -602,4 +602,4 @@ SpotiParty daar als kaart, en leveren de songteksten ook *Now playing* in de lau
 
 SpotiParty heeft niets met Spotify AB te maken. Spotify is een handelsmerk van Spotify AB.
 
-© 2026 Mike den Hertog. Alle rechten voorbehouden; zie de [licentievoorwaarden](LICENSE).
+© 2026 CodeAura. Alle rechten voorbehouden; zie de [licentievoorwaarden](LICENSE).
