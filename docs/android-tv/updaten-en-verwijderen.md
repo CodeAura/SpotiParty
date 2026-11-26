@@ -16,7 +16,7 @@ Meestal hoeft dat niet: het scherm komt van de Hub en is dus altijd zo nieuw als
 ```bash
 cd SpotiParty
 git pull
-cd android/party-mode && ./gradlew assembleRelease
+cd android/spotiparty && ./gradlew assembleRelease
 cd ../..
 ```
 
@@ -24,7 +24,7 @@ cd ../..
 
 ```bash
 adb connect 192.168.1.50
-adb install -r android/party-mode/app/build/outputs/apk/release/app-release.apk
+adb install -r android/spotiparty/app/build/outputs/apk/release/app-release.apk
 ```
 
 4. Zet foutopsporing weer uit.

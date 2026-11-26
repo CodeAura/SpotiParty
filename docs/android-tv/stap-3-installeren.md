@@ -26,7 +26,7 @@ Controleer de verbinding met `adb devices`. Je tv staat in de lijst met de statu
 ### SpotiParty installeren
 
 ```bash
-adb install -r android/party-mode/app/build/outputs/apk/release/app-release.apk
+adb install -r android/spotiparty/app/build/outputs/apk/release/app-release.apk
 ```
 
 Je ziet `Success` als het gelukt is. De `-r` zorgt ervoor dat een oudere versie gewoon wordt vervangen.

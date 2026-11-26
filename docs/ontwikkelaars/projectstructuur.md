@@ -8,7 +8,7 @@ icon: folder-tree
 ```
 SpotiParty/
 ├── android/
-│   ├── party-mode/   SpotiParty voor Android TV: een WebView met http://<hub>:8770/scherm/
+│   ├── spotiparty/   SpotiParty voor Android TV: een WebView met http://<hub>:8770/scherm/
 │   └── lyrics/       Oude Lyrics-add-on (niet meer nodig)
 ├── web/              Het feestscherm: PC, Raspberry Pi, Home Assistant en (via de Hub) Android TV
 │   ├── index.html

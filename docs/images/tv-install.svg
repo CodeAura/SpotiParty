@@ -21,7 +21,7 @@
     <text x="372" y="99" fill="#fff" font-size="16" font-weight="700">Bouwen op de PC</text>
     <rect x="336" y="118" width="230" height="80" rx="8" fill="#0a110b"/>
     <g font-family="Consolas, monospace" font-size="12" fill="#a1cca5">
-      <text x="346" y="140">cd android/party-mode</text>
+      <text x="346" y="140">cd android/spotiparty</text>
       <text x="346" y="160">./gradlew assembleRelease</text>
       <text x="346" y="180">(idem in android/lyrics)</text>
     </g>

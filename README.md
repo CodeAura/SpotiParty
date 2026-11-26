@@ -355,7 +355,7 @@ Je hebt **JDK 17** en de **Android SDK** (platform 34) nodig. Installeer je
 
 ```bash
 git clone https://github.com/CodeAura/SpotiParty.git
-cd SpotiParty/android/party-mode
+cd SpotiParty/android/spotiparty
 ./gradlew assembleRelease
 cd ../..
 ```
@@ -372,7 +372,7 @@ Vervang `192.168.1.50` door het IP-adres van je tv. Op de tv verschijnt **"USB-f
 **Toestaan**. Installeer daarna de app:
 
 ```bash
-adb install -r android/party-mode/app/build/outputs/apk/release/app-release.apk
+adb install -r android/spotiparty/app/build/outputs/apk/release/app-release.apk
 ```
 
 Had je de oude **Lyrics**-app nog? Die is niet meer nodig: `adb uninstall io.github.cleanyourtv.lyrics`.
@@ -587,7 +587,7 @@ Meer oplossingen in [docs/hulp](docs/hulp/problemen-oplossen.md).
 | `web/` | Het feestscherm (HTML/JS), plus `serve.py` |
 | `hub/` | De Hub: `spotiparty_hub.py`, het dashboard, de gastenpagina, Spotify en de feestspellen |
 | `desktop/` | De desktop-app, de auto-updater, de Windows-installer en de Mac-buildscript |
-| `android/` | De Android TV-app `party-mode` (een WebView met het scherm van de Hub); `lyrics` is niet meer nodig |
+| `android/` | De Android TV-app `spotiparty` (een WebView met het scherm van de Hub); `lyrics` is niet meer nodig |
 | `pi/` | Het installatiescript voor de Raspberry Pi |
 | `tools/build_ha.py` | Maakt `dist/spotiparty-card.js` voor Home Assistant |
 | `docs/` | De volledige [handleiding](https://spotiparty.gitbook.io/spotiparty/), gesynchroniseerd met GitBook |

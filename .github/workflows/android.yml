@@ -18,7 +18,7 @@ jobs:
           java-version: "17"
       # The ubuntu runner has the Android SDK already (ANDROID_HOME); android-actions/setup-android broke on it.
       - name: Build SpotiParty
-        working-directory: android/party-mode
+        working-directory: android/spotiparty
         run: ./gradlew --no-daemon assembleRelease
       - name: Build Lyrics
         working-directory: android/lyrics

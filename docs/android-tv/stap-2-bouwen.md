@@ -5,7 +5,7 @@ icon: hammer
 
 # Stap 2: De app bouwen
 
-Je bouwt één APK-bestand: **SpotiParty** (`android/party-mode`). Het project gebruikt geen externe bibliotheken, dus het bouwen gaat snel.
+Je bouwt één APK-bestand: **SpotiParty** (`android/spotiparty`). Het project gebruikt geen externe bibliotheken, dus het bouwen gaat snel.
 
 ## Wat je op je PC nodig hebt
 
@@ -25,7 +25,7 @@ Het project gebruikt de Gradle-wrapper (Gradle 8.9) en de Android Gradle Plugin 
 {% tab title="macOS en Linux" %}
 ```bash
 git clone https://github.com/CodeAura/SpotiParty.git
-cd SpotiParty/android/party-mode
+cd SpotiParty/android/spotiparty
 ./gradlew assembleRelease
 cd ../..
 ```
@@ -34,7 +34,7 @@ cd ../..
 {% tab title="Windows" %}
 ```bat
 git clone https://github.com/CodeAura/SpotiParty.git
-cd SpotiParty\android\party-mode
+cd SpotiParty\android\spotiparty
 gradlew.bat assembleRelease
 cd ..\..
 ```
@@ -45,7 +45,7 @@ De eerste keer duurt het een paar minuten, omdat Gradle alles downloadt. Daarna 
 
 | App        | Bestand                                                            |
 | ---------- | ------------------------------------------------------------------ |
-| SpotiParty | `android/party-mode/app/build/outputs/apk/release/app-release.apk` |
+| SpotiParty | `android/spotiparty/app/build/outputs/apk/release/app-release.apk` |
 
 {% hint style="info" %}
 De app wordt ondertekend met de debug-sleutel van je PC (in je gebruikersmap onder `.android/debug.keystore`). Bouw een update op dezelfde PC, dan installeert hij over de oude heen.
