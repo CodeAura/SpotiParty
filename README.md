@@ -1,11 +1,6 @@
 <div align="center">
 
-<h1>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="brand/spotiparty-horizontal-reversed.svg">
-    <img src="brand/spotiparty-horizontal.svg" alt="SpotiParty" width="420">
-  </picture>
-</h1>
+<img src="https://raw.githubusercontent.com/CodeAura/SpotiParty/main/brand/png/spotiparty-banner.png" alt="SpotiParty" width="480">
 
 **Het nummer dat speelt, groot in beeld: met meelopende songtekst, de komende nummers en een QR-code waarmee je
 vrienden meedoen met je Spotify Jam, het volgende nummer kiezen, muziekbingo spelen en meedoen met de muziekquiz.**
@@ -20,7 +15,7 @@ Voor je **Android TV**, je **PC**, een **Raspberry Pi** en je **Home Assistant**
 
 [![Nieuwste release](https://img.shields.io/github/v/release/CodeAura/SpotiParty?label=nieuwste%20versie)](../../releases/latest)
 
-<img src="docs/images/web-wide.png" alt="SpotiParty: de hoes van het nummer als glas over de wazige achtergrond, de meelopende songtekst, de komende nummers en de Jam-QR-code" width="860">
+<img src="https://raw.githubusercontent.com/CodeAura/SpotiParty/main/docs/images/web-wide.png" alt="SpotiParty: de hoes van het nummer als glas over de wazige achtergrond, de meelopende songtekst, de komende nummers en de Jam-QR-code" width="860">
 
 </div>
 
@@ -65,7 +60,7 @@ Voor je **Android TV**, je **PC**, een **Raspberry Pi** en je **Home Assistant**
 
 ## ✨ Wat het doet
 
-<img src="docs/images/web-wide-explained.png" alt="Uitleg van het scherm: 1 wat er speelt, 2 de songtekst, 3 de komende nummers, 4 de QR-code" width="860">
+<img src="https://raw.githubusercontent.com/CodeAura/SpotiParty/main/docs/images/web-wide-explained.png" alt="Uitleg van het scherm: 1 wat er speelt, 2 de songtekst, 3 de komende nummers, 4 de QR-code" width="860">
 
 | | |
 |---|---|
@@ -124,7 +119,7 @@ Alle versies en downloads vind je bij [Releases](../../releases).
 
 ## 🧭 Hoe het in elkaar zit
 
-<img src="docs/images/overview.svg" alt="De Hub in het midden: hij leest je Spotify-account en stuurt alle schermen aan (Android TV, PC, Raspberry Pi, Home Assistant); jij bedient hem via het dashboard, gasten via de gastenpagina" width="860">
+<img src="https://raw.githubusercontent.com/CodeAura/SpotiParty/main/docs/images/overview.svg" alt="De Hub in het midden: hij leest je Spotify-account en stuurt alle schermen aan (Android TV, PC, Raspberry Pi, Home Assistant); jij bedient hem via het dashboard, gasten via de gastenpagina" width="860">
 
 De **Hub** is het hart: een klein programma op je PC of Raspberry Pi met een admin-dashboard op poort **8770**. Daar
 koppel je één keer je Spotify-account en de link van je Jam, en alle schermen in huis volgen dat.
@@ -169,7 +164,7 @@ het SpotiParty-venster. Er draait één Hub per netwerk: start je de app op een 
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/CodeAura/SpotiParty/main/server/proxmox.sh)"
 ```
 
-<img src="docs/images/hub-dashboard.png" alt="Het Hub-dashboard: vier schermen online, Muziek bedienen met de account-wisselaar (Mike en Sanne), en de Spotify Jam met QR-code" width="860">
+<img src="https://raw.githubusercontent.com/CodeAura/SpotiParty/main/docs/images/hub-dashboard.png" alt="Het Hub-dashboard: vier schermen online, Muziek bedienen met de account-wisselaar (Mike en Sanne), en de Spotify Jam met QR-code" width="860">
 
 | Onderdeel in het dashboard | Wat het doet |
 |---|---|
@@ -196,7 +191,7 @@ Alles wat iets verandert, vraagt de PIN. Na vijf foute pogingen wacht de Hub een
 Sinds versie 2.5.0 koppel je Spotify **op één plek: de Hub**. Daarvoor heb je een eigen, gratis Spotify-app nodig.
 Spotify vraagt dit om te weten welke app je login gebruikt.
 
-<img src="docs/images/spotify-app.svg" alt="Schematisch: het formulier Create app met Redirect URI en Web API gemarkeerd" width="860">
+<img src="https://raw.githubusercontent.com/CodeAura/SpotiParty/main/docs/images/spotify-app.svg" alt="Schematisch: het formulier Create app met Redirect URI en Web API gemarkeerd" width="860">
 
 1. Ga naar **[developer.spotify.com/dashboard](https://developer.spotify.com/dashboard)**, log in met je eigen
    Spotify-account en kies **Create app**.
@@ -227,7 +222,7 @@ Spotify vraagt dit om te weten welke app je login gebruikt.
 Alles stel je in bij **🎉 Feest** in het Hub-dashboard. Ze werken op de Windows- en Mac-app, de Android TV-app,
 de Raspberry Pi en de Home Assistant-kaart.
 
-<img src="docs/images/party-games.png" alt="Feestspellen: op het scherm de stemkaart voor het volgende nummer onder de nummerinfo, een berichtje van een gast boven de songtekst en de muziekbingo; daaronder de winnaar van de avond met de top 5; op de telefoon de gastenpagina met naam en punten, stemmen en de bingokaart" width="860">
+<img src="https://raw.githubusercontent.com/CodeAura/SpotiParty/main/docs/images/party-games.png" alt="Feestspellen: op het scherm de stemkaart voor het volgende nummer onder de nummerinfo, een berichtje van een gast boven de songtekst en de muziekbingo; daaronder de winnaar van de avond met de top 5; op de telefoon de gastenpagina met naam en punten, stemmen en de bingokaart" width="860">
 
 | | |
 |---|---|
@@ -296,7 +291,7 @@ netwerk kan erbij. Draait de Hub op een andere computer, vul dan het adres in bi
 
 ### Instellen
 
-<img src="docs/images/web-settings.png" alt="Het instellingenscherm van een SpotiParty-scherm: Spotify via de Hub, de Jam-link en het adres van de Hub" width="420">
+<img src="https://raw.githubusercontent.com/CodeAura/SpotiParty/main/docs/images/web-settings.png" alt="Het instellingenscherm van een SpotiParty-scherm: Spotify via de Hub, de Jam-link en het adres van de Hub" width="420">
 
 Open de instellingen met **S**, of met de ⚙ die verschijnt zodra je de muis beweegt. Kies bij **Wat speelt er?**
 *Spotify via de Hub* of een *Home Assistant media player*. Spotify en de Jam-link stel je in het Hub-dashboard in;
@@ -339,7 +334,7 @@ TCL, Hisense en NVIDIA Shield. Je installeert één app: **SpotiParty**. Die too
 rechtstreeks van je Hub (`http://<hub>:8770/scherm/`). Werkt de Hub zichzelf bij, dan heeft de tv meteen de nieuwe
 versie: de app zelf hoef je daarvoor niet opnieuw te installeren.
 
-<img src="docs/images/tv-install.svg" alt="Vijf stappen: debuggen aan, bouwen, installeren, toegang geven, openen en verbinden met de Hub" width="860">
+<img src="https://raw.githubusercontent.com/CodeAura/SpotiParty/main/docs/images/tv-install.svg" alt="Vijf stappen: debuggen aan, bouwen, installeren, toegang geven, openen en verbinden met de Hub" width="860">
 
 ### Stap 1: Debuggen aanzetten op de tv
 
@@ -477,7 +472,7 @@ pc, en bovenaan het Hub-dashboard.
 | `name: Woonkamer-tablet` | De naam van dit scherm in het Hub-dashboard. |
 
 <table><tr>
-<td><img src="docs/images/web-card.png" alt="SpotiParty als smalle kaart in een dashboard: hoes, titel, het eerstvolgende nummer, de songtekst en de QR-code" width="260"></td>
+<td><img src="https://raw.githubusercontent.com/CodeAura/SpotiParty/main/docs/images/web-card.png" alt="SpotiParty als smalle kaart in een dashboard: hoes, titel, het eerstvolgende nummer, de songtekst en de QR-code" width="260"></td>
 <td>
 
 **Werkt meteen, zonder token.** De kaart leest de spelers uit je eigen dashboard.
