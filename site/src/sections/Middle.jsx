@@ -135,7 +135,7 @@ const HUB = [
   [MessageSquareText, "Meldingen", "“De pizza's zijn er!” groot op de schermen die je kiest."],
   [Coffee, "Korte pauze", "Een aftelklok op alle schermen. De muziek pauzeert en gaat daarna vanzelf verder."],
   [Wifi, "Gasten-wifi", "Een QR-code naast de Jam-code: één scan en je gasten zitten op je gastennetwerk."],
-  [Users, "Eén Jam-link", "Eén keer plakken per feest, en elk scherm in huis toont dezelfde QR-code. Werkt de link niet meer, dan haalt de Hub hem weg."],
+  [Users, "Eén Jam-link", "Eén keer plakken, en elk scherm in huis toont dezelfde QR-code. Werkt de link niet meer, dan haalt de Hub hem weg."],
   [UserRoundCog, "Meerdere Spotify-accounts", "Koppel tot vijf accounts, van jou en je huisgenoten, en kies met één tik wie de muziek levert."],
   [MessageSquareText, "Berichten van gasten", "Gasten sturen een berichtje vanaf hun telefoon; jij keurt het goed en het staat even boven de songtekst."],
   [Compass, "Uitleg bij de eerste keer", "Een korte rondleiding laat zien waar alles staat, en Aan de slag vertelt wat er nog moet gebeuren. Overslaan kan altijd."],

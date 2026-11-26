@@ -128,8 +128,11 @@ class Hub:
         # Skip votes and the "Raad het nummer" quiz, played from the guests' phones (/gast).
         self.party = sp_party.Party(self.cfg)
         self.guest_hits = {}    # ip -> [count, window start]: a phone can't flood the hub
-        # The Jam link: in memory only, and gone when another Spotify account plays (a Jam belongs to one account).
-        self.jam, self.jam_acct, self.jam_note = "", None, ""
+        # The Jam link: kept in hub.json while it works, and gone when it stops working or another Spotify account
+        # plays (a Jam belongs to one account). A link saved before the account was noted belongs to the active one.
+        act = self.spotify.active()
+        self.jam, self.jam_note = self.cfg.get("jam", ""), ""
+        self.jam_acct = self.cfg.get("jam_acct") or (act["key"] if act and self.jam else None)
         self.screens = {}       # id -> {name, kind, ip, seen, song}
         self.notice = None      # {id, text, style, until (ms or 0 = until removed), targets}
         self.brk = None         # {id, title, minutes, until (ms), targets}
@@ -153,7 +156,6 @@ class Hub:
         if self.setup_pin and cfg.get("pin") and "pin_chosen" not in cfg:
             cfg["pin_chosen"] = True
         cfg.setdefault("name", platform.node().split(".")[0] or "SpotiParty")
-        cfg.pop("jam", None)   # the Jam link lives in memory only (see self.jam): every party starts a new Jam
         cfg.setdefault("wifi", {"ssid": "", "password": "", "security": "WPA", "hidden": False, "show": False})
         cfg.setdefault("names", {})
         self.file.parent.mkdir(parents=True, exist_ok=True)
@@ -179,23 +181,28 @@ class Hub:
         key = act["key"] if act else None
         with self.lock:
             if self.jam and key != self.jam_acct:
-                self.jam = ""
-                self.jam_note = ("Er speelt nu een ander Spotify-account. De oude Jam-link is weggehaald: start een nieuwe Jam "
-                                 "en plak die link hier.")
+                self._set_jam("", None, "Er speelt nu een ander Spotify-account. De oude Jam-link is weggehaald: start een "
+                                        "nieuwe Jam en plak die link hier.")
+
+    def _set_jam(self, jam, acct, note=""):
+        """Under the lock. A working link is saved, so it survives a restart; an empty one is removed from hub.json."""
+        self.jam, self.jam_acct, self.jam_note = jam, acct, note
+        self.cfg["jam"], self.cfg["jam_acct"] = jam, acct
+        self._save()
 
     def _jam_test(self):
         url = self.jam
         if url and jam_valid(url) is False:
             with self.lock:
                 if self.jam == url:
-                    self.jam = ""
-                    self.jam_note = "De Jam-link werkt niet meer (de Jam is gestopt of verlopen). Start een nieuwe Jam en plak die link hier."
+                    self._set_jam("", None, "De Jam-link werkt niet meer (de Jam is gestopt of verlopen). Start een nieuwe Jam "
+                                            "en plak die link hier.")
 
     def _spotify_loop(self):
         # While the dashboard is open, a break runs or a screen is on: what the account plays, every 4 s
         # (the queue every 20 s), so every screen shows the song of the account the music comes from.
         last_queue = 0.0
-        last_jam_test = time.time()
+        last_jam_test = 0   # right after a start too: a saved link may have stopped working while the Hub was off
         while self.httpd:
             self._jam_check()
             t = time.time()
@@ -540,7 +547,7 @@ class Hub:
                 if jam and not is_spotify_link(jam):
                     return 400, {"error": "Dat is geen Spotify-link. Kopieer de uitnodiging van je Jam (https://spotify.link/…)."}
                 act = self.spotify.active()
-                self.jam, self.jam_acct, self.jam_note = jam, act["key"] if act else None, ""
+                self._set_jam(jam, act["key"] if act else None)
                 return 200, {"jam": jam}
             if action == "notice":
                 text = str(b.get("text", "")).strip()[:280]

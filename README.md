@@ -84,7 +84,8 @@ wat over het scherm heen komt, is van glas over dezelfde wazige hoes.
 
 | Versie | Wat er veranderde |
 |---|---|
-| **[3.6.8](../../releases/tag/v3.6.8)** (nieuwste) | **Opgelost:** *Nog geen Jam-link* stond in het dashboard ook als er wel een link was. Nu alleen als het veld leeg is. |
+| **[3.6.9](../../releases/tag/v3.6.9)** (nieuwste) | **De Hub onthoudt je Jam-link weer**, ook na een herstart, zolang hij werkt. Hij test de link bij het starten en elke 10 minuten, en haalt hem weg als hij niet meer werkt of als er een ander Spotify-account speelt. |
+| [3.6.8](../../releases/tag/v3.6.8) | **Opgelost:** *Nog geen Jam-link* stond in het dashboard ook als er wel een link was. Nu alleen als het veld leeg is. |
 | [3.6.7](../../releases/tag/v3.6.7) | **Opgelost:** een nieuwe Jam-link werd soms geweigerd met *Die Jam-link werkt niet (meer)*. De Hub weigert nu alleen nog links die nergens meer heen gaan. |
 | [3.6.6](../../releases/tag/v3.6.6) | **CodeAura** is weer de uitgever van de Windows-installer en de eigenaar in de licentie; het opstartscherm blijft *door Mike den Hertog*. |
 | [3.6.5](../../releases/tag/v3.6.5) | **De maker op zijn plek:** het opstartscherm zegt *door Mike den Hertog*, en de Windows-installer noemt hem als uitgever. |
@@ -124,7 +125,7 @@ Alle versies en downloads vind je bij [Releases](../../releases).
 <img src="docs/images/overview.svg" alt="De Hub in het midden: hij leest je Spotify-account en stuurt alle schermen aan (Android TV, PC, Raspberry Pi, Home Assistant); jij bedient hem via het dashboard, gasten via de gastenpagina" width="860">
 
 De **Hub** is het hart: een klein programma op je PC of Raspberry Pi met een admin-dashboard op poort **8770**. Daar
-koppel je één keer je Spotify-account, zet je per feest de link van je Jam, en alle schermen in huis volgen dat.
+koppel je één keer je Spotify-account en de link van je Jam, en alle schermen in huis volgen dat.
 
 | | 💻 PC (Windows of Mac) | 🍓 Raspberry Pi | 📺 Android TV | 🏠 Home Assistant |
 |---|---|---|---|---|
@@ -249,11 +250,11 @@ spel aan, dan leidt de QR-code op de schermen daarheen. Uitleg per spel: [Feests
 
 ### Windows-app (aanbevolen)
 
-Download bij de nieuwste [**Release (3.6.8)**](../../releases/latest):
+Download bij de nieuwste [**Release (3.6.9)**](../../releases/latest):
 
 | Bestand | Installeren |
 |---|---|
-| [`SpotiParty-Setup-3.6.8.exe`](../../releases/download/v3.6.8/SpotiParty-Setup-3.6.8.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
+| [`SpotiParty-Setup-3.6.9.exe`](../../releases/download/v3.6.9/SpotiParty-Setup-3.6.9.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
 
 SpotiParty start de Hub en opent het SpotiParty-venster: wat er speelt, het adres en de **PIN** van het dashboard, en
 de knoppen **Scherm openen** en **Dashboard**. Met **Scherm openen** komt het feestscherm in een eigen venster, zonder

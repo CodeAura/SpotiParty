@@ -106,7 +106,7 @@ def set_scene(hub, scene):
         hub.notice = None
         hub.cfg.update(vote_on=False, msg_on=False, vote_needed=4)
         act = hub.spotify.active()
-        hub.jam, hub.jam_acct, hub.jam_note = "https://spotify.link/feestavond", act and act["key"], ""
+        hub.jam, hub.jam_acct, hub.jam_note = "https://open.spotify.com/socialsession/5ma7h1pxUeK2VZ5pDlDGqP", act and act["key"], ""
         p.quiz_on, p.round, p.next_on, p.next, p.bingo = False, None, False, None, None
         p.msg_now, p.msgs, p.shown, p.voters, p.winner_until = None, [], [], set(), 0.0
         p.scores = {v: {"name": n, "pts": pts, "quiz": pts // 2, "bingo": pts // 3, "next": pts - pts // 2 - pts // 3}
