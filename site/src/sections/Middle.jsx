@@ -6,7 +6,7 @@ import ScrollReveal from "../components/reactbits/ScrollReveal/ScrollReveal.jsx"
 import ShinyText from "../components/reactbits/ShinyText/ShinyText.jsx";
 import Pic from "../components/Pic.jsx";
 import { MicVocal, QrCode, Sunset, ListMusic, PartyPopper, Lock, Music, MessageSquareText, Coffee, Wifi, Users, Server,
-  UserRoundCog } from "lucide-react";
+  UserRoundCog, Compass, KeyRound } from "lucide-react";
 
 const SPOTS = [
   { box: [3.9, 8.4, 25.9, 58.3], title: "Wat er speelt",
@@ -138,7 +138,9 @@ const HUB = [
   [Users, "Eén Jam-link", "Eén keer plakken, en elk scherm in huis toont dezelfde QR-code."],
   [UserRoundCog, "Meerdere Spotify-accounts", "Koppel tot vijf accounts, van jou en je huisgenoten, en kies met één tik wie de muziek levert."],
   [MessageSquareText, "Berichten van gasten", "Gasten sturen een berichtje vanaf hun telefoon; jij keurt het goed en het staat even boven de songtekst."],
-  [Server, "Ook op een server", <>De Hub draait ook op Linux, met systemd of Docker. Elke browser of tv opent het scherm op <code>/scherm/</code>.</>],
+  [Compass, "Uitleg bij de eerste keer", "Een korte rondleiding laat zien waar alles staat, en Aan de slag vertelt wat er nog moet gebeuren. Overslaan kan altijd."],
+  [KeyRound, "Je eigen PIN", "De eerste keer kies je zelf de PIN van je Hub, en vul je hem nog een keer in. Alleen wie hem kent, bedient de schermen."],
+  [Server, "Ook op een server", <>De Hub draait ook op Linux (systemd of Docker) en op Proxmox, met één commando. Elke browser of tv opent het scherm op <code>/scherm/</code>.</>],
 ];
 
 export function Hub() {

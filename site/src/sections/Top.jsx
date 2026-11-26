@@ -18,7 +18,7 @@ export function Nav() {
   }, { scope: ref });
   return (
     <>
-      <div className="concept"><span className="tag">Nieuw</span>SpotiParty is nu open source en gratis, feestspellen inbegrepen.</div>
+      <div className="concept"><span className="tag">Nieuw</span>SpotiParty 3.6: een rondleiding in het dashboard, je eigen PIN en installeren op Proxmox.</div>
       <nav ref={ref} className="nav">
         <div className="wrap">
           <a className="brand" href="#top" aria-label="SpotiParty"><img src="/assets/logo.svg" alt="SpotiParty" width="137" height="36" /></a>

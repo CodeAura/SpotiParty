@@ -75,7 +75,7 @@ const PLATFORMS = [
   [Laptop, "Windows", "Installeren, dubbelklikken, klaar. Werkt zichzelf bij."],
   [Apple, "macOS", <>Voor Macs met Apple silicon en Intel, werkt zichzelf bij. <a href="https://github.com/CodeAura/SpotiParty/releases/latest">Download de .dmg</a>.</>],
   [Cpu, "Raspberry Pi", "Een vast feestscherm aan je tv of beamer, en als je wilt ook de Hub."],
-  [Server, "Linux-server", "De Hub zonder scherm, op je NAS of thuisserver: met systemd of Docker."],
+  [Server, "Linux-server & Proxmox", <>De Hub zonder scherm, op je NAS of thuisserver: met systemd, Docker, of op Proxmox met <a href="https://spotiparty.gitbook.io/spotiparty/hub/proxmox">één commando</a>.</>],
   [House, "Home Assistant", "Als kaart via HACS, ook op je wandtablet. Werkt met Sonos, Cast en Music Assistant."],
 ];
 
@@ -120,7 +120,7 @@ export function Platforms() {
 }
 
 const STEPS = [
-  ["Installeer de Hub", "De Windows- of Mac-app, een Raspberry Pi of een Linux-server. Je krijgt het adres en de PIN van het dashboard.", 5],
+  ["Installeer de Hub", "De Windows- of Mac-app, een Raspberry Pi, een Linux-server of Proxmox. Open het dashboard en kies je eigen PIN; een korte rondleiding doet de rest.", 5],
   ["Koppel je Spotify", "Eén keer, in het dashboard. Alle schermen tonen daarna wat je account speelt.", 3],
   ["Start een Jam", "Plak de link in het dashboard. De QR-code staat op elk scherm en je vrienden scannen hem.", 1],
 ];
@@ -162,7 +162,7 @@ export function Steps() {
 const HACS = "https://my.home-assistant.io/redirect/hacs_repository/?owner=CodeAura&repository=SpotiParty&category=plugin";
 
 const FREE = ["Windows- en Mac-app, werkt zichzelf bij", "Hub met dashboard op je telefoon", "Songteksten, Jam-QR en Hierna",
-  "Meldingen, pauze, gasten-wifi en berichten van gasten", "Android TV, Raspberry Pi, Home Assistant en Linux-server",
+  "Meldingen, pauze, gasten-wifi en berichten van gasten", "Android TV, Raspberry Pi, Home Assistant, Linux-server en Proxmox",
   "Feestspellen: Raad het nummer, Muziekbingo, stemmen en de winnaar van de avond",
   "Open source, op GitHub"];
 
@@ -210,12 +210,13 @@ export function Pricing() {
 
 const FAQ = [
   ["Heb ik Spotify Premium nodig?", "Om een Jam te starten wel: zo werkt Spotify. Wat er speelt en de songteksten tonen werkt met elk Spotify-account."],
-  ["Wat is de Hub?", "Een klein programma op je pc, Mac, Raspberry Pi of Linux-server. Daar koppel je één keer Spotify en je Jam-link, en vanuit het dashboard op je telefoon bestuur je alle schermen."],
+  ["Wat is de Hub?", "Een klein programma op je pc, Mac, Raspberry Pi, Linux-server of Proxmox. Daar koppel je één keer Spotify en je Jam-link, en vanuit het dashboard op je telefoon bestuur je alle schermen."],
   ["Hoe krijgt mijn tv updates?", "Vanzelf. De tv-app toont het scherm rechtstreeks van je Hub. Werkt de Hub zichzelf bij, dan heeft de tv de nieuwe versie zodra je SpotiParty opent."],
   ["Is SpotiParty echt gratis?", "Ja. SpotiParty is open source: de apps, de Hub en de broncode staan gratis op GitHub, met updates. De Windows- en Mac-app werken zichzelf bij."],
   ["Kunnen mijn vrienden de muziek overnemen?", "Nee. Zet in je Jam de optie Gasten mogen afspelen bedienen uit, dan kunnen ze alleen nummers toevoegen. Overslaan kan alleen als jij de Skip-stemmen aanzet, en dan pas bij genoeg stemmen."],
   ["Werkt het op mijn tv?", "Op tv's en mediaspelers met Android TV of Google TV, Android 8 of nieuwer. Samsung (Tizen) en LG (webOS) worden niet ondersteund; sluit daar een pc, Mac of Raspberry Pi aan met HDMI."],
   ["Werkt het ook zonder Spotify, met Sonos bijvoorbeeld?", "Via Home Assistant werkt SpotiParty met elke media player: Sonos, Cast, Music Assistant, Plex en meer."],
+  ["Ik heb een Proxmox-server. Kan de Hub daarop?", "Ja. Plak één commando in de shell van je Proxmox-host: dat maakt een kleine Debian-container met de Hub erin, die zichzelf elke nacht bijwerkt. Zie de handleiding, onder Hub op Proxmox."],
   ["Wat doen jullie met mijn gegevens?", "Niets. We hebben geen server die meekijkt. Je Spotify-login en instellingen blijven op je eigen Hub, in je eigen netwerk."],
 ];
 

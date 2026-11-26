@@ -27,9 +27,9 @@ Voor je **Android TV**, je **PC**, een **Raspberry Pi** en je **Home Assistant**
 ---
 
 > [!TIP]
-> **Nieuw in [3.5.0](../../releases/tag/v3.5.0): een nieuw SpotiParty-venster.** Met de hoes en de knoppen van wat er
-> speelt, het adres en de PIN van de Hub, en het feestscherm opent pas als jij dat wilt. Sinds 3.4.0 staat SpotiParty
-> ook in de menubalk (Mac) en de taakbalk (Windows); sinds 3.3.0 met een nieuw logo en nieuwe kleuren.
+> **Nieuw in [3.6.0](../../releases/tag/v3.6.0): een Hub die je wegwijs maakt.** Een rondleiding en "Aan de slag" in
+> het dashboard, je eigen PIN bij de eerste keer, en de Hub op Proxmox met één commando. Sinds 3.5.0 een nieuw
+> SpotiParty-venster, sinds 3.4.0 in de menubalk en de taakbalk, sinds 3.3.0 een nieuw logo.
 >
 > **Sinds [3.0.0](../../releases/tag/v3.0.0): een gloednieuwe SpotiParty.** Gasten **kiezen het volgende nummer**,
 > spelen **muziekbingo** op hun telefoon en sturen **berichtjes** naar het scherm; alle punten tellen op tot de
@@ -84,7 +84,8 @@ wat over het scherm heen komt, is van glas over dezelfde wazige hoes.
 
 | Versie | Wat er veranderde |
 |---|---|
-| **[3.5.1](../../releases/tag/v3.5.1)** (nieuwste) | **Het Hub-dashboard op een PC:** geen lege vlakken meer naast de lange kaart Feest. Op een breed scherm staan Muziek, Jam en Melding naast elkaar, daaronder Feest (twee kolommen breed) naast Pauze, Wifi en Hub. Op een tablet twee kolommen, op een telefoon één. |
+| **[3.6.0](../../releases/tag/v3.6.0)** (nieuwste) | **Een Hub die je wegwijs maakt.** De eerste keer een **rondleiding** door het dashboard (met *Tutorial overslaan*, en *Uitleg* om hem terug te zien), **Aan de slag** met wat er nog moet gebeuren, snelle links in de kop. **Je eigen PIN:** een nieuwe Hub vraagt bij de eerste keer om een PIN, twee keer ingevuld; oudere Hubs vragen één keer om een eigen PIN. **[Hub op Proxmox](docs/hub/proxmox.md)** met één commando. Het speel-icoon bij de accounts staat weer recht. |
+| [3.5.1](../../releases/tag/v3.5.1) | **Het Hub-dashboard op een PC:** geen lege vlakken meer naast de lange kaart Feest. Op een breed scherm staan Muziek, Jam en Melding naast elkaar, daaronder Feest (twee kolommen breed) naast Pauze, Wifi en Hub. Op een tablet twee kolommen, op een telefoon één. |
 | [3.5.0](../../releases/tag/v3.5.0) | **Een nieuw SpotiParty-venster** voor Windows en Mac: wat er speelt met de hoes, een voortgangsbalk en knoppen voor vorige, afspelen/pauzeren, volgende en volume; het adres en de PIN van de Hub met **Kopieer**, en hoeveel schermen online zijn; updates in een eigen kaart. Het feestscherm opent niet meer vanzelf bij het starten: dat doe je met **Scherm openen**. |
 | [3.4.0](../../releases/tag/v3.4.0) | **SpotiParty in de menubalk en de taakbalk.** Zolang de Mac- of Windows-app draait, staat er een SpotiParty-icoon in de menubalk (Mac) of bij de klok (Windows). Daar zie je wat er speelt, bedien je de muziek (vorige, afspelen/pauzeren, volgende, volume) en open je het scherm, het dashboard of het SpotiParty-venster. |
 | [3.3.0](../../releases/tag/v3.3.0) | **Branding update: een nieuw logo en nieuwe kleuren.** Een S met een stip, in groen, op de site, het feestscherm, de Hub, de gastenpagina, de Home Assistant-kaart en de Windows-, Mac- en Android TV-apps. Updates van de desktop-app tonen een voortgangsbalk bij het downloaden en een venster bij het installeren; op Windows zie je het installatieprogramma. Het Mac-installatievenster heeft het logo. |
@@ -240,11 +241,11 @@ spel aan, dan leidt de QR-code op de schermen daarheen. Uitleg per spel: [Feests
 
 ### Windows-app (aanbevolen)
 
-Download bij de nieuwste [**Release (3.5.1)**](../../releases/latest):
+Download bij de nieuwste [**Release (3.6.0)**](../../releases/latest):
 
 | Bestand | Installeren |
 |---|---|
-| [`SpotiParty-Setup-3.5.1.exe`](../../releases/download/v3.5.1/SpotiParty-Setup-3.5.1.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
+| [`SpotiParty-Setup-3.6.0.exe`](../../releases/download/v3.6.0/SpotiParty-Setup-3.6.0.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
 
 SpotiParty start de Hub en opent het SpotiParty-venster: wat er speelt, het adres en de **PIN** van het dashboard, en
 de knoppen **Scherm openen** en **Dashboard**. Met **Scherm openen** komt het feestscherm in een eigen venster, zonder
