@@ -56,15 +56,17 @@ def is_spotify_link(s: str) -> bool:
 
 
 def jam_valid(url: str):
-    """Does this link still lead to a Jam? True, False, or None when we can't tell (offline).
-    An unknown or expired spotify.link goes to Spotify's front page; a Jam's goes to .../socialsession/<id>.
+    """Does this link still work? False only when Spotify sends it to its bare front page (an unknown or expired
+    spotify.link); True for anything else, and None when we can't tell (offline). Not "leads to /socialsession/":
+    a new Jam's link can be sent elsewhere first, and refusing a link that works is worse than keeping a dead one.
     shortcut: a Jam that was stopped keeps its address, so that one still counts as valid (Spotify can't be asked)."""
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (SpotiParty Hub)"})
         with urllib.request.urlopen(req, timeout=8) as r:
-            return "/socialsession/" in urllib.parse.unquote(r.geturl())
+            final = urllib.parse.urlsplit(r.geturl())
     except Exception:  # noqa: BLE001
         return None
+    return not (final.netloc == "open.spotify.com" and final.path in ("", "/") and not final.query)
 
 
 def default_data_dir() -> pathlib.Path:
