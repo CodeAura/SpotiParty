@@ -79,7 +79,8 @@ wat over het scherm heen komt, is van glas over dezelfde wazige hoes.
 
 | Versie | Wat er veranderde |
 |---|---|
-| **[3.8.0](../../releases/tag/v3.8.0)** (nieuwste) | **Songtekst later tonen:** loopt de tekst voor op wat je hoort, zet hem dan in het Hub-dashboard bij **Feest** 0,5 tot 3 seconden later, voor alle schermen tegelijk. |
+| **[3.8.1](../../releases/tag/v3.8.1)** (nieuwste) | **Intro op de gastenpagina:** wie de QR-code scant, ziet eerst kort het logo en de maker, net als op het scherm. |
+| [3.8.0](../../releases/tag/v3.8.0) | **Songtekst later tonen:** loopt de tekst voor op wat je hoort, zet hem dan in het Hub-dashboard bij **Feest** 0,5 tot 3 seconden later, voor alle schermen tegelijk. |
 | [3.7.3](../../releases/tag/v3.7.3) | **Opgelost:** songteksten liepen soms een paar seconden voor. Het scherm kiest nu de versie van de tekst die precies bij de lengte van het nummer past. |
 | [3.7.2](../../releases/tag/v3.7.2) | **Opgelost:** op een Android TV ontbrak de vage cover op de achtergrond, waardoor de kleurtoon anders was dan in de webapp. Nu ziet de tv er hetzelfde uit. |
 | [3.7.1](../../releases/tag/v3.7.1) | **Opgelost:** een tv bleef soms zonder songtekst bij een nummer dat de webapp wel had. Het scherm onthoudt "niet gevonden" niet meer voorgoed en probeert het later opnieuw. |
@@ -250,11 +251,11 @@ spel aan, dan leidt de QR-code op de schermen daarheen. Uitleg per spel: [Feests
 
 ### Windows-app (aanbevolen)
 
-Download bij de nieuwste [**Release (3.8.0)**](../../releases/latest):
+Download bij de nieuwste [**Release (3.8.1)**](../../releases/latest):
 
 | Bestand | Installeren |
 |---|---|
-| [`SpotiParty-Setup-3.8.0.exe`](../../releases/download/v3.8.0/SpotiParty-Setup-3.8.0.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
+| [`SpotiParty-Setup-3.8.1.exe`](../../releases/download/v3.8.1/SpotiParty-Setup-3.8.1.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
 
 SpotiParty start de Hub en opent het SpotiParty-venster: wat er speelt, het adres en de **PIN** van het dashboard, en
 de knoppen **Scherm openen** en **Dashboard**. Met **Scherm openen** komt het feestscherm in een eigen venster, zonder

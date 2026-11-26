@@ -1,8 +1,8 @@
 {
-  "version": "3.8.0",
-  "title": "Nieuw in SpotiParty 3.8.0",
+  "version": "3.8.1",
+  "title": "Nieuw in SpotiParty 3.8.1",
   "items": [
-    ["mic-vocal", "Songtekst later tonen", "Loopt de songtekst voor op wat je hoort? Zet hem bij Feest 0,5 tot 3 seconden later. Dat geldt voor alle schermen tegelijk."],
-    ["tv", "De tv ziet er hetzelfde uit", "Op een Android TV staat nu ook de vage cover op de achtergrond, en songteksten kiezen de versie die precies bij het nummer past."]
+    ["smartphone", "Intro op de gastenpagina", "Wie de QR-code scant, ziet eerst kort het logo en de maker, net als op het scherm."],
+    ["mic-vocal", "Songtekst later tonen", "Loopt de songtekst voor op wat je hoort? Zet hem bij Feest 0,5 tot 3 seconden later."]
   ]
 }
