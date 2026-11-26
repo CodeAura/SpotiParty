@@ -12,7 +12,7 @@ icon: party-horn
 Alles bestuur je vanuit één plek: de [**SpotiParty Hub**](hub/hub-dashboard.md).
 
 {% hint style="success" %}
-**Nieuwste versie: 3.5.0**, met een nieuw SpotiParty-venster; sinds 3.4.0 in de menubalk (Mac) en de taakbalk (Windows), sinds 3.3.0 een nieuw logo en nieuwe kleuren. Sinds 3.0 een gloednieuwe SpotiParty: gasten kiezen het volgende nummer, spelen muziekbingo en sturen berichtjes naar het scherm, en alle punten tellen op tot de winnaar van de avond (zie [Feestspellen](hub/feestspellen.md)). De Mac-app werkt zichzelf bij. Op Windows kon dat pas vanaf 3.2.1: heb je 3.2.0 of ouder, installeer dan [`SpotiParty-Setup-3.2.1.exe`](https://github.com/CodeAura/SpotiParty/releases/download/v3.2.1/SpotiParty-Setup-3.2.1.exe) één keer met de hand. Alle versies staan bij [Releases](https://github.com/CodeAura/SpotiParty/releases).
+**Nieuwste versie: 3.5.1**, met een opgeruimd Hub-dashboard op de PC; sinds 3.5.0 een nieuw SpotiParty-venster, sinds 3.4.0 in de menubalk (Mac) en de taakbalk (Windows), sinds 3.3.0 een nieuw logo en nieuwe kleuren. Sinds 3.0 een gloednieuwe SpotiParty: gasten kiezen het volgende nummer, spelen muziekbingo en sturen berichtjes naar het scherm, en alle punten tellen op tot de winnaar van de avond (zie [Feestspellen](hub/feestspellen.md)). De Mac-app werkt zichzelf bij. Op Windows kon dat pas vanaf 3.2.1: heb je 3.2.0 of ouder, installeer dan [`SpotiParty-Setup-3.2.1.exe`](https://github.com/CodeAura/SpotiParty/releases/download/v3.2.1/SpotiParty-Setup-3.2.1.exe) één keer met de hand. Alle versies staan bij [Releases](https://github.com/CodeAura/SpotiParty/releases).
 {% endhint %}
 
 ![SpotiParty: de hoes van het nummer, de songtekst en de Jam-QR-code](.gitbook/assets/web-wide.jpg)

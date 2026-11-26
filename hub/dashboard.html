@@ -9,17 +9,34 @@
   :root { --accent: #a1cca5; --bg: #0a110b; --card: #142016; --line: #ffffff1f; --muted: #b4c4b5; --err: #ff7b72; }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: #fff; font: 15px/1.45 system-ui, "Segoe UI", Roboto, sans-serif; }
-  header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line);
+  header { display: flex; align-items: center; gap: 12px; padding: 14px max(16px, calc((100% - 1440px) / 2 + 16px)); border-bottom: 1px solid var(--line);
     position: sticky; top: 0; background: #0a110bee; backdrop-filter: blur(8px); z-index: 2; }
   header h1 { font-size: 18px; margin: 0; flex: 1; display: flex; align-items: center; gap: 8px; }
   .ic { width: 1.1em; height: 1.1em; flex: none; vertical-align: -0.18em; color: var(--accent, #a1cca5); }
   .player .ic, button .ic { color: inherit; }
   .player button { display: inline-grid; place-items: center; }
 
-  main { max-width: 1100px; margin: 0 auto; padding: 16px; display: grid; gap: 16px;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); align-items: start; }
+  /* Schermen over the full width. On a PC: Muziek, Jam and Melding side by side, then Feest (two columns wide) next to
+     Pauze, Wifi and Hub. Two columns on a tablet, one on a phone. */
+  main { max-width: 1440px; margin: 0 auto; padding: 16px; }
+  .cards { display: grid; gap: 16px; align-items: start; grid-template-columns: minmax(0, 1fr); }
+  .side { display: contents; }   /* on a PC: one column of its own (see below) */
+  @media (min-width: 760px) {
+    .cards { grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-areas: "music jam" "notice break" "party party" "wifi hub"; }
+    #s-music { grid-area: music; } #s-jam { grid-area: jam; } #s-notice { grid-area: notice; }
+    #s-party { grid-area: party; } #s-break { grid-area: break; } #s-wifi { grid-area: wifi; } #s-hub { grid-area: hub; }
+    /* Feest is two columns wide; its parts flow over two columns inside it. */
+    .party-body { columns: 2; column-gap: 32px; }
+    .party-body > div { break-inside: avoid; }
+  }
+  @media (min-width: 1200px) {
+    .cards { grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-areas: "music jam notice" "party party side"; }
+    .side { display: flex; flex-direction: column; gap: 16px; grid-area: side; }
+  }
   section { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; min-width: 0; }
-  section.wide { grid-column: 1 / -1; }
+  section.wide { margin-bottom: 16px; }
   h2 { font-size: 16px; margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
   h2 small { font-weight: 400; color: var(--muted); font-size: 13px; margin-left: auto; }
   p { color: var(--muted); margin: 6px 0; font-size: 14px; }
@@ -120,7 +137,9 @@
     <div id="screens"><p class="empty">Nog geen schermen. Open SpotiParty op je tv, PC of Raspberry Pi: ze melden zich hier vanzelf.</p></div>
   </section>
 
-  <section>
+  <div class="cards">
+
+  <section id="s-music">
     <h2><i data-icon="music"></i>Muziek bedienen <small id="m-acct"></small></h2>
     <div id="m-linked" hidden>
       <div class="accts" id="m-accts" aria-label="Spotify-accounts"></div>
@@ -160,7 +179,7 @@
     </div>
   </section>
 
-  <section>
+  <section id="s-jam">
     <h2><i data-icon="users"></i>Spotify Jam</h2>
     <div class="wifi">
       <div>
@@ -175,8 +194,10 @@
     <p>In Spotify: Jam starten, <b>Gasten mogen afspelen bedienen</b> uit, dan <b>Uitnodigen → Link kopiëren</b>.</p>
   </section>
 
-  <section>
+  <section id="s-party">
     <h2><i data-icon="party-popper"></i>Feest <small id="p-live"></small></h2>
+    <div class="party-body">
+    <div>
     <div class="wifi">
       <div>
         <label for="p-upnext">Komende nummers op het scherm</label>
@@ -194,10 +215,14 @@
         <p style="font-size:12px;margin-top:6px"><a id="guest-link" target="_blank" rel="noopener" style="color:var(--muted)"></a></p>
       </div>
     </div>
-    <h2 style="margin-top:14px"><i data-icon="mic-vocal"></i>Raad het nummer</h2>
+    </div>
+
+    <div class="gm">
+    <h2><i data-icon="mic-vocal"></i>Raad het nummer</h2>
     <p>Titel, hoes en songtekst blijven 15 seconden verborgen. Gasten raden op hun telefoon; wie het snelst de titel raadt, krijgt de meeste punten.</p>
     <div class="row"><button class="go" id="q-toggle">Quiz starten</button></div>
     <div class="msg" id="q-msg"></div>
+    </div>
 
     <div class="gm">
       <h2><i data-icon="list-music"></i>Afspeellijst voor de spellen <small id="pl-now"></small></h2>
@@ -243,11 +268,12 @@
       <div class="row"><button class="go" id="sc-show">Winnaar tonen</button><button id="q-reset">Nieuw feest</button></div>
       <div class="msg" id="sc-msg"></div>
     </div>
+    </div>
     <p>Gasten scannen de QR-code op het scherm (of hiernaast) om mee te doen. Ze moeten op hetzelfde netwerk zitten als
       de Hub.</p>
   </section>
 
-  <section>
+  <section id="s-notice">
     <h2><i data-icon="message-square-text"></i>Melding op het scherm</h2>
     <div id="notice-live"></div>
     <label for="n-text">Bericht</label>
@@ -267,7 +293,8 @@
     <div class="msg" id="n-msg"></div>
   </section>
 
-  <section>
+  <div class="side">
+  <section id="s-break">
     <h2><i data-icon="coffee"></i>Korte pauze</h2>
     <div id="break-live"></div>
     <p>Zet een aftelklok op de schermen. Als de tijd om is, staat er dat het feest verdergaat.</p>
@@ -287,7 +314,7 @@
     <div class="msg" id="b-msg"></div>
   </section>
 
-  <section>
+  <section id="s-wifi">
     <h2><i data-icon="wifi"></i>Gasten-wifi</h2>
     <div class="wifi">
       <div>
@@ -307,7 +334,7 @@
     <p>Gebruik een apart <b>gastennetwerk</b>: iedereen die het scherm ziet, kan dit wachtwoord lezen.</p>
   </section>
 
-  <section>
+  <section id="s-hub">
     <h2><i data-icon="settings"></i>Hub</h2>
     <p>Open dit dashboard op je telefoon:</p>
     <p id="urls"></p>
@@ -318,6 +345,8 @@
     <div class="row"><button id="h-save">Opslaan</button><button id="h-logout">Uitloggen</button></div>
     <div class="msg" id="h-msg"></div>
   </section>
+  </div>
+  </div>
 </main>
 
 <div id="login">
@@ -774,8 +803,9 @@ function wifiText() {
 }
 function paintWifi() {
   const c = $("wifi-qr");
-  if ($("w-ssid").value) { c.style.visibility = ""; Qr.paint(c, wifiText()); }
-  else c.style.visibility = "hidden";
+  // No network name yet: no QR code, and no empty space where it would be.
+  if ($("w-ssid").value) { c.style.display = ""; Qr.paint(c, wifiText()); }
+  else c.style.display = "none";
 }
 ["w-ssid", "w-pass", "w-sec", "w-hidden"].forEach(id => $(id).addEventListener("input", paintWifi));
 $("w-save").onclick = async () => {
