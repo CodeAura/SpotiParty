@@ -188,6 +188,7 @@
   .jam-alert { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; margin-bottom: 10px;
     background: #a1cca51f; color: #e3f1e4; font-size: 14px; }
   .jam-alert .ic { flex: none; margin-top: 2px; }
+  .jam-alert[hidden] { display: none; }   /* display: flex above would otherwise win over the hidden attribute */
   #jam-qr { width: 140px; height: 140px; background: #fff; border-radius: 10px; padding: 6px; display: block; }
 </style>
 </head>
@@ -745,19 +746,21 @@ let shownJam = null;
 function renderJam(s) {
   const jam = s.jam || "";
   $("s-jam").classList.toggle("missing", !jam);
-  $("j-alert").hidden = !!jam;
   $("j-alert-text").textContent = s.jam_note || "Nog geen Jam-link. Start een Jam in Spotify, kopieer de uitnodiging en plak die hier.";
   if (jam !== shownJam && document.activeElement !== $("j-link")) {   // never overwrite what you are typing
     shownJam = jam;
     $("j-link").value = jam;
     paintJam(jam);
   }
+  jamAlert();
 }
+/** "Nog geen Jam-link" only while the field is empty: a pasted link that is not saved yet counts as one. */
+const jamAlert = () => { $("j-alert").hidden = !!$("j-link").value.trim(); };
 function paintJam(link) {
   const c = $("jam-qr");
   if (link) { c.style.visibility = ""; Qr.paint(c, link); } else c.style.visibility = "hidden";
 }
-$("j-link").addEventListener("input", () => paintJam($("j-link").value.trim()));
+$("j-link").addEventListener("input", () => { paintJam($("j-link").value.trim()); jamAlert(); });
 $("j-save").onclick = async () => {
   try {
     const r = await api("jam", { jam: $("j-link").value.trim() });

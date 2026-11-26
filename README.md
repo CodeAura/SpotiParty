@@ -84,7 +84,8 @@ wat over het scherm heen komt, is van glas over dezelfde wazige hoes.
 
 | Versie | Wat er veranderde |
 |---|---|
-| **[3.6.7](../../releases/tag/v3.6.7)** (nieuwste) | **Opgelost:** een nieuwe Jam-link werd soms geweigerd met *Die Jam-link werkt niet (meer)*. De Hub weigert nu alleen nog links die nergens meer heen gaan. |
+| **[3.6.8](../../releases/tag/v3.6.8)** (nieuwste) | **Opgelost:** *Nog geen Jam-link* stond in het dashboard ook als er wel een link was. Nu alleen als het veld leeg is. |
+| [3.6.7](../../releases/tag/v3.6.7) | **Opgelost:** een nieuwe Jam-link werd soms geweigerd met *Die Jam-link werkt niet (meer)*. De Hub weigert nu alleen nog links die nergens meer heen gaan. |
 | [3.6.6](../../releases/tag/v3.6.6) | **CodeAura** is weer de uitgever van de Windows-installer en de eigenaar in de licentie; het opstartscherm blijft *door Mike den Hertog*. |
 | [3.6.5](../../releases/tag/v3.6.5) | **De maker op zijn plek:** het opstartscherm zegt *door Mike den Hertog*, en de Windows-installer noemt hem als uitgever. |
 | [3.6.4](../../releases/tag/v3.6.4) | **De Jam-link blijft kloppen.** De Hub onthoudt hem niet meer (elk feest een nieuwe Jam), controleert hem bij het opslaan en elke 10 minuten, en haalt hem weg als hij niet meer werkt of als er een ander Spotify-account gaat spelen. Zonder link knippert de kaart **Spotify Jam** in het dashboard, met de uitleg waarom. |
@@ -248,11 +249,11 @@ spel aan, dan leidt de QR-code op de schermen daarheen. Uitleg per spel: [Feests
 
 ### Windows-app (aanbevolen)
 
-Download bij de nieuwste [**Release (3.6.7)**](../../releases/latest):
+Download bij de nieuwste [**Release (3.6.8)**](../../releases/latest):
 
 | Bestand | Installeren |
 |---|---|
-| [`SpotiParty-Setup-3.6.7.exe`](../../releases/download/v3.6.7/SpotiParty-Setup-3.6.7.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
+| [`SpotiParty-Setup-3.6.8.exe`](../../releases/download/v3.6.8/SpotiParty-Setup-3.6.8.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
 
 SpotiParty start de Hub en opent het SpotiParty-venster: wat er speelt, het adres en de **PIN** van het dashboard, en
 de knoppen **Scherm openen** en **Dashboard**. Met **Scherm openen** komt het feestscherm in een eigen venster, zonder
