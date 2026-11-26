@@ -19,13 +19,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install pyinstaller pillow certifi
+      - run: pip install pyinstaller pillow certifi pystray
       - name: Build SpotiParty.exe
         run: >
           pyinstaller --noconfirm --onefile --windowed --name SpotiParty
           --icon "${{ github.workspace }}/desktop/icon.ico" --add-data "${{ github.workspace }}/web;web"
           --add-data "${{ github.workspace }}/hub;hub"
-          --add-data "${{ github.workspace }}/brand/app;brand/app" --paths "${{ github.workspace }}/hub"
+          --add-data "${{ github.workspace }}/brand/app;brand/app" --hidden-import pystray._win32 --paths "${{ github.workspace }}/hub"
           --distpath desktop/dist --workpath build --specpath build/spec
           desktop/spotiparty_app.py
         shell: bash

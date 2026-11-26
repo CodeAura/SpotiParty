@@ -66,8 +66,9 @@ Voor een eigen venster zonder tabbladen gebruikt SpotiParty **Google Chrome, Mic
 ## Goed om te weten
 
 * **Inkomende verbindingen:** is de firewall van je Mac aan, dan vraagt macOS de eerste keer of SpotiParty inkomende verbindingen mag accepteren. Kies **Sta toe**: zo kunnen je tv en telefoon de Hub en het dashboard bereiken.
+* **In de menubalk:** zolang SpotiParty draait, staat het SpotiParty-icoon (de S met de stip) rechtsboven in de menubalk. Daar zie je wat er speelt en bedien je de muziek (vorige, afspelen/pauzeren, volgende, volume), open je het scherm, het dashboard of het SpotiParty-venster, en stop je SpotiParty. Zie je het icoon niet, dan is de menubalk vol: op een Mac met een notch vallen icoontjes dan weg achter de camera.
 * **Dock-icoon:** klik je op het SpotiParty-icoon in het Dock terwijl SpotiParty al draait, dan opent het scherm opnieuw.
-* **Stoppen:** met **Stoppen** in het SpotiParty-venster, het venster sluiten, of **⌘Q**.
+* **Stoppen:** met **Stoppen** in het SpotiParty-venster, het venster sluiten, **⌘Q**, of **SpotiParty stoppen** in de menubalk.
 
 ## Waar staan mijn gegevens?
 

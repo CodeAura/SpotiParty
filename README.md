@@ -24,8 +24,9 @@ Voor je **Android TV**, je **PC**, een **Raspberry Pi** en je **Home Assistant**
 ---
 
 > [!TIP]
-> **Nieuw in [3.3.0](../../releases/tag/v3.3.0): een nieuw logo en nieuwe kleuren.** Overal groen, van de site tot de
-> apps. Updates van de desktop-app tonen nu een voortgangsbalk.
+> **Nieuw in [3.4.0](../../releases/tag/v3.4.0): SpotiParty in de menubalk (Mac) en de taakbalk (Windows).** Zie wat er
+> speelt en bedien de muziek zonder het dashboard te openen. Sinds [3.3.0](../../releases/tag/v3.3.0): een nieuw logo en
+> nieuwe kleuren.
 >
 > **Sinds [3.0.0](../../releases/tag/v3.0.0): een gloednieuwe SpotiParty.** Gasten **kiezen het volgende nummer**,
 > spelen **muziekbingo** op hun telefoon en sturen **berichtjes** naar het scherm; alle punten tellen op tot de
@@ -80,7 +81,8 @@ wat over het scherm heen komt, is van glas over dezelfde wazige hoes.
 
 | Versie | Wat er veranderde |
 |---|---|
-| **[3.3.0](../../releases/tag/v3.3.0)** (nieuwste) | **Branding update: een nieuw logo en nieuwe kleuren.** Een S met een stip, in groen, op de site, het feestscherm, de Hub, de gastenpagina, de Home Assistant-kaart en de Windows-, Mac- en Android TV-apps. Updates van de desktop-app tonen een voortgangsbalk bij het downloaden en een venster bij het installeren; op Windows zie je het installatieprogramma. Het Mac-installatievenster heeft het logo. |
+| **[3.4.0](../../releases/tag/v3.4.0)** (nieuwste) | **SpotiParty in de menubalk en de taakbalk.** Zolang de Mac- of Windows-app draait, staat er een SpotiParty-icoon in de menubalk (Mac) of bij de klok (Windows). Daar zie je wat er speelt, bedien je de muziek (vorige, afspelen/pauzeren, volgende, volume) en open je het scherm, het dashboard of het SpotiParty-venster. |
+| [3.3.0](../../releases/tag/v3.3.0) | **Branding update: een nieuw logo en nieuwe kleuren.** Een S met een stip, in groen, op de site, het feestscherm, de Hub, de gastenpagina, de Home Assistant-kaart en de Windows-, Mac- en Android TV-apps. Updates van de desktop-app tonen een voortgangsbalk bij het downloaden en een venster bij het installeren; op Windows zie je het installatieprogramma. Het Mac-installatievenster heeft het logo. |
 | [3.2.1](../../releases/tag/v3.2.1) | **Windows werkt zichzelf nu echt bij.** De updater van 2.7.0 t/m 3.2.0 kon de setup niet starten, en zolang er een update klaarstond sloot SpotiParty bij het starten meteen weer af. Installeer 3.2.1 één keer met de hand; daarna gaan updates vanzelf. Na een update bij het starten openen de Windows- en Mac-app ook het feestscherm weer. |
 | [3.2.0](../../releases/tag/v3.2.0) | **Meteen volledig scherm:** de Windows- en Mac-app openen het feestscherm over de hele monitor (met Edge, Chrome of Brave). In een andere browser vraagt een grote knop om één klik of F. |
 | [3.1.1](../../releases/tag/v3.1.1) | De Windows- en Mac-app starten de Hub ook als poort 8770 na een update nog even bezet is; blijft hij bezet, dan zegt het venster door welk programma. |
@@ -224,11 +226,11 @@ spel aan, dan leidt de QR-code op de schermen daarheen. Uitleg per spel: [Feests
 
 ### Windows-app (aanbevolen)
 
-Download bij de nieuwste [**Release (3.3.0)**](../../releases/latest):
+Download bij de nieuwste [**Release (3.4.0)**](../../releases/latest):
 
 | Bestand | Installeren |
 |---|---|
-| [`SpotiParty-Setup-3.3.0.exe`](../../releases/download/v3.3.0/SpotiParty-Setup-3.3.0.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
+| [`SpotiParty-Setup-3.4.0.exe`](../../releases/download/v3.4.0/SpotiParty-Setup-3.4.0.exe) | Voor **Windows 10/11** (64-bit). Dubbelklik en volg de stappen. SpotiParty komt in het Startmenu en, als je dat aanvinkt, op je bureaublad. Er zijn geen beheerdersrechten nodig. Verwijderen gaat via **Instellingen → Apps**. |
 
 SpotiParty opent het feestscherm in een eigen venster, zonder tabbladen, en start de Hub. Er verschijnt ook een klein
 venster met het adres en de **PIN** van het dashboard, en de knoppen **Scherm openen**, **Dashboard** en **Stoppen**.

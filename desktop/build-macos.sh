@@ -40,13 +40,13 @@ echo "→ Python: $PY ($("$PY" -c 'import sys, tkinter; print(sys.version.split(
 echo "→ Bouwomgeving in desktop/build/venv"
 [ -x "$WORK/venv/bin/python" ] || "$PY" -m venv "$WORK/venv"
 # dmgbuild draws the .dmg window (background, icon places) without scripting Finder.
-"$WORK/venv/bin/pip" install --quiet --upgrade pyinstaller pillow certifi "dmgbuild==1.6.2"
+"$WORK/venv/bin/pip" install --quiet --upgrade pyinstaller pillow certifi pyobjc-framework-Cocoa "dmgbuild==1.6.2"
 
 echo "→ SpotiParty.app ($ARCH)"
 # Absolute paths: PyInstaller resolves --add-data and --icon relative to the spec folder.
 "$WORK/venv/bin/pyinstaller" --noconfirm --clean --windowed --name SpotiParty \
   --icon "$ROOT/desktop/icon.png" \
-  --add-data "$ROOT/web:web" --add-data "$ROOT/hub:hub" --add-data "$ROOT/brand/app:brand/app" --paths "$ROOT/hub" \
+  --add-data "$ROOT/web:web" --add-data "$ROOT/hub:hub" --add-data "$ROOT/brand/app:brand/app" --paths "$ROOT/hub" --hidden-import AppKit --hidden-import Foundation \
   --osx-bundle-identifier io.github.codeaura.spotiparty \
   --distpath "$OUT" --workpath "$WORK/work" --specpath "$WORK/spec" \
   "$ROOT/desktop/spotiparty_app.py" > "$WORK/pyinstaller.log" 2>&1 \

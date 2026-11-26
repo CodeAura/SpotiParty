@@ -68,6 +68,7 @@ def web_root() -> pathlib.Path:
 sys.path.insert(0, str(bundle_dir("hub")))
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import spotiparty_hub  # noqa: E402
+import sp_tray  # noqa: E402
 import sp_update  # noqa: E402
 from sp_version import VERSION  # noqa: E402
 
@@ -384,7 +385,11 @@ def main():
     note = tk.Label(root, text="", fg="#a1cca5", bg="#0a110b", font=font(9))
     note.pack(anchor="w")
 
+    tray = None
+
     def stop():
+        if tray:
+            tray.stop()
         if hub:
             hub.stop()
         server.shutdown()
@@ -392,6 +397,60 @@ def main():
 
     button(row, "Stoppen", stop, *grey, **size).pack(side="left", padx=(8, 0))
     root.protocol("WM_DELETE_WINDOW", stop)
+
+    # ---------- the icon in the menu bar (Mac) or next to the clock (Windows) ----------
+    def show_window():
+        root.deiconify()
+        root.lift()
+        root.attributes("-topmost", True)
+        root.after(200, lambda: root.attributes("-topmost", False))
+        root.focus_force()
+
+    def music(cmd):
+        def run():
+            try:
+                hub.spotify.control(cmd)
+            except spotiparty_hub.sp_spotify.SpotifyError as e:
+                root.after(0, lambda: note.config(text=str(e)))
+        threading.Thread(target=run, daemon=True, name="tray-music").start()
+
+    remote_label = (hub_name(remote) or remote) if remote else ""   # once: hub_name waits for the network
+
+    def tray_items():
+        items = []
+        if hub:
+            p = hub.spotify.player if hub.spotify.linked() else None
+            playing = bool(p and p.get("playing"))
+            if not hub.spotify.linked():
+                items.append(("Koppel Spotify in het dashboard", None, False))
+            elif p and p.get("title"):
+                song = f"{p['title']} – {p['artist']}" if p.get("artist") else p["title"]
+                items.append((("Speelt: " if playing else "Gepauzeerd: ") + song[:60], None, False))
+            else:
+                items.append(("Er speelt nu niets", None, False))
+            ok = hub.spotify.linked()
+            items += [None, ("Vorige", lambda: music("previous"), ok),
+                      ("Pauzeren" if playing else "Afspelen", lambda: music("pause" if playing else "play"), ok),
+                      ("Volgende", lambda: music("next"), ok),
+                      ("Volume hoger", lambda: music("volume_up"), ok),
+                      ("Volume lager", lambda: music("volume_down"), ok)]
+        elif remote:
+            items.append((f"Scherm van de Hub {remote_label}", None, False))
+        items += [None, ("Scherm openen", open_window, True)]
+        if hub or remote:
+            dash = f"http://127.0.0.1:{hub.port}/" if hub else f"http://{remote}/"
+            items.append(("Dashboard openen", lambda: webbrowser.open(dash), True))
+        items += [("Venster van SpotiParty tonen", show_window, True), None, ("SpotiParty stoppen", stop, True)]
+        return items
+
+    tray = sp_tray.start(root, bundle_dir("brand") / "app", tray_items(), on_click=show_window)
+
+    def tray_loop():
+        if tray:
+            tray.update(tray_items())
+            root.after(2000, tray_loop)
+
+    root.after(2000, tray_loop)
 
     # ---------- updates ----------
     if updated:
