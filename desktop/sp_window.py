@@ -82,12 +82,23 @@ class Button(tk.Canvas):
         self.w, self.h, self.fill, self.fg, self.hover, self.command = w, h, fill, fg, hover, command
         self.shape = rounded(self, 0, 0, w, h, h / 2, fill=fill, outline="")
         self.label = self.create_text(w / 2, h / 2, text=text, fill=fg, font=font)
-        self.bind("<Enter>", lambda e: self.itemconfig(self.shape, fill=self.hover))
-        self.bind("<Leave>", lambda e: self.itemconfig(self.shape, fill=self.fill))
-        self.bind("<Button-1>", lambda e: self.command and self.command())
+        self.enabled = True
+        self.bind("<Enter>", lambda e: self.enabled and self.itemconfig(self.shape, fill=self.hover))
+        self.bind("<Leave>", lambda e: self.enabled and self.itemconfig(self.shape, fill=self.fill))
+        self.bind("<Button-1>", lambda e: self.enabled and self.command and self.command())
 
     def text(self, text):
         self.itemconfig(self.label, text=text)
+
+    def look(self, text=None, fill=None, fg=None, hover=None, enabled=True):
+        """Change text and colours; a disabled button is dimmed and does nothing."""
+        self.enabled = enabled
+        if fill:
+            self.fill, self.fg, self.hover = fill, fg, hover
+        f, c = (self.fill, self.fg) if enabled else (CARD2, DIM)
+        self.itemconfig(self.shape, fill=f)
+        self.itemconfig(self.label, fill=c, **({"text": text} if text else {}))
+        self.config(cursor="hand2" if enabled else "arrow")
 
 
 class IconButton(tk.Canvas):
@@ -193,10 +204,14 @@ class Window:
         row.pack(fill="x", pady=(16, 0))
         big = f(11, "bold")
         half = (WIDTH - 10) // 2 if ctx.open_dashboard else WIDTH
-        Button(row, "Scherm openen", ctx.open_screen, big, bg=BG, width=half, pady=11).pack(side="left")
+        self.screen_btn = Button(row, "Scherm openen", ctx.open_screen, big, bg=BG, width=half, pady=11)
+        self.screen_btn.pack(side="left")
+        self.dash_btn = None
         if ctx.open_dashboard:
-            Button(row, "Dashboard", ctx.open_dashboard, big, fill=CARD2, fg=TEXT, hover=LINE, bg=BG, width=half,
-                   pady=11).pack(side="right")
+            self.dash_btn = Button(row, "Dashboard", ctx.open_dashboard, big, fill=CARD2, fg=TEXT, hover=LINE, bg=BG,
+                                   width=half, pady=11)
+            self.dash_btn.pack(side="right")
+        self.ready = None   # is the Hub set up (a PIN chosen)? Until then: "Hub instellen" first, no screen yet
 
         # ---------- update card, message ----------
         self.slot = tk.Frame(root, bg=BG)
@@ -318,7 +333,8 @@ class Window:
         pin = hub.cfg.get("pin", "")
         self.pin_value.config(text=pin or "nog niet gekozen", fg=TEXT if pin else MUTED,
                               font=(self.ctx.mono, 15, "bold") if pin else self.ctx.font(10, "italic"))
-        self.pin_hint.config(text="" if pin else "Klik op Dashboard en kies daar je PIN.")
+        self.pin_hint.config(text="" if pin else "Klik op Hub instellen en kies daar je PIN. Daarna kun je het scherm openen.")
+        self._set_ready(bool(pin))
         online = sum(1 for s in list(hub.screens.values()) if time.time() - s["seen"] < ONLINE_S)
         self.screens.config(text=f"{online} online" if online else "nog geen")
         self.root.after(500, self._tick)
@@ -370,6 +386,21 @@ class Window:
         self.cover_img = ImageTk.PhotoImage(im)
         self.cover.delete("img")
         self.cover.create_image(0, 0, image=self.cover_img, anchor="nw", tags="img")
+
+    def _set_ready(self, ready):
+        """First start: the Hub has no PIN yet. Then setting it up comes first and the screen waits."""
+        if ready == self.ready or not self.dash_btn:
+            return
+        self.ready = ready
+        if ready:
+            self.screen_btn.look("Scherm openen", MINT, NIGHT, MINT_HI)
+            self.dash_btn.look("Dashboard", CARD2, TEXT, LINE)
+        else:
+            self.screen_btn.look("Scherm openen", MINT, NIGHT, MINT_HI, enabled=False)
+            self.dash_btn.look("Hub instellen", MINT, NIGHT, MINT_HI)
+
+    def needs_setup(self):
+        return self.ready is False
 
     # ---------- small things ----------
     def _copy(self, value, what):

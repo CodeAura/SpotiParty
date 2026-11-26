@@ -11,7 +11,7 @@ Op de pc start de app ook de [SpotiParty Hub](../hub/hub-dashboard.md). Spotify 
 {% step %}
 ### Open het dashboard
 
-Klik in het SpotiParty-venster op **Dashboard**. De eerste keer kies je daar een **PIN** (4 tot 12 cijfers) en vul je hem nog een keer in. Dat kan alleen op deze computer, zodat niemand anders op je wifi je voor is. Daarna staan het adres en de PIN in het SpotiParty-venster, en open je het dashboard ook op je telefoon.
+De eerste keer staat in het SpotiParty-venster de knop **Hub instellen** (en kan het scherm nog niet open). Klik erop: in het dashboard kies je een **PIN** (4 tot 12 cijfers) en vul je hem nog een keer in. Dat kan alleen op deze computer, zodat niemand anders op je wifi je voor is. Daarna staan het adres en de PIN in het SpotiParty-venster, en open je het dashboard ook op je telefoon.
 {% endstep %}
 
 {% step %}

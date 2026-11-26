@@ -31,7 +31,7 @@ Open daarna het dashboard op `http://<adres-van-die-computer>:8770`, ook op je t
 ### De eerste keer: kies je PIN
 
 * **Een nieuwe Hub** heeft nog geen PIN. Open je het dashboard, dan krijg je **Welkom bij je Hub**: kies een PIN van 4 tot 12 cijfers en vul hem nog een keer in. Makkelijk te raden PIN's zoals `0000` of `1234` gaan niet.
-* **Desktop-app:** dat kan alleen op de computer waar SpotiParty draait (via **Dashboard** in het venster). Opent iemand het dashboard eerst op een telefoon, dan staat daar dat de PIN op die computer gekozen moet worden. Zo kan niemand anders op je wifi je voor zijn met een eigen PIN.
+* **Desktop-app:** dat kan alleen op de computer waar SpotiParty draait, via **Hub instellen** in het venster. Tot er een PIN is, kan het feestscherm nog niet open. Opent iemand het dashboard eerst op een telefoon, dan staat daar dat de PIN op die computer gekozen moet worden. Zo kan niemand anders op je wifi je voor zijn met een eigen PIN.
 * **Raspberry Pi en server:** die hebben geen eigen scherm, dus daar kies je de PIN vanaf elk apparaat in je netwerk. Doe dat meteen na het installeren.
 * **Een oudere Hub** met een PIN die hij zelf bedacht (de desktop-app of een Raspberry Pi van vóór 3.6.0): na het inloggen vraagt het dashboard één keer om een eigen PIN. Kies er een (twee keer invullen) of klik op **Huidige PIN houden**.
 * **Later wijzigen** doe je bij **Hub**: vul de nieuwe PIN twee keer in en klik op **Opslaan**.

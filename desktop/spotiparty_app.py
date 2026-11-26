@@ -374,7 +374,8 @@ def main():
     ctx = sp_window.Context()
     ctx.font, ctx.mono, ctx.art_dir, ctx.version, ctx.this = font, MONO, art, VERSION, THIS
     ctx.hub, ctx.remote, ctx.remote_label, ctx.hub_busy = hub, remote or "", remote_label, hub_busy
-    ctx.hub_port, ctx.open_screen, ctx.stop, ctx.music, ctx.switch_role = spotiparty_hub.PORT, open_window, stop, music, switch
+    ctx.hub_port, ctx.stop, ctx.music, ctx.switch_role = spotiparty_hub.PORT, stop, music, switch
+    ctx.open_screen = lambda: open_screen()
     ctx.open_dashboard = (lambda: webbrowser.open(dash)) if dash else None
     win = sp_window.Window(root, ctx)
     root.protocol("WM_DELETE_WINDOW", stop)
@@ -386,6 +387,17 @@ def main():
         root.attributes("-topmost", True)
         root.after(200, lambda: root.attributes("-topmost", False))
         root.focus_force()
+
+    def setting_up():
+        """The first start of this Hub: no PIN yet. Set it up in the dashboard before the screen opens."""
+        return bool(hub) and not hub.cfg.get("pin")
+
+    def open_screen():
+        if setting_up():
+            show_window()
+            win.note("Stel eerst de Hub in: klik op Hub instellen en kies daar je PIN. Daarna opent het scherm.")
+            return
+        open_window()
 
     def tray_items():
         items = []
@@ -407,8 +419,12 @@ def main():
                       ("Volume lager", lambda: music("volume_down"), ok)]
         elif remote:
             items.append((f"Scherm van de Hub {remote_label}", None, False))
-        items += [None, ("Scherm openen", open_window, True)]
-        if dash:
+        if setting_up():
+            items += [None, ("Hub instellen (kies je PIN)", lambda: webbrowser.open(dash), True),
+                      ("Scherm openen", open_screen, False)]
+        else:
+            items += [None, ("Scherm openen", open_screen, True)]
+        if dash and not setting_up():
             items.append(("Dashboard openen", lambda: webbrowser.open(dash), True))
         items += [("Venster van SpotiParty tonen", show_window, True), None, ("SpotiParty stoppen", stop, True)]
         return items
@@ -484,7 +500,7 @@ def main():
         show()
     if MAC:
         # Dock icon of the running app clicked: open the screen again. Cmd+Q: stop like the Stop button.
-        root.createcommand("::tk::mac::ReopenApplication", open_window)
+        root.createcommand("::tk::mac::ReopenApplication", open_screen)
         root.createcommand("::tk::mac::Quit", stop)
     root.mainloop()
 
